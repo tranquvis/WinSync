@@ -182,5 +182,14 @@ namespace WinSync.Data
 
             return new Link(title, path1, path2, direction, remove);
         }
+
+        /// <summary>
+        /// Creates a new object, that is a copy of this instance.
+        /// </summary>
+        /// <returns></returns>
+        public Link Clone()
+        {
+            return new Link(Title, Path1, Path2, Direction, Remove);
+        }
     }
 }
