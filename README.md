@@ -35,3 +35,19 @@ The file looks like this:
 ```
 (whitespaces are allowed)
 
+##Development
+I tried to seperate the project in data management and the synchronisation service.
+####Data Management
+DataManager.cs contains all important functions to store, load and change links.
+Link.cs is the data model on teh one side and provides functions for synchronisation.
+
+####Synchronisation Service
+I have created a synchronisation service that is in abackground task using async and await.
+The synchronisations processes like detecting file changes and copying files are running parallel too.
+This isn't really necessary, due to limited read and write speeds of hard drives. But it was a good training for me.
+
+All synchronisation statistics are published in the SyncInfo object. The SyncInfo object provides the whole information for the synchronisation, which sould be displayed at the interface.
+
+##More
+I'm happy about all people that want to improve or comment this project.
+But please note that this is my first big c# application and I have written it particularly for training purposes.
