@@ -21,6 +21,20 @@ There is no installation needed.
 The data is saved in a text file named links.dat.
 You only have to run the WinSync.exe from the repository home, or compile it on your own.
 
+**add link**
+
+![add link window](https://raw.github.com/andi1501/WinSync/master/screenshots/addLink.png)
+
+**edit, remove link or open its folders by right clicking on a line**
+
+![line popup](https://raw.github.com/andi1501/WinSync/master/screenshots/linePopup.png)
+
+**view synchronisation statistics**
+
+Select a running or finished synchronisation and click on the details button.
+
+![link statistics window](https://raw.github.com/andi1501/WinSync/master/screenshots/linkStatistics.png)
+
 You can also edit the **data file** if you don't want to use the interface.
 The file looks like this:
 
