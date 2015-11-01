@@ -8,7 +8,7 @@ It is the same process every time. So create a Link in your WinSync application 
 - easily add, edit and synchronisation links
 - pause and cancel a synchronisation process
 - one-way and two-way synchronisation
-- possibility to remove old files and folders
+- remove old files and folders (optional)
 - watch the synchronisation progress with several statistics
 - log display
 - conflict and error documentation when the synchronisation finished
