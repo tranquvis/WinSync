@@ -53,10 +53,10 @@ The file looks like this:
 I tried to seperate the project in data management and the synchronisation service.
 ####Data Management
 DataManager.cs contains all important functions to store, load and change links.
-Link.cs is the data model on teh one side and provides functions for synchronisation.
+Link.cs is the data model on tthe one side and provides functions for synchronisation on the other side.
 
 ####Synchronisation Service
-I have created a synchronisation service that is in abackground task using async and await.
+I have created a synchronisation service that runs in a background task using async and await.
 The synchronisations processes like detecting file changes and copying files are running parallel too.
 This isn't really necessary, due to limited read and write speeds of hard drives. But it was a good training for me.
 
