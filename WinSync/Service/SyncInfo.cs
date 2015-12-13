@@ -26,10 +26,10 @@ namespace WinSync.Service
         /// <summary>
         /// create SyncInfo
         /// </summary>
-        /// <param name="link">owner</param>
+        /// <param name="link">link data (will be copied not referenced)</param>
         public SyncInfo(Link link)
         {
-            Link = link;
+            Link = link.Clone();
 
             Running = false;
             Paused = false;
