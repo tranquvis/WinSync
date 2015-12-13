@@ -8,7 +8,7 @@ It is the same process every time. So create a Link in your WinSync application 
 - easily add, edit and synchronisation links
 - pause and cancel a synchronisation process
 - one-way and two-way synchronisation
-- possibility to remove old files and folders
+- remove old files and folders (optional)
 - watch the synchronisation progress with several statistics
 - log display
 - conflict and error documentation when the synchronisation finished
@@ -20,6 +20,20 @@ It is the same process every time. So create a Link in your WinSync application 
 There is no installation needed.
 The data is saved in a text file named links.dat.
 You only have to run the WinSync.exe from the repository home, or compile it on your own.
+
+**add link**
+
+![add link window](https://raw.github.com/andi1501/WinSync/master/screenshots/addLink.png)
+
+**edit, remove link or open its folders by right clicking on a line**
+
+![line popup](https://raw.github.com/andi1501/WinSync/master/screenshots/linePopup.png)
+
+**view synchronisation statistics**
+
+Select a running or finished synchronisation and click on the details button.
+
+![link statistics window](https://raw.github.com/andi1501/WinSync/master/screenshots/linkStatistics.png)
 
 You can also edit the **data file** if you don't want to use the interface.
 The file looks like this:
@@ -39,10 +53,10 @@ The file looks like this:
 I tried to seperate the project in data management and the synchronisation service.
 ####Data Management
 DataManager.cs contains all important functions to store, load and change links.
-Link.cs is the data model on teh one side and provides functions for synchronisation.
+Link.cs is the data model on tthe one side and provides functions for synchronisation on the other side.
 
 ####Synchronisation Service
-I have created a synchronisation service that is in abackground task using async and await.
+I have created a synchronisation service that runs in a background task using async and await.
 The synchronisations processes like detecting file changes and copying files are running parallel too.
 This isn't really necessary, due to limited read and write speeds of hard drives. But it was a good training for me.
 
