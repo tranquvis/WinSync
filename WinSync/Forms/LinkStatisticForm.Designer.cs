@@ -32,6 +32,8 @@ namespace WinSync.Forms
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(LinkStatisticForm));
             this.panel1 = new System.Windows.Forms.Panel();
+            this.label_averageSpeed = new System.Windows.Forms.Label();
+            this.label14 = new System.Windows.Forms.Label();
             this.label11 = new System.Windows.Forms.Label();
             this.shadow_bottom2 = new System.Windows.Forms.Panel();
             this.shadow_top2 = new System.Windows.Forms.Panel();
@@ -39,9 +41,9 @@ namespace WinSync.Forms
             this.label10 = new System.Windows.Forms.Label();
             this.label_speed = new System.Windows.Forms.Label();
             this.label9 = new System.Windows.Forms.Label();
-            this.label_syncedFiles = new System.Windows.Forms.Label();
+            this.label_syncedFilesCount = new System.Windows.Forms.Label();
             this.label8 = new System.Windows.Forms.Label();
-            this.label_totalFiles = new System.Windows.Forms.Label();
+            this.label_syncedFilesSize = new System.Windows.Forms.Label();
             this.label7 = new System.Windows.Forms.Label();
             this.label_detail_status = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
@@ -63,8 +65,6 @@ namespace WinSync.Forms
             this.shadow_bottom1 = new System.Windows.Forms.Panel();
             this.panel3 = new System.Windows.Forms.Panel();
             this.label12 = new System.Windows.Forms.Label();
-            this.label_averageSpeed = new System.Windows.Forms.Label();
-            this.label14 = new System.Windows.Forms.Label();
             this.progressBar = new WinSync.Controls.MyProgressBar();
             this.button_pr = new WinSync.Controls.MyButton();
             this.button_sync = new WinSync.Controls.MyButton();
@@ -89,9 +89,9 @@ namespace WinSync.Forms
             this.panel1.Controls.Add(this.label10);
             this.panel1.Controls.Add(this.label_speed);
             this.panel1.Controls.Add(this.label9);
-            this.panel1.Controls.Add(this.label_syncedFiles);
+            this.panel1.Controls.Add(this.label_syncedFilesCount);
             this.panel1.Controls.Add(this.label8);
-            this.panel1.Controls.Add(this.label_totalFiles);
+            this.panel1.Controls.Add(this.label_syncedFilesSize);
             this.panel1.Controls.Add(this.label7);
             this.panel1.Controls.Add(this.label_detail_status);
             this.panel1.Controls.Add(this.label3);
@@ -104,6 +104,24 @@ namespace WinSync.Forms
             this.panel1.Name = "panel1";
             this.panel1.Size = new System.Drawing.Size(541, 479);
             this.panel1.TabIndex = 10;
+            // 
+            // label_averageSpeed
+            // 
+            this.label_averageSpeed.AutoSize = true;
+            this.label_averageSpeed.Location = new System.Drawing.Point(381, 87);
+            this.label_averageSpeed.Name = "label_averageSpeed";
+            this.label_averageSpeed.Size = new System.Drawing.Size(0, 13);
+            this.label_averageSpeed.TabIndex = 30;
+            // 
+            // label14
+            // 
+            this.label14.AutoSize = true;
+            this.label14.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label14.Location = new System.Drawing.Point(282, 85);
+            this.label14.Name = "label14";
+            this.label14.Size = new System.Drawing.Size(93, 15);
+            this.label14.TabIndex = 29;
+            this.label14.Text = "Average Speed:";
             // 
             // label11
             // 
@@ -174,13 +192,13 @@ namespace WinSync.Forms
             this.label9.TabIndex = 22;
             this.label9.Text = "Speed:";
             // 
-            // label_syncedFiles
+            // label_syncedFilesCount
             // 
-            this.label_syncedFiles.AutoSize = true;
-            this.label_syncedFiles.Location = new System.Drawing.Point(118, 111);
-            this.label_syncedFiles.Name = "label_syncedFiles";
-            this.label_syncedFiles.Size = new System.Drawing.Size(0, 13);
-            this.label_syncedFiles.TabIndex = 21;
+            this.label_syncedFilesCount.AutoSize = true;
+            this.label_syncedFilesCount.Location = new System.Drawing.Point(120, 111);
+            this.label_syncedFilesCount.Name = "label_syncedFilesCount";
+            this.label_syncedFilesCount.Size = new System.Drawing.Size(0, 13);
+            this.label_syncedFilesCount.TabIndex = 21;
             // 
             // label8
             // 
@@ -188,17 +206,17 @@ namespace WinSync.Forms
             this.label8.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label8.Location = new System.Drawing.Point(6, 109);
             this.label8.Name = "label8";
-            this.label8.Size = new System.Drawing.Size(106, 15);
+            this.label8.Size = new System.Drawing.Size(108, 15);
             this.label8.TabIndex = 20;
-            this.label8.Text = "Synced Files/Size:";
+            this.label8.Text = "Synced files count:";
             // 
-            // label_totalFiles
+            // label_syncedFilesSize
             // 
-            this.label_totalFiles.AutoSize = true;
-            this.label_totalFiles.Location = new System.Drawing.Point(105, 87);
-            this.label_totalFiles.Name = "label_totalFiles";
-            this.label_totalFiles.Size = new System.Drawing.Size(0, 13);
-            this.label_totalFiles.TabIndex = 19;
+            this.label_syncedFilesSize.AutoSize = true;
+            this.label_syncedFilesSize.Location = new System.Drawing.Point(112, 87);
+            this.label_syncedFilesSize.Name = "label_syncedFilesSize";
+            this.label_syncedFilesSize.Size = new System.Drawing.Size(0, 13);
+            this.label_syncedFilesSize.TabIndex = 19;
             // 
             // label7
             // 
@@ -206,9 +224,9 @@ namespace WinSync.Forms
             this.label7.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label7.Location = new System.Drawing.Point(6, 85);
             this.label7.Name = "label7";
-            this.label7.Size = new System.Drawing.Size(93, 15);
+            this.label7.Size = new System.Drawing.Size(100, 15);
             this.label7.TabIndex = 18;
-            this.label7.Text = "Total Files/Size:";
+            this.label7.Text = "Synced files size:";
             // 
             // label_detail_status
             // 
@@ -430,24 +448,6 @@ namespace WinSync.Forms
             this.label12.TabIndex = 29;
             this.label12.Text = "Link Info";
             // 
-            // label_averageSpeed
-            // 
-            this.label_averageSpeed.AutoSize = true;
-            this.label_averageSpeed.Location = new System.Drawing.Point(381, 87);
-            this.label_averageSpeed.Name = "label_averageSpeed";
-            this.label_averageSpeed.Size = new System.Drawing.Size(0, 13);
-            this.label_averageSpeed.TabIndex = 30;
-            // 
-            // label14
-            // 
-            this.label14.AutoSize = true;
-            this.label14.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label14.Location = new System.Drawing.Point(282, 85);
-            this.label14.Name = "label14";
-            this.label14.Size = new System.Drawing.Size(93, 15);
-            this.label14.TabIndex = 29;
-            this.label14.Text = "Average Speed:";
-            // 
             // progressBar
             // 
             this.progressBar.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
@@ -549,9 +549,9 @@ namespace WinSync.Forms
         private System.Windows.Forms.Label label_direction;
         private System.Windows.Forms.Label label6;
         private MyButton button_sync;
-        private System.Windows.Forms.Label label_syncedFiles;
+        private System.Windows.Forms.Label label_syncedFilesCount;
         private System.Windows.Forms.Label label8;
-        private System.Windows.Forms.Label label_totalFiles;
+        private System.Windows.Forms.Label label_syncedFilesSize;
         private System.Windows.Forms.Label label7;
         private System.Windows.Forms.Label label_speed;
         private System.Windows.Forms.Label label9;
