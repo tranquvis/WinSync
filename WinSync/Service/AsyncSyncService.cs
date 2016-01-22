@@ -536,7 +536,7 @@ namespace WinSync.Service
                     GetSyncFilesOfDirOneWay(sourceHomePath, destHomePath, relativePath + "/" + dn);
                 }
 
-                //Loop through all files in source directory
+                //loop through all files in source directory
                 foreach (string name in Directory.GetFiles(sourcePath))
                 {
                     //detect changes of file asynchronously

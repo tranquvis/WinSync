@@ -416,7 +416,7 @@ namespace WinSync.Forms
             
             foreach (Link l in _links)
             {
-                if (l.SyncInfo == null) continue;
+                if (!l.SyncInfo.Running) continue;
                 total += l.SyncInfo.TotalSize;
                 p += l.SyncInfo.SizeApplied;
             }
