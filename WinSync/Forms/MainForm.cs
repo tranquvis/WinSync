@@ -58,6 +58,7 @@ namespace WinSync.Forms
             ll.EditEventHandler = delegate { Edit(_linkLines.IndexOf(ll)); };
             ll.SelectEventHandler = delegate { LineSelect(_linkLines.IndexOf(ll)); };
             ll.SyncEventHandler = delegate { Sync(_linkLines.IndexOf(ll)); };
+            ll.CancelEventHandler = delegate { Cancel(_linkLines.IndexOf(ll)); };
 
             _linkLines.Add(ll);
             dataTable.Controls.Add(ll, 0, _linkLines.Count);
@@ -222,8 +223,6 @@ namespace WinSync.Forms
         /// <param name="pos">link position in _links</param>
         private void Sync(int pos)
         {
-            _syncFinsihedFlags.Remove(_links[pos]);
-
             _linkLines[pos].SyncB.SwitchToCancel();
             _linkLines[pos].InfoIcon = -1;
 
@@ -332,7 +331,14 @@ namespace WinSync.Forms
                     }
                     else
                     {
-                        if (l.SyncInfo == null || !l.SyncInfo.Finished || _syncFinsihedFlags.Contains(l)) continue;
+                        if (l.SyncInfo == null || !l.SyncInfo.Finished)
+                            continue;
+
+                        if(_syncFinsihedFlags.Contains(l))
+                        {
+                            _syncFinsihedFlags.Remove(l);
+                            continue;
+                        }
                         _syncFinsihedFlags.Add(l);
 
                         //--- on synchronisation finished ---
@@ -351,7 +357,7 @@ namespace WinSync.Forms
                     }
                 }
                 await Task.Delay(100);
-                if (!SyncRunning()) lastLoop = true;
+                if (!SyncRunning()) lastLoop = !lastLoop;
             }
 
             progressBar_total.Visible = false;
@@ -416,7 +422,7 @@ namespace WinSync.Forms
             
             foreach (Link l in _links)
             {
-                if (!l.SyncInfo.Running) continue;
+                if (!l.IsRunning()) continue;
                 total += l.SyncInfo.TotalSize;
                 p += l.SyncInfo.SizeApplied;
             }

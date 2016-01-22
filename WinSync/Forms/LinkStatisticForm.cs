@@ -302,5 +302,13 @@ namespace WinSync.Forms
                 shadow_bottom1.Visible = true;
             }
         }
+
+        private void listBox_syncInfo_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Control && e.KeyCode == Keys.C)
+            {
+                Clipboard.SetData(DataFormats.Text, (string)listBox_syncInfo.SelectedItem);
+            }
+        }
     }
 }

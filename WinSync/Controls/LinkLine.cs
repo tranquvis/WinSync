@@ -127,6 +127,7 @@ namespace WinSync.Controls
         public EventHandler EditEventHandler { private get; set; } = null;
         public Action SelectEventHandler { private get; set; } = null;
         public EventHandler SyncEventHandler { private get; set; } = null;
+        public EventHandler CancelEventHandler { private get; set; } = null;
 
 
         /// <summary>
@@ -170,7 +171,10 @@ namespace WinSync.Controls
 
         private void syncButton_Click(object sender, EventArgs e)
         {
-            SyncEventHandler?.Invoke(sender, e);
+            if (syncButton.StateSync)
+                SyncEventHandler?.Invoke(sender, e);
+            else
+                CancelEventHandler?.Invoke(sender, e);
         }
 
         private void OpenInExplorer(string path)

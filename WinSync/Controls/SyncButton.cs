@@ -8,7 +8,7 @@ namespace WinSync.Controls
         public static Image SyncImage = Properties.Resources.ic_sync_48px;
         public static Image CancelImage = Properties.Resources.ic_close_48px;
 
-        public bool StateSync = true;
+        public bool StateSync = true; // true if the sync button is visible
 
         public SyncButton()
         {
@@ -24,14 +24,14 @@ namespace WinSync.Controls
         public void SwitchToSync()
         {
             BackgroundImage = SyncImage;
-            StateSync = false;
+            StateSync = true;
             Invalidate();
         }
 
         public void SwitchToCancel()
         {
             BackgroundImage = CancelImage;
-            StateSync = true;
+            StateSync = false;
             Invalidate();
         }
     }

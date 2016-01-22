@@ -615,6 +615,7 @@ namespace WinSync.Service
             }
         }
 
+        SyncFileInfo d_sfi;
         /// <summary>
         /// compare 2 files for one way synchronisation in new task
         /// </summary>
@@ -651,7 +652,7 @@ namespace WinSync.Service
                 FileInfo destFileInfo = new FileInfo(df);
 
                 SyncFileInfo sfi = new SyncFileInfo(_si, filePath, srcFileInfo.Length, _si.Link.Direction, false);
-
+                d_sfi = sfi;
                 while (_si.Paused)
                 {
                     try

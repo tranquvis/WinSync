@@ -53,6 +53,8 @@ namespace WinSync.Forms
             this.label4 = new System.Windows.Forms.Label();
             this.listBox_syncInfo = new System.Windows.Forms.ListBox();
             this.panel_header = new System.Windows.Forms.Panel();
+            this.button_pr = new WinSync.Controls.MyButton();
+            this.button_sync = new WinSync.Controls.MyButton();
             this.label_title = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.label_folder1 = new System.Windows.Forms.Label();
@@ -66,8 +68,6 @@ namespace WinSync.Forms
             this.panel3 = new System.Windows.Forms.Panel();
             this.label12 = new System.Windows.Forms.Label();
             this.progressBar = new WinSync.Controls.MyProgressBar();
-            this.button_pr = new WinSync.Controls.MyButton();
-            this.button_sync = new WinSync.Controls.MyButton();
             this.panel1.SuspendLayout();
             this.panel2.SuspendLayout();
             this.panel_header.SuspendLayout();
@@ -300,9 +300,9 @@ namespace WinSync.Forms
             this.listBox_syncInfo.FormattingEnabled = true;
             this.listBox_syncInfo.Location = new System.Drawing.Point(6, 32);
             this.listBox_syncInfo.Name = "listBox_syncInfo";
-            this.listBox_syncInfo.SelectionMode = System.Windows.Forms.SelectionMode.None;
             this.listBox_syncInfo.Size = new System.Drawing.Size(535, 260);
             this.listBox_syncInfo.TabIndex = 17;
+            this.listBox_syncInfo.KeyDown += new System.Windows.Forms.KeyEventHandler(this.listBox_syncInfo_KeyDown);
             // 
             // panel_header
             // 
@@ -317,6 +317,46 @@ namespace WinSync.Forms
             this.panel_header.Name = "panel_header";
             this.panel_header.Size = new System.Drawing.Size(541, 34);
             this.panel_header.TabIndex = 13;
+            // 
+            // button_pr
+            // 
+            this.button_pr.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.button_pr.BackColor = System.Drawing.Color.Transparent;
+            this.button_pr.BackgroundImage = global::WinSync.Properties.Resources.ic_pause_white;
+            this.button_pr.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
+            this.button_pr.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.button_pr.FlatAppearance.BorderSize = 0;
+            this.button_pr.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(28)))), ((int)(((byte)(67)))), ((int)(((byte)(102)))));
+            this.button_pr.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.button_pr.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.999999F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.button_pr.ForeColor = System.Drawing.Color.White;
+            this.button_pr.Location = new System.Drawing.Point(467, 0);
+            this.button_pr.Margin = new System.Windows.Forms.Padding(0);
+            this.button_pr.Name = "button_pr";
+            this.button_pr.Size = new System.Drawing.Size(38, 34);
+            this.button_pr.TabIndex = 21;
+            this.button_pr.UseVisualStyleBackColor = false;
+            this.button_pr.Click += new System.EventHandler(this.button_pr_Click);
+            // 
+            // button_sync
+            // 
+            this.button_sync.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.button_sync.BackColor = System.Drawing.Color.Transparent;
+            this.button_sync.BackgroundImage = global::WinSync.Properties.Resources.ic_sync_white;
+            this.button_sync.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
+            this.button_sync.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.button_sync.FlatAppearance.BorderSize = 0;
+            this.button_sync.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(28)))), ((int)(((byte)(67)))), ((int)(((byte)(102)))));
+            this.button_sync.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.button_sync.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.999999F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.button_sync.ForeColor = System.Drawing.Color.White;
+            this.button_sync.Location = new System.Drawing.Point(505, 0);
+            this.button_sync.Margin = new System.Windows.Forms.Padding(0);
+            this.button_sync.Name = "button_sync";
+            this.button_sync.Size = new System.Drawing.Size(39, 34);
+            this.button_sync.TabIndex = 1;
+            this.button_sync.UseVisualStyleBackColor = false;
+            this.button_sync.Click += new System.EventHandler(this.button_sync_Click);
             // 
             // label_title
             // 
@@ -460,46 +500,6 @@ namespace WinSync.Forms
             this.progressBar.Name = "progressBar";
             this.progressBar.Size = new System.Drawing.Size(541, 10);
             this.progressBar.TabIndex = 22;
-            // 
-            // button_pr
-            // 
-            this.button_pr.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.button_pr.BackColor = System.Drawing.Color.Transparent;
-            this.button_pr.BackgroundImage = global::WinSync.Properties.Resources.ic_pause_white;
-            this.button_pr.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
-            this.button_pr.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.button_pr.FlatAppearance.BorderSize = 0;
-            this.button_pr.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(28)))), ((int)(((byte)(67)))), ((int)(((byte)(102)))));
-            this.button_pr.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.button_pr.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.999999F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.button_pr.ForeColor = System.Drawing.Color.White;
-            this.button_pr.Location = new System.Drawing.Point(467, 0);
-            this.button_pr.Margin = new System.Windows.Forms.Padding(0);
-            this.button_pr.Name = "button_pr";
-            this.button_pr.Size = new System.Drawing.Size(38, 34);
-            this.button_pr.TabIndex = 21;
-            this.button_pr.UseVisualStyleBackColor = false;
-            this.button_pr.Click += new System.EventHandler(this.button_pr_Click);
-            // 
-            // button_sync
-            // 
-            this.button_sync.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.button_sync.BackColor = System.Drawing.Color.Transparent;
-            this.button_sync.BackgroundImage = global::WinSync.Properties.Resources.ic_sync_white;
-            this.button_sync.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
-            this.button_sync.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.button_sync.FlatAppearance.BorderSize = 0;
-            this.button_sync.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(28)))), ((int)(((byte)(67)))), ((int)(((byte)(102)))));
-            this.button_sync.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.button_sync.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.999999F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.button_sync.ForeColor = System.Drawing.Color.White;
-            this.button_sync.Location = new System.Drawing.Point(505, 0);
-            this.button_sync.Margin = new System.Windows.Forms.Padding(0);
-            this.button_sync.Name = "button_sync";
-            this.button_sync.Size = new System.Drawing.Size(39, 34);
-            this.button_sync.TabIndex = 1;
-            this.button_sync.UseVisualStyleBackColor = false;
-            this.button_sync.Click += new System.EventHandler(this.button_sync_Click);
             // 
             // LinkStatisticForm
             // 
