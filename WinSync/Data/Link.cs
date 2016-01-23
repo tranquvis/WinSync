@@ -109,8 +109,8 @@ namespace WinSync.Data
             if (!IsRunning()) return;
 
             SyncTask.Cancel();
+            SyncInfo.SyncCancelled();
             SyncTask = null;
-            SyncInfo.Running = false;
         }
 
         /// <summary>

@@ -30,6 +30,9 @@ namespace WinSync.Forms
 
         private int _currentPos = -1;
 
+        private bool updateStatsAsyncRunning;
+        private bool updateDetailStatsAsync;
+
         public Link ActLink => _links.Count > 0 && _currentPos > -1 ? _links[_currentPos] : null;
         public LinkLine ActLinkLine => _linkLines.Count > 0 && _currentPos > -1 ? _linkLines[_currentPos] : null;
 
@@ -37,8 +40,23 @@ namespace WinSync.Forms
         {
             InitializeComponent();
             FillData();
-            UpdateDetailStatsAsync();
-            UpdateStatsAsync();
+            StartUpdateRoutine();
+        }
+
+        public void StartUpdateRoutine()
+        {
+            Task.Run(async () =>
+            {
+                while (!IsDisposed)
+                {
+                    if (!updateStatsAsyncRunning && SyncRunning())
+                        Invoke(new Action(() => { UpdateStatsAsync(); }));
+                    if (!updateDetailStatsAsync && ActLink?.SyncInfo != null)
+                        Invoke(new Action(() => { UpdateDetailStatsAsync(); })); 
+
+                    await Task.Delay(500);
+                }
+            });
         }
 
         public void SetLinks(List<Link> links)
@@ -283,11 +301,15 @@ namespace WinSync.Forms
         /// </summary>
         public async void UpdateStatsAsync()
         {
+            updateStatsAsyncRunning = true;
+
             progressBar_total.Visible = true;
             shadow_progressbar.Visible = true;
 
             //loop once more after all synchronisations finished
             bool lastLoop = false;
+            _syncFinsihedFlags.Clear();
+
             while (SyncRunning() || lastLoop)
             {
                 float tp = GetTotalProgress();
@@ -308,7 +330,7 @@ namespace WinSync.Forms
 
                     if (l.IsRunning())
                     {
-                        if (!linkLine.SyncB.StateSync)
+                        if (linkLine.SyncB.StateSync)
                         {
                             linkLine.SyncB.SwitchToCancel();
                         }
@@ -356,9 +378,12 @@ namespace WinSync.Forms
                         }
                     }
                 }
-                await Task.Delay(100);
-                if (!SyncRunning()) lastLoop = !lastLoop;
+                await Task.Delay(200);
+                if (!SyncRunning())
+                    lastLoop = !lastLoop;
             }
+
+            updateStatsAsyncRunning = false;
 
             progressBar_total.Visible = false;
             shadow_progressbar.Visible = false;
@@ -370,6 +395,7 @@ namespace WinSync.Forms
         /// </summary>
         public async void UpdateDetailStatsAsync()
         {
+            updateDetailStatsAsync = true;
 
             if (ActLink?.SyncInfo != null)
                 panel_syncDetail.Visible = true;
@@ -407,6 +433,8 @@ namespace WinSync.Forms
 
                 await Task.Delay(300);
             }
+
+            updateDetailStatsAsync = false;
 
             panel_syncDetail.Visible = false;
         }

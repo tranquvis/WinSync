@@ -9,7 +9,8 @@ namespace WinSync.Forms
     public partial class LinkStatisticForm : Form, ISyncListener
     {
         readonly Link _l;
-        private bool _initFlag;
+        bool _initFlag;
+        bool updateStatsAsyncRunning;
 
         /// <summary>
         /// create a LinkStatisticsForm that displays all details of a synchronisation process
@@ -28,10 +29,24 @@ namespace WinSync.Forms
             label_folder2.Text = _l.Path2;
             label_direction.Text = _l.Direction.ToString();
 
-            _initFlag = true;
-
             _l.SyncInfo.Listener = this;
+
             UpdateStatsAsync();
+            StartUpdateRoutine();
+        }
+        
+        public void StartUpdateRoutine()
+        {
+            Task.Run(async () =>
+            {
+                while (!IsDisposed)
+                {
+                    if (!updateStatsAsyncRunning && _l.IsRunning())
+                        Invoke(new Action(() => { UpdateStatsAsync(); }));
+
+                    await Task.Delay(500);
+                }
+            });
         }
 
         /// <summary>
@@ -66,6 +81,9 @@ namespace WinSync.Forms
         /// </summary>
         public async void UpdateStatsAsync()
         {
+            updateStatsAsyncRunning = true;
+            _initFlag = true;
+
             //display cancel and pause button
             button_sync.BackgroundImage = Properties.Resources.ic_cancel_white;
             button_pr.Visible = true;
@@ -75,8 +93,10 @@ namespace WinSync.Forms
                 button_pr.BackgroundImage = _l.SyncInfo.Paused ? Properties.Resources.ic_play_white : Properties.Resources.ic_pause_white;
                 UpdateProgressInfos();
 
-                await Task.Delay(100);
+                await Task.Delay(200);
             }
+
+            updateStatsAsyncRunning = false;
 
             //after synchronisation
             button_sync.BackgroundImage = Properties.Resources.ic_sync_white;
@@ -170,7 +190,6 @@ namespace WinSync.Forms
                 _l.Sync();
                 _l.SyncInfo.Listener = this;
                 listBox_syncInfo.Items.Clear();
-                _initFlag = true;
                 UpdateStatsAsync();
             }
             else
