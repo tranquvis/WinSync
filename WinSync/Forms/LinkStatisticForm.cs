@@ -274,6 +274,26 @@ namespace WinSync.Forms
         }
 
         /// <summary>
+        /// add process line on log message received
+        /// </summary>
+        /// <param name="message"></param>
+        public void OnLog(LogMessage message)
+        {
+            string text = "";
+            switch(message.Type)
+            {
+                case LogType.ERROR:
+                    text = "Error:";
+                    break;
+                case LogType.INFO:
+                    text = "Info:";
+                    break;
+            }
+            text += message.Message;
+            AddProcessLine(text);
+        }
+
+        /// <summary>
         /// hide or show shadows when resizing
         /// </summary>
         /// <param name="sender"></param>

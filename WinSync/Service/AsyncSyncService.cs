@@ -13,8 +13,6 @@ namespace WinSync.Service
         private readonly SyncInfo _si;
 
         private List<Task<SyncFileInfo>> _detectFileTasks = new List<Task<SyncFileInfo>>();
-        private List<Task> _folderCreateTasks = new List<Task>();
-        private List<Task> _folderRemoveTasks = new List<Task>();
         private List<Task<SyncFileInfo>> _fileApplyTasks = new List<Task<SyncFileInfo>>();
 
         private CancellationTokenSource _ts;
@@ -74,56 +72,68 @@ namespace WinSync.Service
         }
 
         /// <summary>
-        /// create directories async
+        /// create directories
         /// </summary>
         /// <param name="syncDirs">directory informations</param>
         /// <returns></returns>
         private async Task CreateFolders(List<SyncDirInfo> syncDirs)
         {
-            foreach (SyncDirInfo sdi in syncDirs)
+            foreach (SyncDirInfo sdi in syncDirs.Where(d => !d.Remove))
             {
-                if(sdi.Remove) continue;
-
                 Task t = RunFolderCreationTask(sdi);
-                if (t != null)
-                    _folderCreateTasks.Add(t);
+                if (t != null)  await t;
             }
-
-            await Task.WhenAll(_folderCreateTasks);
-            _folderCreateTasks = null;
         }
 
         /// <summary>
-        /// delete directories async
+        /// delete directories
         /// </summary>
         /// <param name="syncDirs">directory informations</param>
         /// <returns></returns>
         private async Task RemoveFolders(List<SyncDirInfo> syncDirs)
         {
-            foreach (SyncDirInfo sdi in syncDirs.Where(d => d.Remove))
+            foreach (SyncDirInfo sdi in syncDirs.Where(d => d.Remove).Reverse())
             {
-                Task t = RunFolderDeletionTask(sdi);
-                if (t != null)
-                    _folderRemoveTasks.Add(t);
+                int result;
+                Task t = RunFolderDeletionTask(sdi, out result);
+                if(t != null) await t;
+                else
+                {
+                    if (result == 2)
+                        _si.Log(new LogMessage(LogType.ERROR,$"The directory to be deleted was not empty. Path: {sdi.Path}"));
+                }
             }
-
-            await Task.WhenAll(_folderRemoveTasks);
-            _folderRemoveTasks = null;
         }
 
         /// <summary>
         /// delete directory in new task
         /// </summary>
         /// <param name="syncdi">directory information</param>
-        /// <returns></returns>
-        private Task RunFolderDeletionTask(SyncDirInfo syncdi)
+        /// <param name="result">
+        /// 0: no error
+        /// 1: the directory to be deleted was not found
+        /// 2: the directory to be deleted was not empty
+        /// </param>
+        /// <returns>null if an error occurred</returns>
+        private Task RunFolderDeletionTask(SyncDirInfo syncdi, out int result)
         {
             string ddp = (syncdi.Dir == SyncDirection.To1 ? _si.Link.Path1 : _si.Link.Path2) + syncdi.Path;
             Delimon.Win32.IO.DirectoryInfo ddi = new Delimon.Win32.IO.DirectoryInfo(ddp);
             
-            //do not remove if directory is not empty
-            if (!ddi.Exists || ddi.GetFiles().Length > 0 || ddi.GetDirectories().Length > 0)
+            if (!ddi.Exists)
+            {
+                result = 1;
                 return null;
+            }
+
+            //do not remove if directory is not empty
+            if (ddi.GetFiles().Length > 0 || ddi.GetDirectories().Length > 0)
+            {
+                result = 2;
+                return null;
+            }
+
+            result = 0;
 
             return Task.Run(() =>
             {
@@ -175,19 +185,11 @@ namespace WinSync.Service
                         return;
                     }
                 }
-
-                try
-                {
-                    syncdi.StartedNow();
-                    ddi.Create();
-                    syncdi.EndedNow();
-                    _si.AppliedDirChange(syncdi);
-                }
-                catch (Exception e)
-                {
-
-                    throw;
-                }
+                
+                syncdi.StartedNow();
+                ddi.Create();
+                syncdi.EndedNow();
+                _si.AppliedDirChange(syncdi);
             }, _ct);
         }
 
@@ -587,7 +589,7 @@ namespace WinSync.Service
                 foreach (string name in Delimon.Win32.IO.Directory.GetDirectories(destPath))
                 {
                     string dn = Delimon.Win32.IO.Path.GetFileName(name);
-                    string sourceDirPath = sourcePath + "/" + dn;
+                    string sourceDirPath = sourcePath + @"\" + dn;
 
                     //remove destination directory if source directory doesn't exist (if remove is enabled)
                     if (_si.Link.Remove && !new Delimon.Win32.IO.DirectoryInfo(sourceDirPath).Exists)

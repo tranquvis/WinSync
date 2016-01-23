@@ -20,6 +20,7 @@ namespace WinSync.Service
         public List<SyncFileInfo> SyncFiles;
         public List<SyncDirInfo> ConflictDirs;
         public List<SyncFileInfo> ConflictFiles;
+        public Stack<LogMessage> LogStack;
 
         public ISyncListener Listener;
 
@@ -41,6 +42,7 @@ namespace WinSync.Service
             SyncFiles = new List<SyncFileInfo>();
             ConflictFiles = new List<SyncFileInfo>();
             ConflictDirs = new List<SyncDirInfo>();
+            LogStack = new Stack<LogMessage>();
         }
         
         /// <summary>
@@ -299,6 +301,12 @@ namespace WinSync.Service
         {
             ConflictDirs.Add(sdi);
             Listener?.OnDirConflicted(sdi);
+        }
+
+        public void Log(LogMessage message)
+        {
+            LogStack.Push(message);
+            Listener?.OnLog(message);
         }
 
         /// <summary>

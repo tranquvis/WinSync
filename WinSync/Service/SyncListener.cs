@@ -37,5 +37,11 @@
         /// </summary>
         /// <param name="sdi">conflicted directory information</param>
         void OnDirConflicted(SyncDirInfo sdi);
+
+        /// <summary>
+        /// is called when a log message has been received
+        /// </summary>
+        /// <param name="message"></param>
+        void OnLog(LogMessage message);
     }
 }
