@@ -36,7 +36,7 @@ namespace WinSync.Data
             {
                 if (value.Trim().Length == 0)
                     throw new Exception("Path 1 must not be empty!");
-                string p = value.Replace('\\', '/');
+                string p = value.Replace('/', '\\');
                 _path1 = p;
             }
         }
@@ -48,7 +48,7 @@ namespace WinSync.Data
             {
                 if (value.Trim().Length == 0)
                     throw new Exception("Path 2 must not be empty!");
-                string p = value.Replace('\\', '/');
+                string p = value.Replace('/', '\\');
                 _path2 = p;
             }
         }
