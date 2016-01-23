@@ -13,6 +13,7 @@ It is the same process every time. So create a Link in your WinSync application 
 - log display
 - conflict and error documentation when the synchronisation finished
 - open folders in explorer directly from the application interface
+- support for very long paths
 
 ![main window](https://raw.github.com/andi1501/WinSync/master/screenshots/mainWindow.png)
 
