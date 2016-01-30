@@ -38,6 +38,9 @@ namespace WinSync.Forms
 
         public MainForm()
         {
+            Delimon.Win32.IO.FileInfo f1 = new Delimon.Win32.IO.FileInfo(@"D:\Users\Andi\SyncTestData\debug\boot\macrium\WA10KFiles\media\Drivers");
+            Delimon.Win32.IO.FileInfo f2 = new Delimon.Win32.IO.FileInfo(@"C:\boot\macrium\WA10KFiles\media\Drivers");
+
 
             InitializeComponent();
             FillData();
@@ -519,8 +522,15 @@ namespace WinSync.Forms
         {
             WindowState = FormWindowState.Minimized;
         }
-
         
+        private void checkBox_availableSyncsOnly_CheckedChanged(object sender, EventArgs e)
+        {
+            for(int i = 0; i < _links.Count; i++)
+            {
+                _linkLines[i].Visible = checkBox_availableSyncsOnly.Checked ? _links[i].IsExecutable() : true;
+            }
+        }
+
         /// <summary>
         /// make window moveable
         /// </summary>

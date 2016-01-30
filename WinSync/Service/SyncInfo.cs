@@ -16,11 +16,13 @@ namespace WinSync.Service
         public bool Running;
         public bool Finished;
 
-        public List<SyncDirInfo> SyncDirs;
-        public List<SyncFileInfo> SyncFiles;
-        public List<SyncDirInfo> ConflictDirs;
-        public List<SyncFileInfo> ConflictFiles;
+        public List<MyDirInfo> SyncDirs;
+        public List<MyFileInfo> SyncFiles;
+        public List<MyDirInfo> ConflictDirs;
+        public List<MyFileInfo> ConflictFiles;
         public Stack<LogMessage> LogStack;
+
+        public DirTree DirTree;
 
         public ISyncListener Listener;
 
@@ -38,11 +40,13 @@ namespace WinSync.Service
             SizeApplied = 0;
             DirsDone = 0;
             FilesDone = 0;
-            SyncDirs = new List<SyncDirInfo>();
-            SyncFiles = new List<SyncFileInfo>();
-            ConflictFiles = new List<SyncFileInfo>();
-            ConflictDirs = new List<SyncDirInfo>();
+            SyncDirs = new List<MyDirInfo>();
+            SyncFiles = new List<MyFileInfo>();
+            ConflictFiles = new List<MyFileInfo>();
+            ConflictDirs = new List<MyDirInfo>();
             LogStack = new Stack<LogMessage>();
+
+            DirTree = new DirTree(new MyDirInfo("", "", null));
         }
         
         /// <summary>
@@ -226,59 +230,69 @@ namespace WinSync.Service
             _timePaused += DateTime.Now - LastPauseStart;
         }
 
+        public void FileFound(MyFileInfo file)
+        {
+            DirTree.AddFile(file);
+        }
+
+        public void DirFound(MyDirInfo dir)
+        {
+            DirTree.AddDir(dir);
+        }
+
         /// <summary>
         /// call when a difference in the files has been detected
         /// </summary>
         /// <param name="sfi">file information</param>
-        public void FileChangeDetected(SyncFileInfo sfi)
+        public void FileChangeDetected(MyFileInfo fi)
         {
-            SyncFiles.Add(sfi);
-            if (!sfi.Remove) TotalSize += sfi.Size;
-            Listener?.OnFileChangeDetected(sfi);
+            SyncFiles.Add(fi);
+            if (!fi.SyncInfo.Remove) TotalSize += fi.Size;
+            Listener?.OnFileChangeDetected(fi);
         }
 
         /// <summary>
         /// call when a difference in the directory tree has been detected
         /// </summary>
         /// <param name="sdi">directory information</param>
-        public void DirChangeDetected(SyncDirInfo sdi)
+        public void DirChangeDetected(MyDirInfo di)
         {
-            SyncDirs.Add(sdi);
+            SyncDirs.Add(di);
         }
 
         /// <summary>
         /// call when detecting of file started
         /// </summary>
         /// <param name="path">relative file path</param>
-        public void DetectingFile(string path)
+        public void DetectingFile(MyFileInfo fi)
         {
-            Listener?.OnDetectingFileStarted(path);
+            Listener?.OnDetectingFileStarted(fi);
         }
 
         /// <summary>
         /// call when succesfully copied or deleted change to file
         /// </summary>
         /// <param name="sfi">synchronised file information</param>
-        public void AppliedFileChange(SyncFileInfo sfi)
+        public void AppliedFileChange(MyFileInfo fi)
         {
-            if(!sfi.Remove)
-                SizeApplied += sfi.Size;
+            if(!fi.SyncInfo.Remove)
+                SizeApplied += fi.Size;
             FilesDone++;
 
-            if (sfi.Conflicted) return;
+            if (fi.SyncInfo.Conflicted) return;
 
-            LastFileSyncSpeed = sfi.Speed;
+            LastFileSyncSpeed = fi.SyncInfo.Speed;
 
             RecalculateActSpeed();
 
-            Listener?.OnFileSynced(sfi);
+            Listener?.OnFileSynced(fi);
         }
 
         /// <summary>
         /// call when succesfully created or deleted directory
         /// </summary>
         /// <param name="sdi">directory information</param>
-        public void AppliedDirChange(SyncDirInfo sdi)
+        public void AppliedDirChange(MyDirInfo di)
         {
             DirsDone++;
         }
@@ -287,20 +301,20 @@ namespace WinSync.Service
         /// call when file conflicted
         /// </summary>
         /// <param name="sfi">file information with conflict infos</param>
-        public void FileConflicted(SyncFileInfo sfi)
+        public void FileConflicted(MyFileInfo fi)
         {
-            ConflictFiles.Add(sfi);
-            Listener?.OnFileConflicted(sfi);
+            ConflictFiles.Add(fi);
+            Listener?.OnFileConflicted(fi);
         }
 
         /// <summary>
         /// call when directory conflicted
         /// </summary>
         /// <param name="sdi">directory information with conflict infos</param>
-        public void DirConflicted(SyncDirInfo sdi)
+        public void DirConflicted(MyDirInfo di)
         {
-            ConflictDirs.Add(sdi);
-            Listener?.OnDirConflicted(sdi);
+            ConflictDirs.Add(di);
+            Listener?.OnDirConflicted(di);
         }
 
         public void Log(LogMessage message)

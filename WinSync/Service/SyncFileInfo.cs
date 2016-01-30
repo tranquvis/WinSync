@@ -6,18 +6,18 @@ namespace WinSync.Service
     {
         public SyncInfo SyncInfo { get; set; }
 
+        public MyFileInfo FileInfo { get; set; }
+
         /// <summary>
         /// create SyncFileInfo
         /// </summary>
         /// <param name="syncInfo">owner</param>
         /// <param name="path">relative file path</param>
         /// <param name="size">file size in byte</param>
-        public SyncFileInfo(SyncInfo syncInfo, string path, long size)
+        public SyncFileInfo(SyncInfo syncInfo, MyFileInfo fileInfo)
         {
             SyncInfo = syncInfo;
-
-            Path = path;
-            Size = size;
+            FileInfo = fileInfo;
         }
 
         /// <summary>
@@ -28,26 +28,16 @@ namespace WinSync.Service
         /// <param name="size">file size in byte</param>
         /// <param name="dir">synchronisation direction</param>
         /// <param name="remove">if destination file should be removed</param>
-        public SyncFileInfo(SyncInfo syncInfo, string path, long size, SyncDirection dir, bool remove) : this(syncInfo, path, size)
+        public SyncFileInfo(SyncInfo syncInfo, MyFileInfo fileInfo, SyncDirection dir, bool remove) : this(syncInfo, fileInfo)
         {
-            Dir = dir;
+            Direction = dir;
             Remove = remove;
         }
 
         /// <summary>
-        /// file path relative to link homedir
-        /// </summary>
-        public string Path { get; set; }
-
-        /// <summary>
-        /// file size in byte
-        /// </summary>
-        public long Size { get; set; }
-
-        /// <summary>
         /// synchronisation direction
         /// </summary>
-        public SyncDirection Dir { get; set; }
+        public SyncDirection Direction { get; set; }
 
         /// <summary>
         /// if destination file should be removed
@@ -88,7 +78,7 @@ namespace WinSync.Service
         /// <summary>
         /// in Megabits/second
         /// </summary>
-        public double Speed => (Size * 8.0 / (1024.0 * 1024.0)) / (SyncDuration.TotalSeconds);
+        public double Speed => (FileInfo.Size * 8.0 / (1024.0 * 1024.0)) / (SyncDuration.TotalSeconds);
 
         /// <summary>
         /// if synchronisation has finished

@@ -16,14 +16,14 @@ namespace WinSync.Forms
             label_linkname.Text = _l.Title;
             label_conflictsCount.Text = (_l.SyncInfo.ConflictDirs.Count + _l.SyncInfo.ConflictFiles.Count).ToString();
 
-            foreach (SyncDirInfo conflictDir in _l.SyncInfo.ConflictDirs)
+            foreach (MyDirInfo conflictDir in _l.SyncInfo.ConflictDirs)
             {
-                listBox_conflicts.Items.Add($"Dir ({conflictDir.ConflictInfo.Type},{conflictDir.ConflictInfo.Context}): {conflictDir.ConflictInfo.GetAbsolutePath()}");
+                listBox_conflicts.Items.Add($"Dir ({conflictDir.SyncInfo.ConflictInfo.Type},{conflictDir.SyncInfo.ConflictInfo.Context}): {conflictDir.SyncInfo.ConflictInfo.GetAbsolutePath()}");
             }
 
-            foreach (SyncFileInfo conflictFile in _l.SyncInfo.ConflictFiles)
+            foreach (MyFileInfo conflictFile in _l.SyncInfo.ConflictFiles)
             {
-                listBox_conflicts.Items.Add($"File ({conflictFile.ConflictInfo.Type},{conflictFile.ConflictInfo.Context}): {conflictFile.ConflictInfo.GetAbsolutePath()}");
+                listBox_conflicts.Items.Add($"File ({conflictFile.SyncInfo.ConflictInfo.Type},{conflictFile.SyncInfo.ConflictInfo.Context}): {conflictFile.SyncInfo.ConflictInfo.GetAbsolutePath()}");
             }
         }
 

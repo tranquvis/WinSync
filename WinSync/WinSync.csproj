@@ -116,8 +116,11 @@
     <Compile Include="Forms\SyncConflictRetryDialog.Designer.cs">
       <DependentUpon>SyncConflictRetryDialog.cs</DependentUpon>
     </Compile>
+    <Compile Include="Service\DirTree.cs" />
     <Compile Include="Service\LogMessage.cs" />
     <Compile Include="Service\LogType.cs" />
+    <Compile Include="Service\MyDirInfo.cs" />
+    <Compile Include="Service\MyFileInfo.cs" />
     <Compile Include="Service\TwoWayCompareResult.cs" />
     <Compile Include="Service\ConflictInfo.cs" />
     <Compile Include="Service\ConflictType.cs" />

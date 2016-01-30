@@ -218,56 +218,56 @@ namespace WinSync.Forms
         /// add process line on start detecting file
         /// </summary>
         /// <param name="path">file path</param>
-        public void OnDetectingFileStarted(string path)
+        public void OnDetectingFileStarted(MyFileInfo fi)
         {
-            AddProcessLine("Start detecting file:" + path);
+            AddProcessLine("Start detecting file:" + fi.FullPath);
         }
 
         /// <summary>
         /// add process line on file change detected
         /// </summary>
         /// <param name="sfi"></param>
-        public void OnFileChangeDetected(SyncFileInfo sfi)
+        public void OnFileChangeDetected(MyFileInfo fi)
         {
-            AddProcessLine("File change detected:" + sfi.Path);
+            AddProcessLine("File change detected:" + fi.FullPath);
         }
 
         /// <summary>
         /// add process line on file synced
         /// </summary>
         /// <param name="sfi"></param>
-        public void OnFileSynced(SyncFileInfo sfi)
+        public void OnFileSynced(MyFileInfo fi)
         {
-            if(sfi.Remove)
-                AddProcessLine("File deleted:" + sfi.Path);
+            if(fi.SyncInfo.Remove)
+                AddProcessLine("File deleted:" + fi.FullPath);
             else
-                AddProcessLine("File copied:" + sfi.Path);
+                AddProcessLine("File copied:" + fi.FullPath);
         }
 
-        public void OnDirSynced(SyncDirInfo sdi)
+        public void OnDirSynced(MyDirInfo di)
         {
-            if (sdi.Remove)
-                AddProcessLine("Directory removed:" + sdi.Path);
+            if (di.SyncInfo.Remove)
+                AddProcessLine("Directory removed:" + di.FullPath);
             else
-                AddProcessLine("Directory created:" + sdi.Path);
+                AddProcessLine("Directory created:" + di.FullPath);
         }
 
         /// <summary>
         /// add process line on file conflicted
         /// </summary>
         /// <param name="sfi"></param>
-        public void OnFileConflicted(SyncFileInfo sfi)
+        public void OnFileConflicted(MyFileInfo fi)
         {
-            switch (sfi.ConflictInfo.Type)
+            switch (fi.SyncInfo.ConflictInfo.Type)
             {
                 case ConflictType.IO:
-                    AddProcessLine("IO conflict at file: " + sfi.Path);
+                    AddProcessLine("IO conflict at file: " + fi.FullPath);
                     break;
                 case ConflictType.UA:
-                    AddProcessLine("Access denied to: " + sfi.Path);
+                    AddProcessLine("Access denied to: " + fi.FullPath);
                     break;
                 case ConflictType.Unknown:
-                    AddProcessLine("Unknown error at file: " + sfi.Path);
+                    AddProcessLine("Unknown error at file: " + fi.FullPath);
                     break;
             }
         }
@@ -276,18 +276,18 @@ namespace WinSync.Forms
         /// add process line on dir conflicted
         /// </summary>
         /// <param name="sdi"></param>
-        public void OnDirConflicted(SyncDirInfo sdi)
+        public void OnDirConflicted(MyDirInfo di)
         {
-            switch (sdi.ConflictInfo.Type)
+            switch (di.SyncInfo.ConflictInfo.Type)
             {
                 case ConflictType.IO:
-                    AddProcessLine("IO conflict at folder: " + sdi.Path);
+                    AddProcessLine("IO conflict at folder: " + di.FullPath);
                     break;
                 case ConflictType.UA:
-                    AddProcessLine("Access denied to: " + sdi.Path);
+                    AddProcessLine("Access denied to: " + di.FullPath);
                     break;
                 case ConflictType.Unknown:
-                    AddProcessLine("Unknown error at folder: " + sdi.Path);
+                    AddProcessLine("Unknown error at folder: " + di.FullPath);
                     break;
             }
         }

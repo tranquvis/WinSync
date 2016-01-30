@@ -6,16 +6,17 @@ namespace WinSync.Service
     {
         public SyncInfo SyncInfo { get; set; }
 
+        public MyDirInfo DirInfo { get; set; }
+
         /// <summary>
         /// create SyncDirInfo
         /// </summary>
         /// <param name="syncInfo">owner</param>
         /// <param name="path">relative file path</param>
-        public SyncDirInfo(SyncInfo syncInfo, string path)
+        public SyncDirInfo(SyncInfo syncInfo, MyDirInfo dirInfo)
         {
             SyncInfo = syncInfo;
-
-            Path = path;
+            DirInfo = dirInfo;
         }
 
         /// <summary>
@@ -25,21 +26,16 @@ namespace WinSync.Service
         /// <param name="path">relative file path</param>
         /// <param name="dir">synchronisation direction</param>
         /// <param name="remove">if destination directory should be removed</param>
-        public SyncDirInfo(SyncInfo syncInfo, string path, SyncDirection dir, bool remove) : this(syncInfo, path)
+        public SyncDirInfo(SyncInfo syncInfo, MyDirInfo dirInfo, SyncDirection dir, bool remove) : this(syncInfo, dirInfo)
         {
-            Dir = dir;
+            Direction = dir;
             Remove = remove;
         }
 
         /// <summary>
-        /// file path relative to link homedir
-        /// </summary>
-        public string Path { get; set; }
-
-        /// <summary>
         /// synchronisation direction
         /// </summary>
-        public SyncDirection Dir { get; set; }
+        public SyncDirection Direction { get; set; }
 
         /// <summary>
         /// if desitnation directory should be removed

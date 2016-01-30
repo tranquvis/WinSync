@@ -22,7 +22,7 @@
 
         public override string GetAbsolutePath()
         {
-            return (ConflictPath == 1 ? SyncDirInfo.SyncInfo.Link.Path1 : SyncDirInfo.SyncInfo.Link.Path2) + SyncDirInfo.Path;
+            return (ConflictPath == 1 ? SyncDirInfo.SyncInfo.Link.Path1 : SyncDirInfo.SyncInfo.Link.Path2) + SyncDirInfo.DirInfo.FullPath;
         }
     }
 }

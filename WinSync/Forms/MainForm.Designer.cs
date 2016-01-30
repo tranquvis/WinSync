@@ -49,6 +49,7 @@ namespace WinSync.Forms
             this.button_minimize = new System.Windows.Forms.Button();
             this.button_close = new System.Windows.Forms.Button();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
+            this.checkBox_availableSyncsOnly = new System.Windows.Forms.CheckBox();
             this.shadow1 = new WinSync.Controls.Shadow();
             this.button_openDetailForm = new WinSync.Controls.MyButton();
             this.button_pr = new WinSync.Controls.MyButton();
@@ -189,6 +190,7 @@ namespace WinSync.Forms
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.panel_content.BackColor = System.Drawing.Color.WhiteSmoke;
+            this.panel_content.Controls.Add(this.checkBox_availableSyncsOnly);
             this.panel_content.Controls.Add(this.dataTable);
             this.panel_content.Controls.Add(this.shadow_progressbar);
             this.panel_content.Controls.Add(this.panel_syncDetail);
@@ -208,7 +210,7 @@ namespace WinSync.Forms
             this.dataTable.BackColor = System.Drawing.Color.White;
             this.dataTable.ColumnCount = 1;
             this.dataTable.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
-            this.dataTable.Location = new System.Drawing.Point(6, 44);
+            this.dataTable.Location = new System.Drawing.Point(6, 64);
             this.dataTable.Name = "dataTable";
             this.dataTable.RowCount = 1;
             this.dataTable.RowStyles.Add(new System.Windows.Forms.RowStyle());
@@ -285,6 +287,17 @@ namespace WinSync.Forms
             this.pictureBox1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
             this.pictureBox1.TabIndex = 11;
             this.pictureBox1.TabStop = false;
+            // 
+            // checkBox_availableSyncsOnly
+            // 
+            this.checkBox_availableSyncsOnly.AutoSize = true;
+            this.checkBox_availableSyncsOnly.Location = new System.Drawing.Point(6, 41);
+            this.checkBox_availableSyncsOnly.Name = "checkBox_availableSyncsOnly";
+            this.checkBox_availableSyncsOnly.Size = new System.Drawing.Size(130, 17);
+            this.checkBox_availableSyncsOnly.TabIndex = 33;
+            this.checkBox_availableSyncsOnly.Text = "executable syncs only";
+            this.checkBox_availableSyncsOnly.UseVisualStyleBackColor = true;
+            this.checkBox_availableSyncsOnly.CheckedChanged += new System.EventHandler(this.checkBox_availableSyncsOnly_CheckedChanged);
             // 
             // shadow1
             // 
@@ -439,6 +452,7 @@ namespace WinSync.Forms
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.TableLayoutPanel dataTable;
         private Shadow shadow1;
+        private System.Windows.Forms.CheckBox checkBox_availableSyncsOnly;
     }
 }
 

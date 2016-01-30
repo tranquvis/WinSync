@@ -11,8 +11,8 @@ namespace WinSync.Service
     {
         private readonly SyncInfo _si;
 
-        private List<Task<SyncFileInfo>> _detectFileTasks = new List<Task<SyncFileInfo>>();
-        private List<Task<SyncFileInfo>> _fileApplyTasks = new List<Task<SyncFileInfo>>();
+        private List<Task<MyFileInfo>> _detectFileTasks = new List<Task<MyFileInfo>>();
+        private List<Task<MyFileInfo>> _fileApplyTasks = new List<Task<MyFileInfo>>();
 
         private CancellationTokenSource _ts;
         private CancellationToken _ct;
@@ -52,12 +52,12 @@ namespace WinSync.Service
             if (_si.Link.Direction == SyncDirection.To1)
             {
                 await GetSyncFilesOneWay(_si.Link.Path2, _si.Link.Path1);
-                GetRemoveInfosOfDirOneWay(_si.Link.Path2, _si.Link.Path1, "");
+                GetRemoveInfosOfDirOneWay(_si.Link.Path2, _si.Link.Path1, new MyDirInfo("", "", null));
             }
             else if (_si.Link.Direction == SyncDirection.To2)
             {
                 await GetSyncFilesOneWay(_si.Link.Path1, _si.Link.Path2);
-                GetRemoveInfosOfDirOneWay(_si.Link.Path1, _si.Link.Path2, "");
+                GetRemoveInfosOfDirOneWay(_si.Link.Path1, _si.Link.Path2, new MyDirInfo("", "", null));
             }
             else if (_si.Link.Direction == SyncDirection.TwoWay)
             {
@@ -80,16 +80,16 @@ namespace WinSync.Service
         /// </summary>
         /// <param name="syncDirs">directory informations</param>
         /// <returns></returns>
-        private async Task CreateFolders(List<SyncDirInfo> syncDirs)
+        private async Task CreateFolders(List<MyDirInfo> syncDirs)
         {
-            foreach (SyncDirInfo sdi in syncDirs.Where(d => !d.Remove))
+            foreach (MyDirInfo di in syncDirs.Where(d => !d.SyncInfo.Remove))
             {
-                Task t = RunFolderCreationTask(sdi);
+                Task t = RunFolderCreationTask(di);
                 if (t != null) await t;
-                if (sdi.Conflicted)
-                    _si.DirConflicted(sdi);
+                if (di.SyncInfo.Conflicted)
+                    _si.DirConflicted(di);
                 else
-                    _si.AppliedDirChange(sdi);
+                    _si.AppliedDirChange(di);
             }
         }
 
@@ -98,32 +98,32 @@ namespace WinSync.Service
         /// </summary>
         /// <param name="syncDirs">directory informations</param>
         /// <returns></returns>
-        private async Task RemoveFolders(List<SyncDirInfo> syncDirs)
+        private async Task RemoveFolders(List<MyDirInfo> syncDirs)
         {
-            foreach (SyncDirInfo sdi in syncDirs.Where(d => d.Remove).Reverse())
+            foreach (MyDirInfo di in syncDirs.Where(d => d.SyncInfo.Remove).Reverse())
             {
-                Task t = RunFolderDeletionTask(sdi);
+                Task t = RunFolderDeletionTask(di);
                 if (t != null) await t;
-                if (sdi.Conflicted)
-                    _si.DirConflicted(sdi);
+                if (di.SyncInfo.Conflicted)
+                    _si.DirConflicted(di);
                 else
-                    _si.AppliedDirChange(sdi);
+                    _si.AppliedDirChange(di);
             }
         }
 
         /// <summary>
         /// delete directory in new task
         /// </summary>
-        /// <param name="syncdi">directory information</param>
+        /// <param name="di">directory information</param>
         /// <param name="result">
         /// 0: no error
         /// 1: the directory to be deleted was not found
         /// 2: the directory to be deleted was not empty
         /// </param>
         /// <returns>null if an error occurred</returns>
-        private Task RunFolderDeletionTask(SyncDirInfo syncdi)
+        private Task RunFolderDeletionTask(MyDirInfo di)
         {
-            string ddp = (syncdi.Dir == SyncDirection.To1 ? _si.Link.Path1 : _si.Link.Path2) + syncdi.Path;
+            string ddp = (di.SyncInfo.Direction == SyncDirection.To1 ? _si.Link.Path1 : _si.Link.Path2) + di.FullPath;
             Delimon.Win32.IO.DirectoryInfo ddi = new Delimon.Win32.IO.DirectoryInfo(ddp);
 
             if (!ddi.Exists)
@@ -134,8 +134,8 @@ namespace WinSync.Service
             //do not remove if directory is not empty
             if (ddi.GetFiles().Length > 0 || ddi.GetDirectories().Length > 0)
             {
-                syncdi.DirConflicted(new DirConflictInfo(ConflictType.DirNotEmpty, syncdi.Dir == SyncDirection.To1 ? 1 : 2,
-                    "RunFolderDeletionTask", $"The directory to be deleted was not empty. Path: {syncdi.Path}", syncdi));
+                di.SyncInfo.DirConflicted(new DirConflictInfo(ConflictType.DirNotEmpty, di.SyncInfo.Direction == SyncDirection.To1 ? 1 : 2,
+                    "RunFolderDeletionTask", $"The directory to be deleted was not empty. Path: {di.FullPath}", di.SyncInfo));
                 return null;
             }
 
@@ -143,29 +143,29 @@ namespace WinSync.Service
             {
                 if (pauseIfRequested(true)) return;
 
-                syncdi.StartedNow();
+                di.SyncInfo.StartedNow();
                 try
                 {
                     ddi.Delete();
                 }
                 catch (Exception e)
                 {
-                    syncdi.DirConflicted(new DirConflictInfo(ConflictType.Unknown, syncdi.Dir == SyncDirection.To2 ? 2 : 1,
-                        "RunFolderDeletionTask", e.Message, syncdi));
+                    di.SyncInfo.DirConflicted(new DirConflictInfo(ConflictType.Unknown, di.SyncInfo.Direction == SyncDirection.To2 ? 2 : 1,
+                        "RunFolderDeletionTask", e.Message, di.SyncInfo));
                 }
-                syncdi.EndedNow();
+                di.SyncInfo.EndedNow();
             }, _ct);
         }
 
         /// <summary>
         /// create missing folders in new task
         /// </summary>
-        /// <param name="syncdi">direcotry info</param>
+        /// <param name="di">direcotry info</param>
         /// <returns></returns>
-        private Task RunFolderCreationTask(SyncDirInfo syncdi)
+        private Task RunFolderCreationTask(MyDirInfo di)
         {
-            string sdp = (syncdi.Dir == SyncDirection.To2 ? _si.Link.Path1 : _si.Link.Path2) + syncdi.Path;
-            string ddp = (syncdi.Dir == SyncDirection.To1 ? _si.Link.Path1 : _si.Link.Path2) + syncdi.Path;
+            string sdp = (di.SyncInfo.Direction == SyncDirection.To2 ? _si.Link.Path1 : _si.Link.Path2) + di.FullPath;
+            string ddp = (di.SyncInfo.Direction == SyncDirection.To1 ? _si.Link.Path1 : _si.Link.Path2) + di.FullPath;
             
             if (!Delimon.Win32.IO.Directory.Exists(sdp))
                 return null;
@@ -174,17 +174,17 @@ namespace WinSync.Service
             {
                 if (pauseIfRequested(true)) return;
 
-                syncdi.StartedNow();
+                di.SyncInfo.StartedNow();
                 try
                 {
                     Delimon.Win32.IO.Directory.CreateDirectory(ddp);
                 }
                 catch (Exception e)
                 {
-                    syncdi.DirConflicted(new DirConflictInfo(ConflictType.Unknown, syncdi.Dir == SyncDirection.To2 ? 2 : 1, 
-                        "RunFolderCreationTask", e.Message, syncdi));
+                    di.SyncInfo.DirConflicted(new DirConflictInfo(ConflictType.Unknown, di.SyncInfo.Direction == SyncDirection.To2 ? 2 : 1, 
+                        "RunFolderCreationTask", e.Message, di.SyncInfo));
                 }
-                syncdi.EndedNow();
+                di.SyncInfo.EndedNow();
             }, _ct);
         }
 
@@ -192,12 +192,12 @@ namespace WinSync.Service
         /// apply file changes to all synchronisation files async
         /// </summary>
         /// <returns>task</returns>
-        private async Task ApplyingFileChanges(List<SyncFileInfo> syncFiles)
+        private async Task ApplyingFileChanges(List<MyFileInfo> syncFiles)
         {
             //add apply file change tasks
-            foreach (SyncFileInfo sfi in syncFiles)
+            foreach (MyFileInfo sfi in syncFiles)
             {
-                Task<SyncFileInfo> t = RunApplyFileChangeTask(sfi);
+                Task<MyFileInfo> t = RunApplyFileChangeTask(sfi);
                 if (t != null)
                     _fileApplyTasks.Add(t);
             }
@@ -205,15 +205,17 @@ namespace WinSync.Service
             //run apply file change tasks
             while (_fileApplyTasks.Count > 0)
             {
-                Task<SyncFileInfo> t = await Task.WhenAny(_fileApplyTasks);
+                Task<MyFileInfo> t = await Task.WhenAny(_fileApplyTasks);
 
                 _ct.ThrowIfCancellationRequested();
 
-                if (t.Result.Conflicted)
-                    _si.FileConflicted(t.Result);
-                else
-                    _si.AppliedFileChange(t.Result);
-
+                if (t.Result != null)
+                {
+                    if (t.Result.SyncInfo.Conflicted)
+                        _si.FileConflicted(t.Result);
+                    else
+                        _si.AppliedFileChange(t.Result);
+                }
                 _fileApplyTasks.Remove(t);
             }
 
@@ -224,26 +226,26 @@ namespace WinSync.Service
         /// apply change to a file in new task 
         /// including file deleting
         /// </summary>
-        /// <param name="syncfi"></param>
+        /// <param name="file"></param>
         /// <returns></returns>
-        private Task<SyncFileInfo> RunApplyFileChangeTask(SyncFileInfo syncfi)
+        private Task<MyFileInfo> RunApplyFileChangeTask(MyFileInfo file)
         {
             return Task.Run(() =>
             {
-                string sfp = (syncfi.Dir == SyncDirection.To2 ? _si.Link.Path1 : _si.Link.Path2) + syncfi.Path;
-                string dfp = (syncfi.Dir == SyncDirection.To1 ? _si.Link.Path1 : _si.Link.Path2) + syncfi.Path;
+                string sfp = (file.SyncInfo.Direction == SyncDirection.To2 ? _si.Link.Path1 : _si.Link.Path2) + file.FullPath;
+                string dfp = (file.SyncInfo.Direction == SyncDirection.To1 ? _si.Link.Path1 : _si.Link.Path2) + file.FullPath;
 
                 Delimon.Win32.IO.FileInfo sfi = new Delimon.Win32.IO.FileInfo(sfp);
 
                 if(pauseIfRequested(true)) return null;
 
-                syncfi.StartedNow();
+                file.SyncInfo.StartedNow();
 
                 try
                 {
                     if (_ct.IsCancellationRequested) return null;
 
-                    if (syncfi.Remove)
+                    if (file.SyncInfo.Remove)
                     {
                         File.SetAttributes(dfp, FileAttributes.Normal); //change attributes to avoid UnauthorizedAccessException
                         File.Delete(dfp);
@@ -254,30 +256,28 @@ namespace WinSync.Service
                         //FMove(sfp, dfp);
                         File.Copy(sfp, dfp, true);
                     }
-                    else
-                        return null;
                 }
                 catch (IOException ioe)
                 {
                     string path = ioe.Message.Split('\"')[1];
                     int conflictPath = path.Contains(_si.Link.Path1) ? 1 : 2;
 
-                    syncfi.FileConflicted(new FileConflictInfo(ConflictType.IO, conflictPath, "RunApplyFileChangeTask", ioe.Message, syncfi));
+                    file.SyncInfo.FileConflicted(new FileConflictInfo(ConflictType.IO, conflictPath, "RunApplyFileChangeTask", ioe.Message, file.SyncInfo));
                 }
                 catch (UnauthorizedAccessException uae)
                 {
                     string path = uae.Message.Split('\"')[1];
                     int conflictPath = path.Contains(_si.Link.Path1) ? 1 : 2;
 
-                    syncfi.FileConflicted(new FileConflictInfo(ConflictType.UA, conflictPath, "RunApplyFileChangeTask", uae.Message, syncfi));
+                    file.SyncInfo.FileConflicted(new FileConflictInfo(ConflictType.UA, conflictPath, "RunApplyFileChangeTask", uae.Message, file.SyncInfo));
                 }
                 catch (Exception e)
                 {
-                    syncfi.FileConflicted(new FileConflictInfo(ConflictType.Unknown, 0, "RunApplyFileChangeTask", e.Message, syncfi));
+                    file.SyncInfo.FileConflicted(new FileConflictInfo(ConflictType.Unknown, 0, "RunApplyFileChangeTask", e.Message, file.SyncInfo));
                 }
-                syncfi.EndedNow();
+                file.SyncInfo.EndedNow();
 
-                return syncfi;
+                return file;
             }, _ct);
         }
 
@@ -324,17 +324,17 @@ namespace WinSync.Service
         private async Task GetSyncFilesTwoWay()
         {
             //Fetching files recursively
-            GetSyncFilesOfDirTwoWay("");
+            GetSyncFilesOfDirTwoWay(new MyDirInfo("", "", null));
 
             while (_detectFileTasks.Count > 0)
             {
-                Task<SyncFileInfo> t = await Task.WhenAny(_detectFileTasks);
+                Task<MyFileInfo> t = await Task.WhenAny(_detectFileTasks);
 
                 _ct.ThrowIfCancellationRequested();
 
-                if (t.Result != null)
+                if (t.Result.SyncInfo != null)
                 {
-                    if (t.Result.Conflicted)
+                    if (t.Result.SyncInfo.Conflicted)
                         _si.FileConflicted(t.Result);
                     else
                         _si.FileChangeDetected(t.Result);
@@ -350,13 +350,15 @@ namespace WinSync.Service
         /// files and directories to remove are also detected
         /// </summary>
         /// <param name="relativePath">path relative to the linked folders</param>
-        private void GetSyncFilesOfDirTwoWay(string relativePath)
+        private void GetSyncFilesOfDirTwoWay(MyDirInfo dir)
         {
             pauseIfRequested(false);
             _ct.ThrowIfCancellationRequested();
 
-            string path1 = _si.Link.Path1 + relativePath;
-            string path2 = _si.Link.Path2 + relativePath;
+            if (dir.Name != "") _si.DirFound(dir);
+
+            string path1 = _si.Link.Path1 + dir.FullPath;
+            string path2 = _si.Link.Path2 + dir.FullPath;
             //directory info
             Delimon.Win32.IO.DirectoryInfo di1 = new Delimon.Win32.IO.DirectoryInfo(path1);
             Delimon.Win32.IO.DirectoryInfo di2 = new Delimon.Win32.IO.DirectoryInfo(path2);
@@ -372,14 +374,15 @@ namespace WinSync.Service
                     //loop through path1 dir
                     foreach (string name in Delimon.Win32.IO.Directory.GetDirectories(path1))
                     {
-                        string dn = Delimon.Win32.IO.Path.GetFileName(name);
-                        dirNames.Add(dn);
-                        GetSyncFilesOfDirTwoWay(relativePath + "/" + dn);
+                        string newDirname = Delimon.Win32.IO.Path.GetFileName(name);
+                        MyDirInfo newDir = new MyDirInfo(dir.FullPath, newDirname, null);
+                        dirNames.Add(newDirname);
+                        GetSyncFilesOfDirTwoWay(newDir);
                     }
                 }
                 else
                 {
-                    if (relativePath != "" && di1.Parent != null)
+                    if (dir.FullPath != "" && di1.Parent != null)
                     {
                         //compare the newest time of last write time or creation time
                         DateTime pd1ChangeTime = di1.Parent.CreationTime > di1.Parent.LastWriteTime ? di1.Parent.CreationTime : di1.Parent.LastWriteTime;
@@ -391,13 +394,15 @@ namespace WinSync.Service
                             {
                                 //remove directory 2 if remove is enabled and the parent directory 1 is new than directory 2
                                 //note that directories only will be removed if they are empty after applying file changes
-                                _si.DirChangeDetected(new SyncDirInfo(_si, relativePath, SyncDirection.To2, true));
+                                dir.SyncInfo = new SyncDirInfo(_si, dir, SyncDirection.To2, true);
+                                _si.DirChangeDetected(dir);
                             }
                         }
                         else
                         {
                             //if directory 2 is newer than the parent directory 1 -> create directory 1
-                            _si.DirChangeDetected(new SyncDirInfo(_si, relativePath, SyncDirection.To1, false));
+                            dir.SyncInfo = new SyncDirInfo(_si, dir, SyncDirection.To1, false);
+                            _si.DirChangeDetected(dir);
                         }
                     }
                 }
@@ -407,14 +412,15 @@ namespace WinSync.Service
                     //loop through path2 dir
                     foreach (string name in Delimon.Win32.IO.Directory.GetDirectories(path2))
                     {
-                        string dn = Delimon.Win32.IO.Path.GetFileName(name);
-                        if (!dirNames.Contains(dn))
-                            GetSyncFilesOfDirTwoWay(relativePath + "/" + dn);
+                        string newDirname = Delimon.Win32.IO.Path.GetFileName(name);
+                        MyDirInfo newDir = new MyDirInfo(dir.FullPath, newDirname, null);
+                        if (!dirNames.Contains(newDirname))
+                            GetSyncFilesOfDirTwoWay(newDir);
                     }
                 }
                 else
                 {
-                    if (relativePath != "" && di2.Parent != null)
+                    if (dir.FullPath != "" && di2.Parent != null)
                     {
                         //compare the newest time of last write time or creation time
                         DateTime pd2ChangeTime = di2.Parent.LastWriteTime > di2.Parent.CreationTime ? di2.Parent.LastWriteTime : di2.Parent.CreationTime;
@@ -425,13 +431,15 @@ namespace WinSync.Service
                             {
                                 //remove directory 1 if remove is enabled and the parent directory 2 is new than directory 1
                                 //note that directories only will be removed if they are empty after applying file changes
-                                _si.DirChangeDetected(new SyncDirInfo(_si, relativePath, SyncDirection.To1, true));
+                                dir.SyncInfo = new SyncDirInfo(_si, dir, SyncDirection.To1, true);
+                                _si.DirChangeDetected(dir);
                             }
                         }
                         else
                         {
                             //if directory 1 is newer than the parent directory 2 -> create directory 2
-                            _si.DirChangeDetected(new SyncDirInfo(_si, relativePath, SyncDirection.To2, false));
+                            dir.SyncInfo = new SyncDirInfo(_si, dir, SyncDirection.To2, false);
+                            _si.DirChangeDetected(dir);
                         }
                     }
                 }
@@ -441,11 +449,14 @@ namespace WinSync.Service
                 if (di1.Exists)
                 {
                     //Loop through all files in path1
-                    foreach (string name in Delimon.Win32.IO.Directory.GetFiles(path1))
+                    foreach (string filepath in Delimon.Win32.IO.Directory.GetFiles(path1))
                     {
                         //detect changes of file asynchronously
+                        string name = Delimon.Win32.IO.Path.GetFileName(filepath);
+                        MyFileInfo file = new MyFileInfo(dir.FullPath, name, null);
+                        _si.FileFound(file);
                         fileNames.Add(name);
-                        Task<SyncFileInfo> t = RunTwoWayFileCompareTask(name, relativePath);
+                        Task<MyFileInfo> t = RunTwoWayFileCompareTask(file);
                         _detectFileTasks.Add(t);
                     }
                 }
@@ -453,11 +464,14 @@ namespace WinSync.Service
                 if (di2.Exists)
                 {
                     //Loop through all files in path2
-                    foreach (string name in Delimon.Win32.IO.Directory.GetFiles(path2))
+                    foreach (string filepath in Delimon.Win32.IO.Directory.GetFiles(path2))
                     {
                         //detect changes of file asynchronously
+                        string name = Delimon.Win32.IO.Path.GetFileName(filepath);
                         if (fileNames.Contains(name)) continue;
-                        Task<SyncFileInfo> t = RunTwoWayFileCompareTask(name, relativePath);
+                        MyFileInfo file = new MyFileInfo(dir.FullPath, name, null);
+                        _si.FileFound(file);
+                        Task<MyFileInfo> t = RunTwoWayFileCompareTask(file);
                         _detectFileTasks.Add(t);
                     }
                 }
@@ -487,16 +501,16 @@ namespace WinSync.Service
         private async Task GetSyncFilesOneWay(string sourceHomePath, string destHomePath)
         {
             //Fetching files recursively
-            GetSyncFilesOfDirOneWay(sourceHomePath, destHomePath, "");
+            GetSyncFilesOfDirOneWay(sourceHomePath, destHomePath, new MyDirInfo("", "", null));
 
             while (_detectFileTasks.Count > 0)
             {
-                Task<SyncFileInfo> t = await Task.WhenAny(_detectFileTasks);
+                Task<MyFileInfo> t = await Task.WhenAny(_detectFileTasks);
                 _ct.ThrowIfCancellationRequested();
 
-                if (t.Result != null)
+                if (t.Result.SyncInfo != null)
                 {
-                    if (t.Result.Conflicted)
+                    if (t.Result.SyncInfo.Conflicted)
                         _si.FileConflicted(t.Result);
                     else
                         _si.FileChangeDetected(t.Result);
@@ -512,32 +526,41 @@ namespace WinSync.Service
         /// <param name="sourceHomePath">absolute source folder path (homepath as defined in link)</param>
         /// <param name="destHomePath">absolute destination folder path (homepath as defined in link)</param>
         /// <param name="relativePath">path relative to the homepath</param>
-        private void GetSyncFilesOfDirOneWay(string sourceHomePath, string destHomePath, string relativePath)
+        private void GetSyncFilesOfDirOneWay(string sourceHomePath, string destHomePath, MyDirInfo dir)
         {
             pauseIfRequested(false);
             _ct.ThrowIfCancellationRequested();
 
-            string sourcePath = sourceHomePath + relativePath;
-            string destPath = destHomePath + relativePath;
+            if(dir.Name != "") _si.DirFound(dir);
+
+            string sourcePath = sourceHomePath + dir.FullPath;
+            string destPath = destHomePath + dir.FullPath;
 
             try
             {
                 //create destination directory if not exists
                 if (!new Delimon.Win32.IO.DirectoryInfo(destPath).Exists)
-                    _si.DirChangeDetected(new SyncDirInfo(_si, relativePath, _si.Link.Direction, false));
+                {
+                    dir.SyncInfo = new SyncDirInfo(_si, dir, _si.Link.Direction, false);
+                    _si.DirChangeDetected(dir);
+                }
 
                 //detect source child directories
-                foreach (string name in Delimon.Win32.IO.Directory.GetDirectories(sourcePath))
+                foreach (string dirpath in Delimon.Win32.IO.Directory.GetDirectories(sourcePath))
                 {
-                    string dn = Delimon.Win32.IO.Path.GetFileName(name);
-                    GetSyncFilesOfDirOneWay(sourceHomePath, destHomePath, relativePath + @"\" + dn);
+                    string name = Delimon.Win32.IO.Path.GetFileName(dirpath);
+                    MyDirInfo newDir = new MyDirInfo(dir.FullPath, name, null);
+                    GetSyncFilesOfDirOneWay(sourceHomePath, destHomePath, newDir);
                 }
 
                 //loop through all files in source directory
-                foreach (string name in Delimon.Win32.IO.Directory.GetFiles(sourcePath))
+                foreach (string filepath in Delimon.Win32.IO.Directory.GetFiles(sourcePath))
                 {
                     //detect changes of file asynchronously
-                    Task<SyncFileInfo> t = RunOneWayFileCompareTask(sourcePath, destPath, name, relativePath);
+                    string name = Delimon.Win32.IO.Path.GetFileName(filepath);
+                    MyFileInfo file = new MyFileInfo(dir.FullPath, name, null);
+                    _si.FileFound(file);
+                    Task<MyFileInfo> t = RunOneWayFileCompareTask(sourceHomePath, destHomePath, file);
                     _detectFileTasks.Add(t);
                 }
             }
@@ -562,13 +585,13 @@ namespace WinSync.Service
         /// <param name="sourceHomePath">absolute source folder path (homepath as defined in link)</param>
         /// <param name="destHomePath">absolute destination folder path (homepath as defined in link)</param>
         /// <param name="relativePath">path relative to the homepath</param>
-        private void GetRemoveInfosOfDirOneWay(string sourceHomePath, string destHomePath, string relativePath)
+        private void GetRemoveInfosOfDirOneWay(string sourceHomePath, string destHomePath, MyDirInfo dir)
         {
             pauseIfRequested(false);
             _ct.ThrowIfCancellationRequested();
 
-            string sourcePath = sourceHomePath + relativePath;
-            string destPath = destHomePath + relativePath;
+            string sourcePath = sourceHomePath + dir.FullPath;
+            string destPath = destHomePath + dir.FullPath;
 
             try
             {
@@ -576,31 +599,39 @@ namespace WinSync.Service
                 //detect destination child directories
                 foreach (string name in Delimon.Win32.IO.Directory.GetDirectories(destPath))
                 {
-                    string dn = Delimon.Win32.IO.Path.GetFileName(name);
-                    string sourceDirPath = sourcePath + @"\" + dn;
+                    string newDirname = Delimon.Win32.IO.Path.GetFileName(name);
+                    MyDirInfo newDir = new MyDirInfo(dir.FullPath, newDirname, null);
 
                     //remove destination directory if source directory doesn't exist (if remove is enabled)
-                    if (_si.Link.Remove && !new Delimon.Win32.IO.DirectoryInfo(sourceDirPath).Exists)
+                    if (_si.Link.Remove && !new Delimon.Win32.IO.DirectoryInfo(newDir.FullPath).Exists)
                     {
-                        _si.DirChangeDetected(new SyncDirInfo(_si, relativePath + @"\" + dn, _si.Link.Direction, true));
+                        newDir.SyncInfo = new SyncDirInfo(_si, dir, _si.Link.Direction, true);
+                        _si.DirChangeDetected(newDir);
                     }
 
-                    GetRemoveInfosOfDirOneWay(sourceHomePath, destHomePath, relativePath + @"\" + dn);
+                    GetRemoveInfosOfDirOneWay(sourceHomePath, destHomePath, newDir);
                 }
 
                 //get files to remove
                 //Loop through all files in destination directory
                 foreach (string path in Delimon.Win32.IO.Directory.GetFiles(destPath))
                 {
-                    string fn = Delimon.Win32.IO.Path.GetFileName(path);
-                    string sourceFilePath = sourcePath + @"\" + fn;
-                    string destFilePath = destPath + @"\" + fn;
+                    string name = Delimon.Win32.IO.Path.GetFileName(path);
+                    MyFileInfo file = new MyFileInfo(dir.FullPath, name, null);
+                    string sourceFilePath = sourceHomePath + file.FullPath;
+                    string destFilePath = destHomePath + file.FullPath;
 
                     //remove destination file if source file doesn't exist (if remove is enabled)
-                    if (_si.Link.Remove && !new Delimon.Win32.IO.FileInfo(sourceFilePath).Exists)
+                    if (!new Delimon.Win32.IO.FileInfo(sourceFilePath).Exists)
                     {
-                        _si.FileChangeDetected(new SyncFileInfo(_si, relativePath + @"\" + fn,
-                            new Delimon.Win32.IO.FileInfo(destFilePath).Length, _si.Link.Direction, true));
+                        _si.FileFound(file);
+
+                        if (_si.Link.Remove)
+                        {
+                            file.Size = new Delimon.Win32.IO.FileInfo(destFilePath).Length;
+                            file.SyncInfo = new SyncFileInfo(_si, file, _si.Link.Direction, true);
+                            _si.FileChangeDetected(file);
+                        }
                     }
                 }
             }
@@ -627,7 +658,7 @@ namespace WinSync.Service
         /// <param name="fileName">file name</param>
         /// <param name="relativePath">file path relative to the homepath without filename</param>
         /// <returns></returns>
-        private Task<SyncFileInfo> RunOneWayFileCompareTask(string sourcePath, string destPath, string fileName, string relativePath)
+        private Task<MyFileInfo> RunOneWayFileCompareTask(string sourcePath, string destPath, MyFileInfo file)
         {
             return Task.Run(() =>
             {
@@ -636,26 +667,21 @@ namespace WinSync.Service
 
                 if (pauseIfRequested(true)) return null;
 
-                string fn = Delimon.Win32.IO.Path.GetFileName(fileName);
-                string filePath = relativePath + @"\" + fn;
+                _si.DetectingFile(file);
 
-                _si.DetectingFile(filePath);
-
-                string sf = sourcePath + @"\" + fn;
-                string df = destPath + @"\" + fn;
+                string sf = sourcePath + file.FullPath;
+                string df = destPath + file.FullPath;
 
                 srcFileInfo = new Delimon.Win32.IO.FileInfo(sf);
                 destFileInfo = new Delimon.Win32.IO.FileInfo(df);
 
-                SyncFileInfo sfi = null;
-
                 try
                 {
-                    sfi = new SyncFileInfo(_si, filePath, srcFileInfo.Length, _si.Link.Direction, false);
-
                     if (CompareFilesForOneWay(srcFileInfo, destFileInfo))
-                        _si.Log(new LogMessage(LogType.INFO, $@"Detected:{relativePath}\{fn}"));
-                    else return null;
+                    {
+                        file.Size = srcFileInfo.Length;
+                        file.SyncInfo = new SyncFileInfo(_si, file, _si.Link.Direction, false);
+                    }
                 }
                 //catch (IOException ioe)
                 //{
@@ -667,13 +693,13 @@ namespace WinSync.Service
                 //}
                 catch(Exception e)
                 {
-                    if (sfi != null)
-                        sfi.FileConflicted(new FileConflictInfo(ConflictType.Unknown, 0, "RunOneWayFileCompareTask", e.Message, sfi));
+                    if (file.SyncInfo != null)
+                        file.SyncInfo.FileConflicted(new FileConflictInfo(ConflictType.Unknown, 0, "RunOneWayFileCompareTask", e.Message, file.SyncInfo));
                     else
                         _si.Log(new LogMessage(LogType.ERROR, e.Message));
                 }
 
-                return sfi;
+                return file;
             }, _ct);
         }
 
@@ -683,19 +709,16 @@ namespace WinSync.Service
         /// <param name="fileName">filename</param>
         /// <param name="relativePath">file path relative to the homedir without filename</param>
         /// <returns></returns>
-        private Task<SyncFileInfo> RunTwoWayFileCompareTask(string fileName, string relativePath)
+        private Task<MyFileInfo> RunTwoWayFileCompareTask(MyFileInfo file)
         {
             return Task.Run(() =>
             {
                 if (pauseIfRequested(true)) return null;
 
-                string fn = Delimon.Win32.IO.Path.GetFileName(fileName);
-                string relativeFilePath = relativePath + @"\" + fn;
+                _si.DetectingFile(file);
 
-                _si.DetectingFile(relativeFilePath);
-
-                string pd1 = _si.Link.Path1 + relativePath;
-                string pd2 = _si.Link.Path2 + relativePath;
+                string pd1 = _si.Link.Path1 + file.Path;
+                string pd2 = _si.Link.Path2 + file.Path;
 
                 //get parent directory infos
                 Delimon.Win32.IO.DirectoryInfo pdi1;
@@ -706,8 +729,8 @@ namespace WinSync.Service
                 while (!(pdi2 = new Delimon.Win32.IO.DirectoryInfo(pd2)).Exists)
                     pd2 = pd2.Substring(0, pd2.LastIndexOf(@"\", StringComparison.Ordinal));
 
-                string f1 = pd1 + @"\" + fn;
-                string f2 = pd2 + @"\" + fn;
+                string f1 = _si.Link.Path1 + file.FullPath;
+                string f2 = _si.Link.Path2 + file.FullPath;
 
                 //file info
                 Delimon.Win32.IO.FileInfo fi1 = new Delimon.Win32.IO.FileInfo(f1);
@@ -715,32 +738,27 @@ namespace WinSync.Service
 
 
                 if (pauseIfRequested(true)) return null;
-
-                SyncFileInfo sfi = null;
+                
                 try
                 {
-                    sfi = new SyncFileInfo(_si, relativeFilePath, fi1.Exists ? fi1.Length : fi2.Length);
-
                     //compare
                     TwoWayCompareResult compResult = CompareFilesForTwoWay(fi1, fi2, _si.Link.Remove, pdi1, pdi2);
 
                     if (compResult != null)
                     {
-                        sfi.Dir = compResult.Direction;
-                        sfi.Remove = compResult.Remove;
+                        file.Size = fi1.Exists ? fi1.Length : fi2.Length;
+                        file.SyncInfo = new SyncFileInfo(_si, file, compResult.Direction, compResult.Remove);
                     }
-                    else
-                        return null;
                 }
                 catch (Exception e)
                 {
-                    if (sfi != null)
-                        sfi.FileConflicted(new FileConflictInfo(ConflictType.Unknown, 0, "RunTwoWayFileCompareTask", e.Message, sfi));
+                    if (file.SyncInfo != null)
+                        file.SyncInfo.FileConflicted(new FileConflictInfo(ConflictType.Unknown, 0, "RunTwoWayFileCompareTask", e.Message, file.SyncInfo));
                     else
                         _si.Log(new LogMessage(LogType.ERROR, e.Message));
                 }
 
-                return sfi;
+                return file;
             }, _ct);
         }
 
@@ -752,6 +770,8 @@ namespace WinSync.Service
         /// <returns>true if the files are not updated</returns>
         private bool CompareFilesForOneWay(Delimon.Win32.IO.FileInfo sfi, Delimon.Win32.IO.FileInfo dfi)
         {
+            bool d = !dfi.Exists || sfi.LastWriteTime > dfi.LastWriteTime || 
+                (sfi.LastWriteTime < dfi.LastWriteTime && !FilesAreEqual(sfi, dfi));
             return !dfi.Exists || sfi.LastWriteTime > dfi.LastWriteTime ||
                 (sfi.LastWriteTime < dfi.LastWriteTime && !FilesAreEqual(sfi, dfi));
         }

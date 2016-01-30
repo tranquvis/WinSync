@@ -37,6 +37,7 @@ namespace WinSync.Data
                 if (value.Trim().Length == 0)
                     throw new Exception("Path 1 must not be empty!");
                 string p = value.Replace('/', '\\');
+                p.TrimEnd('\\');
                 _path1 = p;
             }
         }
@@ -49,6 +50,7 @@ namespace WinSync.Data
                 if (value.Trim().Length == 0)
                     throw new Exception("Path 2 must not be empty!");
                 string p = value.Replace('/', '\\');
+                p.TrimEnd('\\');
                 _path2 = p;
             }
         }
@@ -190,6 +192,15 @@ namespace WinSync.Data
         public Link Clone()
         {
             return new Link(Title, Path1, Path2, Direction, Remove);
+        }
+
+        /// <summary>
+        /// check if the sync is executable on the current system
+        /// </summary>
+        /// <returns></returns>
+        public bool IsExecutable()
+        {
+            return Delimon.Win32.IO.Directory.Exists(Path1) && Delimon.Win32.IO.Directory.Exists(Path2);
         }
     }
 }
