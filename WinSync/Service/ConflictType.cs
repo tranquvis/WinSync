@@ -2,6 +2,6 @@
 {
     public enum ConflictType
     {
-        IO, UA, Unknown
+        IO, UA, Unknown, DirNotEmpty
     }
 }

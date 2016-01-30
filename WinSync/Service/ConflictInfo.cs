@@ -16,19 +16,23 @@
         public int ConflictPath { get; set; }
 
         /// <summary>
+        /// additional info about conflict
+        /// </summary>
+        public string Message { get; set; }
+
+        /// <summary>
         /// create ConflictInfo
         /// </summary>
         /// <param name="type"></param>
-        /// <param name="conflictPath">
-        /// 1: if the conflict occured in directory 1 of link 
-        /// 2: if in directory 2
-        /// </param>
-        /// <param name="context">context where the conflict occurred</param>
-        protected ConflictInfo(ConflictType type, int conflictPath, string context)
+        /// <param name="conflictPath"></param>
+        /// <param name="context"></param>
+        /// <param name="message"></param>
+        protected ConflictInfo(ConflictType type, int conflictPath, string context, string message)
         {
             Type = type;
             ConflictPath = conflictPath;
             Context = context;
+            Message = message;
         }
 
         public abstract string GetAbsolutePath();

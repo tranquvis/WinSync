@@ -2,6 +2,7 @@ using WinSync.Data;
 using System;
 using System.IO;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace WinSync.Service
 {
@@ -45,6 +46,11 @@ namespace WinSync.Service
             }
             catch (OperationCanceledException) {
                 _si.SyncCancelled();
+            }
+            catch(DirectoryNotFoundException dnfe)
+            {
+                _si.SyncCancelled();
+                MessageBox.Show(dnfe.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 

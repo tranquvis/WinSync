@@ -14,8 +14,8 @@
         /// </param>
         /// <param name="context">context where the conflict occurred</param>
         /// <param name="syncDirInfo">owner</param>
-        public DirConflictInfo(ConflictType type, int conflictPath, string context, SyncDirInfo syncDirInfo) : 
-            base(type, conflictPath, context)
+        public DirConflictInfo(ConflictType type, int conflictPath, string context, string message, SyncDirInfo syncDirInfo) : 
+            base(type, conflictPath, context, message)
         {
             SyncDirInfo = syncDirInfo;
         }

@@ -38,6 +38,7 @@ namespace WinSync.Forms
 
         public MainForm()
         {
+
             InitializeComponent();
             FillData();
             StartUpdateRoutine();

@@ -14,8 +14,8 @@
         /// </param>
         /// <param name="context">context where the conflict occurred</param>
         /// <param name="syncFileInfo">owner</param>
-        public FileConflictInfo(ConflictType type, int conflictPath, string context, SyncFileInfo syncFileInfo) : 
-            base(type, conflictPath, context)
+        public FileConflictInfo(ConflictType type, int conflictPath, string context, string message, SyncFileInfo syncFileInfo) : 
+            base(type, conflictPath, context, message)
         {
             SyncFileInfo = syncFileInfo;
         }

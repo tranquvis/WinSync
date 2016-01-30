@@ -42,6 +42,11 @@ namespace WinSync.Service
             _ts = new CancellationTokenSource();
             _ct = _ts.Token;
 
+            if(!Delimon.Win32.IO.Directory.Exists(_si.Link.Path1) || !Delimon.Win32.IO.Directory.Exists(_si.Link.Path2))
+            {
+                throw new DirectoryNotFoundException("The directories to sync do not exist on this System.");
+            }
+
             _si.State = SyncState.DetectingChanges;
 
             if (_si.Link.Direction == SyncDirection.To1)
@@ -81,6 +86,10 @@ namespace WinSync.Service
             {
                 Task t = RunFolderCreationTask(sdi);
                 if (t != null) await t;
+                if (sdi.Conflicted)
+                    _si.DirConflicted(sdi);
+                else
+                    _si.AppliedDirChange(sdi);
             }
         }
 
@@ -93,14 +102,12 @@ namespace WinSync.Service
         {
             foreach (SyncDirInfo sdi in syncDirs.Where(d => d.Remove).Reverse())
             {
-                int result;
-                Task t = RunFolderDeletionTask(sdi, out result);
+                Task t = RunFolderDeletionTask(sdi);
                 if (t != null) await t;
+                if (sdi.Conflicted)
+                    _si.DirConflicted(sdi);
                 else
-                {
-                    if (result == 2)
-                        _si.Log(new LogMessage(LogType.ERROR, $"The directory to be deleted was not empty. Path: {sdi.Path}"));
-                }
+                    _si.AppliedDirChange(sdi);
             }
         }
 
@@ -114,44 +121,39 @@ namespace WinSync.Service
         /// 2: the directory to be deleted was not empty
         /// </param>
         /// <returns>null if an error occurred</returns>
-        private Task RunFolderDeletionTask(SyncDirInfo syncdi, out int result)
+        private Task RunFolderDeletionTask(SyncDirInfo syncdi)
         {
             string ddp = (syncdi.Dir == SyncDirection.To1 ? _si.Link.Path1 : _si.Link.Path2) + syncdi.Path;
             Delimon.Win32.IO.DirectoryInfo ddi = new Delimon.Win32.IO.DirectoryInfo(ddp);
 
             if (!ddi.Exists)
             {
-                result = 1;
                 return null;
             }
 
             //do not remove if directory is not empty
             if (ddi.GetFiles().Length > 0 || ddi.GetDirectories().Length > 0)
             {
-                result = 2;
+                syncdi.DirConflicted(new DirConflictInfo(ConflictType.DirNotEmpty, syncdi.Dir == SyncDirection.To1 ? 1 : 2,
+                    "RunFolderDeletionTask", $"The directory to be deleted was not empty. Path: {syncdi.Path}", syncdi));
                 return null;
             }
 
-            result = 0;
-
             return Task.Run(() =>
             {
-                while (_si.Paused)
-                {
-                    try
-                    {
-                        Task.Delay(500, _ct).Wait(_ct);
-                    }
-                    catch (OperationCanceledException)
-                    {
-                        return;
-                    }
-                }
+                if (pauseIfRequested(true)) return;
 
                 syncdi.StartedNow();
-                ddi.Delete();
+                try
+                {
+                    ddi.Delete();
+                }
+                catch (Exception e)
+                {
+                    syncdi.DirConflicted(new DirConflictInfo(ConflictType.Unknown, syncdi.Dir == SyncDirection.To2 ? 2 : 1,
+                        "RunFolderDeletionTask", e.Message, syncdi));
+                }
                 syncdi.EndedNow();
-                _si.AppliedDirChange(syncdi);
             }, _ct);
         }
 
@@ -164,31 +166,25 @@ namespace WinSync.Service
         {
             string sdp = (syncdi.Dir == SyncDirection.To2 ? _si.Link.Path1 : _si.Link.Path2) + syncdi.Path;
             string ddp = (syncdi.Dir == SyncDirection.To1 ? _si.Link.Path1 : _si.Link.Path2) + syncdi.Path;
-
-            Delimon.Win32.IO.DirectoryInfo sdi = new Delimon.Win32.IO.DirectoryInfo(sdp);
-            Delimon.Win32.IO.DirectoryInfo ddi = new Delimon.Win32.IO.DirectoryInfo(ddp);
-
-            if (!sdi.Exists)
+            
+            if (!Delimon.Win32.IO.Directory.Exists(sdp))
                 return null;
 
             return Task.Run(() =>
             {
-                while (_si.Paused)
-                {
-                    try
-                    {
-                        Task.Delay(500, _ct).Wait(_ct);
-                    }
-                    catch (OperationCanceledException)
-                    {
-                        return;
-                    }
-                }
+                if (pauseIfRequested(true)) return;
 
                 syncdi.StartedNow();
-                ddi.Create();
+                try
+                {
+                    Delimon.Win32.IO.Directory.CreateDirectory(ddp);
+                }
+                catch (Exception e)
+                {
+                    syncdi.DirConflicted(new DirConflictInfo(ConflictType.Unknown, syncdi.Dir == SyncDirection.To2 ? 2 : 1, 
+                        "RunFolderCreationTask", e.Message, syncdi));
+                }
                 syncdi.EndedNow();
-                _si.AppliedDirChange(syncdi);
             }, _ct);
         }
 
@@ -198,7 +194,6 @@ namespace WinSync.Service
         /// <returns>task</returns>
         private async Task ApplyingFileChanges(List<SyncFileInfo> syncFiles)
         {
-            Console.WriteLine("test");
             //add apply file change tasks
             foreach (SyncFileInfo sfi in syncFiles)
             {
@@ -240,17 +235,7 @@ namespace WinSync.Service
 
                 Delimon.Win32.IO.FileInfo sfi = new Delimon.Win32.IO.FileInfo(sfp);
 
-                while (_si.Paused)
-                {
-                    try
-                    {
-                        Task.Delay(500, _ct).Wait(_ct);
-                    }
-                    catch (OperationCanceledException)
-                    {
-                        return null;
-                    }
-                }
+                if(pauseIfRequested(true)) return null;
 
                 syncfi.StartedNow();
 
@@ -265,37 +250,32 @@ namespace WinSync.Service
                     }
                     else if (sfi.Exists)
                     {
-                        //uncomment Copy Methods:
+                        //Copy Methods:
                         //FMove(sfp, dfp);
                         File.Copy(sfp, dfp, true);
                     }
                     else
                         return null;
-
-                    syncfi.EndedNow();
                 }
                 catch (IOException ioe)
                 {
-                    syncfi.EndedNow();
-
                     string path = ioe.Message.Split('\"')[1];
                     int conflictPath = path.Contains(_si.Link.Path1) ? 1 : 2;
 
-                    syncfi.FileConflicted(new FileConflictInfo(ConflictType.IO, conflictPath, "RunApplyFileChangeTask", syncfi));
+                    syncfi.FileConflicted(new FileConflictInfo(ConflictType.IO, conflictPath, "RunApplyFileChangeTask", ioe.Message, syncfi));
                 }
                 catch (UnauthorizedAccessException uae)
                 {
-                    syncfi.EndedNow();
-
                     string path = uae.Message.Split('\"')[1];
                     int conflictPath = path.Contains(_si.Link.Path1) ? 1 : 2;
 
-                    syncfi.FileConflicted(new FileConflictInfo(ConflictType.UA, conflictPath, "RunApplyFileChangeTask", syncfi));
+                    syncfi.FileConflicted(new FileConflictInfo(ConflictType.UA, conflictPath, "RunApplyFileChangeTask", uae.Message, syncfi));
                 }
                 catch (Exception e)
                 {
-                    _si.Log(new LogMessage(LogType.ERROR, e.Message));
+                    syncfi.FileConflicted(new FileConflictInfo(ConflictType.Unknown, 0, "RunApplyFileChangeTask", e.Message, syncfi));
                 }
+                syncfi.EndedNow();
 
                 return syncfi;
             }, _ct);
@@ -372,8 +352,7 @@ namespace WinSync.Service
         /// <param name="relativePath">path relative to the linked folders</param>
         private void GetSyncFilesOfDirTwoWay(string relativePath)
         {
-            while (_si.Paused)
-                Task.Delay(500, _ct).Wait(_ct);
+            pauseIfRequested(false);
             _ct.ThrowIfCancellationRequested();
 
             string path1 = _si.Link.Path1 + relativePath;
@@ -483,19 +462,22 @@ namespace WinSync.Service
                     }
                 }
             }
-            catch (UnauthorizedAccessException uae)
-            {
-                string path = uae.Message.Split('\"')[1];
-                int conflictPath = path.Contains(_si.Link.Path1) ? 1 : 2;
+            //catch (UnauthorizedAccessException uae)
+            //{
+            //    string path = uae.Message.Split('\"')[1];
+            //    int conflictPath = path.Contains(_si.Link.Path1) ? 1 : 2;
 
-                SyncDirInfo sdi = new SyncDirInfo(_si, relativePath);
-                sdi.DirConflicted(new DirConflictInfo(ConflictType.UA, conflictPath, "GetSyncFilesOfDirTwoWay", sdi));
-                _si.DirConflicted(sdi);
+            //    SyncDirInfo sdi = new SyncDirInfo(_si, relativePath);
+            //    sdi.DirConflicted(new DirConflictInfo(ConflictType.UA, conflictPath, "GetSyncFilesOfDirTwoWay", sdi));
+            //    _si.DirConflicted(sdi);
+            //}
+            catch (Exception e)
+            {
+                _si.Log(new LogMessage(LogType.ERROR, e.Message));
             }
             #endregion
         }
-
-        Task<SyncFileInfo> debug_t;
+        
         /// <summary>
         /// detect changes for One-Way synchronisation async
         /// </summary>
@@ -510,7 +492,6 @@ namespace WinSync.Service
             while (_detectFileTasks.Count > 0)
             {
                 Task<SyncFileInfo> t = await Task.WhenAny(_detectFileTasks);
-                debug_t = t;
                 _ct.ThrowIfCancellationRequested();
 
                 if (t.Result != null)
@@ -533,8 +514,7 @@ namespace WinSync.Service
         /// <param name="relativePath">path relative to the homepath</param>
         private void GetSyncFilesOfDirOneWay(string sourceHomePath, string destHomePath, string relativePath)
         {
-            while (_si.Paused)
-                Task.Delay(500, _ct).Wait(_ct);
+            pauseIfRequested(false);
             _ct.ThrowIfCancellationRequested();
 
             string sourcePath = sourceHomePath + relativePath;
@@ -561,14 +541,18 @@ namespace WinSync.Service
                     _detectFileTasks.Add(t);
                 }
             }
-            catch (UnauthorizedAccessException uae)
-            {
-                string path = uae.Message.Split('\"')[1] + @"\";
-                int conflictPath = path.Contains(_si.Link.Path1) ? 1 : 2;
+            //catch (UnauthorizedAccessException uae)
+            //{
+            //    string path = uae.Message.Split('\"')[1] + @"\";
+            //    int conflictPath = path.Contains(_si.Link.Path1) ? 1 : 2;
 
-                SyncDirInfo sdi = new SyncDirInfo(_si, relativePath);
-                sdi.DirConflicted(new DirConflictInfo(ConflictType.UA, conflictPath, "GetSyncFilesOfDirOneWay", sdi));
-                _si.DirConflicted(sdi);
+            //    SyncDirInfo sdi = new SyncDirInfo(_si, relativePath);
+            //    sdi.DirConflicted(new DirConflictInfo(ConflictType.UA, conflictPath, "GetSyncFilesOfDirOneWay", sdi));
+            //    _si.DirConflicted(sdi);
+            //}
+            catch (Exception e)
+            {
+                _si.Log(new LogMessage(LogType.ERROR, e.Message));
             }
         }
 
@@ -580,8 +564,7 @@ namespace WinSync.Service
         /// <param name="relativePath">path relative to the homepath</param>
         private void GetRemoveInfosOfDirOneWay(string sourceHomePath, string destHomePath, string relativePath)
         {
-            while (_si.Paused)
-                Task.Delay(500, _ct).Wait(_ct);
+            pauseIfRequested(false);
             _ct.ThrowIfCancellationRequested();
 
             string sourcePath = sourceHomePath + relativePath;
@@ -621,18 +604,21 @@ namespace WinSync.Service
                     }
                 }
             }
-            catch (UnauthorizedAccessException uae)
-            {
-                string path = uae.Message.Split('\"')[1] + @"\";
-                int conflictPath = path.Contains(_si.Link.Path1) ? 1 : 2;
+            //catch (UnauthorizedAccessException uae)
+            //{
+            //    string path = uae.Message.Split('\"')[1] + @"\";
+            //    int conflictPath = path.Contains(_si.Link.Path1) ? 1 : 2;
 
-                SyncDirInfo sdi = new SyncDirInfo(_si, relativePath);
-                sdi.DirConflicted(new DirConflictInfo(ConflictType.UA, conflictPath, "GetRemoveInfosOfDirOneWay", sdi));
-                _si.DirConflicted(sdi);
+            //    SyncDirInfo sdi = new SyncDirInfo(_si, relativePath);
+            //    sdi.DirConflicted(new DirConflictInfo(ConflictType.UA, conflictPath, "GetRemoveInfosOfDirOneWay", sdi));
+            //    _si.DirConflicted(sdi);
+            //}
+            catch(Exception e)
+            {
+                _si.Log(new LogMessage(LogType.ERROR, e.Message));
             }
         }
-
-        SyncFileInfo d_sfi;
+        
         /// <summary>
         /// compare 2 files for one way synchronisation in new task
         /// </summary>
@@ -648,17 +634,7 @@ namespace WinSync.Service
                 Delimon.Win32.IO.FileInfo srcFileInfo;
                 Delimon.Win32.IO.FileInfo destFileInfo;
 
-                while (_si.Paused)
-                {
-                    try
-                    {
-                        Task.Delay(500, _ct).Wait(_ct);
-                    }
-                    catch (OperationCanceledException)
-                    {
-                        return null;
-                    }
-                }
+                if (pauseIfRequested(true)) return null;
 
                 string fn = Delimon.Win32.IO.Path.GetFileName(fileName);
                 string filePath = relativePath + @"\" + fn;
@@ -669,41 +645,32 @@ namespace WinSync.Service
                 string df = destPath + @"\" + fn;
 
                 srcFileInfo = new Delimon.Win32.IO.FileInfo(sf);
-                destFileInfo = new Delimon.Win32.IO.FileInfo(df); //TODO long file path not supported
+                destFileInfo = new Delimon.Win32.IO.FileInfo(df);
 
-                SyncFileInfo sfi = new SyncFileInfo(_si, filePath, srcFileInfo.Length, _si.Link.Direction, false);
-                d_sfi = sfi;
-                while (_si.Paused)
-                {
-                    try
-                    {
-                        Task.Delay(500, _ct).Wait(_ct);
-                    }
-                    catch (OperationCanceledException)
-                    {
-                        return null;
-                    }
-                }
+                SyncFileInfo sfi = null;
 
                 try
                 {
+                    sfi = new SyncFileInfo(_si, filePath, srcFileInfo.Length, _si.Link.Direction, false);
+
                     if (CompareFilesForOneWay(srcFileInfo, destFileInfo))
-                    {
-                        Console.WriteLine($@"Detected:{relativePath}\{fn}");
-                    }
+                        _si.Log(new LogMessage(LogType.INFO, $@"Detected:{relativePath}\{fn}"));
                     else return null;
                 }
-                catch (IOException ioe)
-                {
-                    string path = ioe.Message.Split('\"')[1];
-                    int conflictPath = path.Contains(_si.Link.Path1) ? 1 : 2;
+                //catch (IOException ioe)
+                //{
+                //    string path = ioe.Message.Split('\"')[1];
+                //    int conflictPath = path.Contains(_si.Link.Path1) ? 1 : 2;
 
-                    Console.WriteLine($"File Conflicted: {filePath}");
-                    sfi.FileConflicted(new FileConflictInfo(ConflictType.IO, conflictPath, "RunOneWayFileCompareTask", sfi));
-                }
-                catch
+                //    Console.WriteLine($"File Conflicted: {filePath}");
+                //    sfi.FileConflicted(new FileConflictInfo(ConflictType.IO, conflictPath, "RunOneWayFileCompareTask", sfi));
+                //}
+                catch(Exception e)
                 {
-                    sfi.FileConflicted(new FileConflictInfo(ConflictType.Unknown, 0, "RunOneWayFileCompareTask", sfi));
+                    if (sfi != null)
+                        sfi.FileConflicted(new FileConflictInfo(ConflictType.Unknown, 0, "RunOneWayFileCompareTask", e.Message, sfi));
+                    else
+                        _si.Log(new LogMessage(LogType.ERROR, e.Message));
                 }
 
                 return sfi;
@@ -720,17 +687,7 @@ namespace WinSync.Service
         {
             return Task.Run(() =>
             {
-                while (_si.Paused)
-                {
-                    try
-                    {
-                        Task.Delay(500, _ct).Wait(_ct);
-                    }
-                    catch (OperationCanceledException)
-                    {
-                        return null;
-                    }
-                }
+                if (pauseIfRequested(true)) return null;
 
                 string fn = Delimon.Win32.IO.Path.GetFileName(fileName);
                 string relativeFilePath = relativePath + @"\" + fn;
@@ -739,7 +696,8 @@ namespace WinSync.Service
 
                 string pd1 = _si.Link.Path1 + relativePath;
                 string pd2 = _si.Link.Path2 + relativePath;
-                //parent directory info
+
+                //get parent directory infos
                 Delimon.Win32.IO.DirectoryInfo pdi1;
                 while (!(pdi1 = new Delimon.Win32.IO.DirectoryInfo(pd1)).Exists)
                     pd1 = pd1.Substring(0, pd1.LastIndexOf(@"\", StringComparison.Ordinal));
@@ -750,26 +708,19 @@ namespace WinSync.Service
 
                 string f1 = pd1 + @"\" + fn;
                 string f2 = pd2 + @"\" + fn;
+
                 //file info
                 Delimon.Win32.IO.FileInfo fi1 = new Delimon.Win32.IO.FileInfo(f1);
                 Delimon.Win32.IO.FileInfo fi2 = new Delimon.Win32.IO.FileInfo(f2);
 
 
-                while (_si.Paused)
-                {
-                    try
-                    {
-                        Task.Delay(500, _ct).Wait(_ct);
-                    }
-                    catch (OperationCanceledException)
-                    {
-                        return null;
-                    }
-                }
+                if (pauseIfRequested(true)) return null;
 
-                SyncFileInfo sfi = new SyncFileInfo(_si, relativeFilePath, fi1.Exists ? fi1.Length : fi2.Length);
+                SyncFileInfo sfi = null;
                 try
                 {
+                    sfi = new SyncFileInfo(_si, relativeFilePath, fi1.Exists ? fi1.Length : fi2.Length);
+
                     //compare
                     TwoWayCompareResult compResult = CompareFilesForTwoWay(fi1, fi2, _si.Link.Remove, pdi1, pdi2);
 
@@ -781,15 +732,12 @@ namespace WinSync.Service
                     else
                         return null;
                 }
-                catch (IOException ioe)
+                catch (Exception e)
                 {
-                    string path = ioe.Message.Split('\"')[1];
-                    int conflictPath = path.Contains(_si.Link.Path1) ? 1 : 2;
-                    sfi.FileConflicted(new FileConflictInfo(ConflictType.IO, conflictPath, "RunTwoWayFileCompareTask", sfi));
-                }
-                catch (Exception)
-                {
-                    sfi.FileConflicted(new FileConflictInfo(ConflictType.Unknown, 0, "RunTwoWayFileCompareTask", sfi));
+                    if (sfi != null)
+                        sfi.FileConflicted(new FileConflictInfo(ConflictType.Unknown, 0, "RunTwoWayFileCompareTask", e.Message, sfi));
+                    else
+                        _si.Log(new LogMessage(LogType.ERROR, e.Message));
                 }
 
                 return sfi;
@@ -854,7 +802,7 @@ namespace WinSync.Service
             // update file 2 if file 1 is newer
             if (fi1.LastWriteTime > fi2.LastWriteTime)
                 return new TwoWayCompareResult(SyncDirection.To2, false);
-
+            
             return null;
         }
 
@@ -877,13 +825,35 @@ namespace WinSync.Service
                     if (fs1.ReadByte() != fs2.ReadByte())
                         return false;
 
-                    while (_si.Paused)
-                        Task.Delay(500, _ct).Wait(_ct);
+                    pauseIfRequested(false);
                     _ct.ThrowIfCancellationRequested();
                 }
             }
 
             return true;
+        }
+
+        /// <summary>
+        /// pause task if requested until continuation
+        /// </summary>
+        /// <returns>true if the operation was canceled</returns>
+        private bool pauseIfRequested(bool catchCanceledException)
+        {
+            while (_si.Paused)
+            {
+                try
+                {
+                    Task.Delay(500, _ct).Wait(_ct);
+                }
+                catch (OperationCanceledException)
+                {
+                    if(catchCanceledException)
+                        return true;
+                    else throw;
+                }
+            }
+
+            return false;
         }
     }
 }
