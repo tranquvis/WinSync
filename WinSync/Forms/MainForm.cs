@@ -38,12 +38,10 @@ namespace WinSync.Forms
 
         public MainForm()
         {
-            Delimon.Win32.IO.FileInfo f1 = new Delimon.Win32.IO.FileInfo(@"D:\Users\Andi\SyncTestData\debug\boot\macrium\WA10KFiles\media\Drivers");
-            Delimon.Win32.IO.FileInfo f2 = new Delimon.Win32.IO.FileInfo(@"C:\boot\macrium\WA10KFiles\media\Drivers");
-
-
             InitializeComponent();
             FillData();
+            panel_syncDetail.Visible = true;
+
             StartUpdateRoutine();
         }
 
@@ -401,7 +399,7 @@ namespace WinSync.Forms
         {
             updateDetailStatsAsync = true;
 
-            if (ActLink?.SyncInfo != null)
+            //if (ActLink?.SyncInfo != null)
                 panel_syncDetail.Visible = true;
 
             while (ActLink?.SyncInfo != null)
@@ -440,7 +438,7 @@ namespace WinSync.Forms
 
             updateDetailStatsAsync = false;
 
-            panel_syncDetail.Visible = false;
+            //panel_syncDetail.Visible = false;
         }
 
         /// <summary>
@@ -469,14 +467,13 @@ namespace WinSync.Forms
         {
             if (ActLink == null) return;
 
-            LinkStatisticForm f = new LinkStatisticForm(ActLink);
+            LinkStatisticForm f = new LinkStatisticForm(ActLink, this);
 
             f.FormClosed += delegate
             {
                 f.Dispose();
                 _statForms.Remove(f);
             };
-
             if (!f.IsDisposed)
             {
                 Application.Run(f);

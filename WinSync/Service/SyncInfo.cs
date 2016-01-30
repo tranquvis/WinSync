@@ -232,12 +232,14 @@ namespace WinSync.Service
 
         public void FileFound(MyFileInfo file)
         {
-            DirTree.AddFile(file);
+            List<DirTree> path = DirTree.AddFile(file);
+            Listener?.OnFileFound(file);
         }
 
         public void DirFound(MyDirInfo dir)
         {
-            DirTree.AddDir(dir);
+            List<DirTree> path = DirTree.AddDir(dir);
+            Listener?.OnDirFound(dir);
         }
 
         /// <summary>
@@ -295,6 +297,7 @@ namespace WinSync.Service
         public void AppliedDirChange(MyDirInfo di)
         {
             DirsDone++;
+            Listener?.OnDirSynced(di);
         }
 
         /// <summary>

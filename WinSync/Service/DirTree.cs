@@ -32,44 +32,56 @@ namespace WinSync.Service
             get { return _dirs; }
         }
 
-        public void AddFile(MyFileInfo file)
+        public List<DirTree> AddFile(MyFileInfo file)
         {
             if (file.Path == "")
             {
+                file.TreePath = new List<DirTree>();
                 this._files.Add(file);
-                return;
+                return file.TreePath;
             }
 
             string[] dirs = file.Path.Split('\\');
 
             DirTree dir = this;
+            List<DirTree> path = new List<DirTree>();
             for (int i = 1; i < dirs.Length; i++)
             {
                 dir = dir._dirs.FirstOrDefault(x => x.Info.Name == dirs[i]);
                 if (dir == null)
-                    return;
+                    return null;
+                path.Add(dir);
             }
+
+            file.TreePath = path;
             dir._files.Add(file);
+            return path;
         }
 
-        public void AddDir(MyDirInfo newDir)
+        public List<DirTree> AddDir(MyDirInfo newDir)
         {
             if (newDir.Path == "")
             {
+                newDir.TreePath = new List<DirTree>();
                 this._dirs.Add(new DirTree(newDir));
-                return;
+                return newDir.TreePath;
             }
 
             string[] dirs = newDir.Path.Split('\\');
 
             DirTree dir = this;
+            List<DirTree> path = new List<DirTree>();
             for (int i = 1; i < dirs.Length; i++)
             {
                 dir = dir._dirs.FirstOrDefault(x => x.Info.Name == dirs[i]);
                 if (dir == null)
-                    return;
+                    return null;
+                path.Add(dir);
             }
+
+            newDir.TreePath = path;
             dir._dirs.Add(new DirTree(newDir));
+            return path;
         }
 
         public List<string> DirNames => _dirs.ConvertAll<string>(dir => dir.Info.Name);

@@ -3,6 +3,8 @@ using WinSync.Service;
 using System;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Collections.Generic;
+using System.Drawing;
 
 namespace WinSync.Forms
 {
@@ -11,17 +13,18 @@ namespace WinSync.Forms
         readonly Link _l;
         bool _initFlag;
         bool updateStatsAsyncRunning;
+        MainForm _mainForm;
 
         /// <summary>
         /// create a LinkStatisticsForm that displays all details of a synchronisation process
         /// </summary>
         /// <param name="l">link that contains the synchronisation information</param>
-        public LinkStatisticForm(Link l)
+        public LinkStatisticForm(Link l, MainForm mainForm)
         {
-            if (l.SyncInfo == null)
-                Close();
+            //if (l.SyncInfo == null) Close();
             
             _l = l;
+            _mainForm = mainForm;
             InitializeComponent();
 
             label_title.Text = _l.Title;
@@ -29,10 +32,13 @@ namespace WinSync.Forms
             label_folder2.Text = _l.Path2;
             label_direction.Text = _l.Direction.ToString();
 
-            _l.SyncInfo.Listener = this;
-
-            UpdateStatsAsync();
+            if (_l.SyncInfo != null)
+            {
+                _l.SyncInfo.Listener = this;
+                UpdateStatsAsync();
+            }
             StartUpdateRoutine();
+            
         }
         
         public void StartUpdateRoutine()
@@ -42,7 +48,11 @@ namespace WinSync.Forms
                 while (!IsDisposed)
                 {
                     if (!updateStatsAsyncRunning && _l.IsRunning())
-                        Invoke(new Action(() => { UpdateStatsAsync(); }));
+                        Invoke(new Action(() => {
+                            if (_l.SyncInfo != null && _l.SyncInfo.Listener == null)
+                                _l.SyncInfo.Listener = this;
+                            UpdateStatsAsync();
+                        }));
 
                     await Task.Delay(500);
                 }
@@ -155,27 +165,11 @@ namespace WinSync.Forms
                 //window handle wasn't created
             }
         }
-
-        /// <summary>
-        /// on form load
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void LinkStatisticForm_Load(object sender, EventArgs e)
-        {
-            label_title.Text = _l.Title;
-            label_folder1.Text = _l.Path1;
-            label_folder2.Text = _l.Path2;
-            label_direction.Text = _l.Direction.ToString();
-
-            _l.SyncInfo.Listener = this;
-            listBox_syncInfo.Items.Add("...");
-            UpdateStatsAsync();
-        }
         
         private void LinkStatisticForm_FormClosing(object sender, FormClosingEventArgs e)
         {
-            _l.SyncInfo.Listener = null;
+            if(_l.SyncInfo != null)
+                _l.SyncInfo.Listener = null;
         }
 
         /// <summary>
@@ -187,7 +181,7 @@ namespace WinSync.Forms
         {
             if (!_l.IsRunning())
             {
-                _l.Sync();
+                _mainForm.Invoke(new Action(() => { _l.Sync(); }));
                 _l.SyncInfo.Listener = this;
                 listBox_syncInfo.Items.Clear();
                 UpdateStatsAsync();
@@ -229,6 +223,9 @@ namespace WinSync.Forms
         /// <param name="sfi"></param>
         public void OnFileChangeDetected(MyFileInfo fi)
         {
+            TreeNode tn = getTreeNode(fi);
+            tn.ForeColor = Color.Blue;
+
             AddProcessLine("File change detected:" + fi.FullPath);
         }
 
@@ -238,7 +235,10 @@ namespace WinSync.Forms
         /// <param name="sfi"></param>
         public void OnFileSynced(MyFileInfo fi)
         {
-            if(fi.SyncInfo.Remove)
+            TreeNode tn = getTreeNode(fi);
+            tn.ForeColor = Color.Green;
+
+            if (fi.SyncInfo.Remove)
                 AddProcessLine("File deleted:" + fi.FullPath);
             else
                 AddProcessLine("File copied:" + fi.FullPath);
@@ -246,6 +246,9 @@ namespace WinSync.Forms
 
         public void OnDirSynced(MyDirInfo di)
         {
+            TreeNode tn = getTreeNode(di);
+            tn.ForeColor = Color.Green;
+
             if (di.SyncInfo.Remove)
                 AddProcessLine("Directory removed:" + di.FullPath);
             else
@@ -348,6 +351,84 @@ namespace WinSync.Forms
             {
                 Clipboard.SetData(DataFormats.Text, (string)listBox_syncInfo.SelectedItem);
             }
+        }
+
+        public void OnFileFound(MyFileInfo fi)
+        {
+            Invoke(new Action(() =>
+            {
+                TreeNodeCollection tnc = treeView1.Nodes;
+                TreeNode treeNode;
+                for (int i = 0; i < fi.TreePath.Count; i++)
+                {
+                    treeNode = tnc[fi.TreePath[i].Info.Name];
+                    if (treeNode == null)
+                        return;
+
+                    tnc = treeNode.Nodes;
+                }
+
+                TreeNode tn = new TreeNode(fi.Name);
+                tn.ImageIndex = 2;
+                tn.SelectedImageIndex = 2;
+                tn.Name = fi.Name;
+                tnc.Add(tn);
+            }));
+        }
+
+        public void OnDirFound(MyDirInfo di)
+        {
+            Invoke(new Action(() =>
+            {
+                TreeNodeCollection tnc = treeView1.Nodes;
+                TreeNode treeNode;
+                for (int i = 0; i < di.TreePath.Count; i++)
+                {
+                    treeNode = tnc[di.TreePath[i].Info.Name];
+                    if (treeNode == null)
+                        return;
+
+                    tnc = treeNode.Nodes;
+                }
+
+                TreeNode tn = new TreeNode(di.Name);
+                tn.ImageIndex = 0;
+                tn.SelectedImageIndex = 0;
+                tn.StateImageIndex = 1;
+                tn.Name = di.Name;
+                tnc.Add(tn);
+            }));
+        }
+
+        public TreeNode getTreeNode(MyFileInfo fi)
+        {
+            TreeNodeCollection tnc = treeView1.Nodes;
+            TreeNode treeNode;
+            for (int i = 0; i < fi.TreePath.Count; i++)
+            {
+                treeNode = tnc[fi.TreePath[i].Info.Name];
+                if (treeNode == null)
+                    return null;
+
+                tnc = treeNode.Nodes;
+            }
+
+            return tnc[fi.Name];
+        }
+        public TreeNode getTreeNode(MyDirInfo di)
+        {
+            TreeNodeCollection tnc = treeView1.Nodes;
+            TreeNode treeNode;
+            for (int i = 0; i < di.TreePath.Count; i++)
+            {
+                treeNode = tnc[di.TreePath[i].Info.Name];
+                if (treeNode == null)
+                    return null;
+
+                tnc = treeNode.Nodes;
+            }
+
+            return tnc[di.Name];
         }
     }
 }

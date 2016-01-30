@@ -35,6 +35,8 @@ namespace WinSync.Service
 
         public SyncFileInfo SyncInfo { get; set; }
 
+        public List<DirTree> TreePath { get; set; }
+
         public MyFileInfo(string path, string name, SyncFileInfo syncInfo)
         {
             Path = path;

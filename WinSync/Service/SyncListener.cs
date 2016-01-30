@@ -1,41 +1,47 @@
-﻿namespace WinSync.Service
+﻿using System.Collections.Generic;
+
+namespace WinSync.Service
 {
     public interface ISyncListener
     {
+
+        void OnFileFound(MyFileInfo fi);
+
+        void OnDirFound(MyDirInfo di);
+
         /// <summary>
         /// is called when a detect task of a file started
         /// </summary>
-        /// <param name="path">relative file path</param>
         void OnDetectingFileStarted(MyFileInfo fi);
         
         /// <summary>
         /// is called when a detect task of a file finished and a change has been detected
         /// </summary>
-        /// <param name="sfi">detected file information</param>
+        /// <param name="fi">detected file information</param>
         void OnFileChangeDetected(MyFileInfo fi);
         
         /// <summary>
         /// is called when a file has been copied or deleted
         /// </summary>
-        /// <param name="sfi">synced file information</param>
+        /// <param name="fi">synced file information</param>
         void OnFileSynced(MyFileInfo fi);
 
         /// <summary>
         /// is called when a directory has been created or removed
         /// </summary>
-        /// <param name="sdi">synced directory information</param>
+        /// <param name="di">synced directory information</param>
         void OnDirSynced(MyDirInfo di);
 
         /// <summary>
         /// is called when a file conflict occurred
         /// </summary>
-        /// <param name="sfi">conflicted file information</param>
+        /// <param name="fi">conflicted file information</param>
         void OnFileConflicted(MyFileInfo fi);
 
         /// <summary>
         /// is called when a directory conflict occurred
         /// </summary>
-        /// <param name="sdi">conflicted directory information</param>
+        /// <param name="di">conflicted directory information</param>
         void OnDirConflicted(MyDirInfo di);
 
         /// <summary>
