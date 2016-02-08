@@ -5,6 +5,7 @@ namespace WinSync.Service
     public interface ISyncListener
     {
 
+        /*
         void OnFileFound(MyFileInfo fi);
 
         void OnDirFound(MyDirInfo di);
@@ -33,17 +34,18 @@ namespace WinSync.Service
         void OnDirSynced(MyDirInfo di);
 
         /// <summary>
-        /// is called when a file conflict occurred
+        /// is called when a directory or file conflict occurred
         /// </summary>
-        /// <param name="fi">conflicted file information</param>
-        void OnFileConflicted(MyFileInfo fi);
+        /// <param name="ci">conflict information</param>
+        void OnConflicted(ConflictInfo ci);
+        */
 
         /// <summary>
-        /// is called when a directory conflict occurred
+        /// is called when the sync state of a directory or file changed
         /// </summary>
-        /// <param name="di">conflicted directory information</param>
-        void OnDirConflicted(MyDirInfo di);
-
+        /// <param name="sei">sync info of the element</param>
+        void OnSyncElementStateChanged(SyncElementInfo sei);
+        
         /// <summary>
         /// is called when a log message has been received
         /// </summary>

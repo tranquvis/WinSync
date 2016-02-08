@@ -1,0 +1,14 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace WinSync.Service
+{
+    public class DirConflictInfo : ConflictInfo
+    {
+        public DirConflictInfo(SyncDirInfo syncDirInfo, ConflictType type, int conflictPath, string context, string message) 
+            : base(syncDirInfo, type, conflictPath, context, message) {}
+    }
+}

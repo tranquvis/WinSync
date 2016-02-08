@@ -75,12 +75,12 @@ namespace WinSync.Data
         /// <summary>
         /// contains the synchronisation executer
         /// </summary>
-        public SyncTask SyncTask;
+        public SyncTask SyncTask { get; private set; }
 
         /// <summary>
         /// contains the status information of the synchronisation
         /// </summary>
-        public SyncInfo SyncInfo;
+        public SyncInfo SyncInfo { get; private set; }
 
         /// <summary>
         /// check if synchronisation is running
@@ -94,13 +94,12 @@ namespace WinSync.Data
         /// <summary>
         /// execute the synchronisation
         /// </summary>
-        public async void Sync()
+        public void Sync()
         {
             SyncInfo = new SyncInfo(this);
 
-            SyncTask = new SyncTask(this);
-            Task t = SyncTask.Execute();
-            await t;
+            SyncTask = new SyncTask2(SyncInfo);
+            SyncTask.Execute();
         }
 
         /// <summary>

@@ -6,37 +6,36 @@ using System.Threading.Tasks;
 
 namespace WinSync.Service
 {
-    public class MyDirInfo
+    public abstract class MyElementInfo
     {
         /// <summary>
-        /// relative dir path without name
+        /// relative file path without name
         /// </summary>
         public string Path { get; set; }
 
+        public List<DirTree> TreePath { get; set; }
+
         /// <summary>
-        /// dir name
+        /// file name
         /// </summary>
         public string Name { get; set; }
 
         /// <summary>
-        /// relative dir path with name
+        /// relative file path with name
         /// </summary>
         public string FullPath
         {
             get { return Name == "" ? "" : Path + @"\" + Name; }
         }
 
-        public bool ChangeDetected => SyncInfo != null;
+        public bool ChangeDetected => SyncElementInfo != null;
 
-        public SyncDirInfo SyncInfo { get; set; }
+        public SyncElementInfo SyncElementInfo { get; set; }
 
-        public List<DirTree> TreePath { get; set; }
-
-        public MyDirInfo(string path, string name, SyncDirInfo syncInfo)
+        public MyElementInfo(string path, string name)
         {
             Path = path;
             Name = name;
-            SyncInfo = syncInfo;
         }
     }
 }

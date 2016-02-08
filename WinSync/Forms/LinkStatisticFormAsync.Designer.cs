@@ -2,7 +2,7 @@
 
 namespace WinSync.Forms
 {
-    partial class LinkStatisticForm
+    partial class LinkStatisticFormAsync
     {
         /// <summary>
         /// Required designer variable.
@@ -31,8 +31,10 @@ namespace WinSync.Forms
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(LinkStatisticForm));
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(LinkStatisticFormAsync));
             this.panel1 = new System.Windows.Forms.Panel();
+            this.label_runningTasks = new System.Windows.Forms.Label();
+            this.label13 = new System.Windows.Forms.Label();
             this.label_averageSpeed = new System.Windows.Forms.Label();
             this.label14 = new System.Windows.Forms.Label();
             this.label11 = new System.Windows.Forms.Label();
@@ -54,6 +56,8 @@ namespace WinSync.Forms
             this.label4 = new System.Windows.Forms.Label();
             this.listBox_syncInfo = new System.Windows.Forms.ListBox();
             this.panel_header = new System.Windows.Forms.Panel();
+            this.button_pr = new WinSync.Controls.MyButton();
+            this.button_sync = new WinSync.Controls.MyButton();
             this.label_title = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.label_folder1 = new System.Windows.Forms.Label();
@@ -67,11 +71,9 @@ namespace WinSync.Forms
             this.panel3 = new System.Windows.Forms.Panel();
             this.label12 = new System.Windows.Forms.Label();
             this.panelLeft = new System.Windows.Forms.Panel();
+            this.progressBar = new WinSync.Controls.MyProgressBar();
             this.treeView1 = new System.Windows.Forms.TreeView();
             this.imageList1 = new System.Windows.Forms.ImageList(this.components);
-            this.progressBar = new WinSync.Controls.MyProgressBar();
-            this.button_pr = new WinSync.Controls.MyButton();
-            this.button_sync = new WinSync.Controls.MyButton();
             this.panel1.SuspendLayout();
             this.panel2.SuspendLayout();
             this.panel_header.SuspendLayout();
@@ -85,6 +87,8 @@ namespace WinSync.Forms
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.panel1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(210)))), ((int)(((byte)(210)))), ((int)(((byte)(210)))));
+            this.panel1.Controls.Add(this.label_runningTasks);
+            this.panel1.Controls.Add(this.label13);
             this.panel1.Controls.Add(this.label_averageSpeed);
             this.panel1.Controls.Add(this.label14);
             this.panel1.Controls.Add(this.label11);
@@ -109,6 +113,23 @@ namespace WinSync.Forms
             this.panel1.Name = "panel1";
             this.panel1.Size = new System.Drawing.Size(567, 479);
             this.panel1.TabIndex = 10;
+            // 
+            // label_runningTasks
+            // 
+            this.label_runningTasks.AutoSize = true;
+            this.label_runningTasks.Location = new System.Drawing.Point(370, 111);
+            this.label_runningTasks.Name = "label_runningTasks";
+            this.label_runningTasks.Size = new System.Drawing.Size(0, 13);
+            this.label_runningTasks.TabIndex = 32;
+            // 
+            // label13
+            // 
+            this.label13.AutoSize = true;
+            this.label13.Location = new System.Drawing.Point(282, 111);
+            this.label13.Name = "label13";
+            this.label13.Size = new System.Drawing.Size(82, 13);
+            this.label13.TabIndex = 31;
+            this.label13.Text = "Running Tasks:";
             // 
             // label_averageSpeed
             // 
@@ -291,9 +312,9 @@ namespace WinSync.Forms
             this.label4.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F);
             this.label4.Location = new System.Drawing.Point(3, 3);
             this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(59, 17);
+            this.label4.Size = new System.Drawing.Size(32, 17);
             this.label4.TabIndex = 18;
-            this.label4.Text = "Process";
+            this.label4.Text = "Log";
             // 
             // listBox_syncInfo
             // 
@@ -322,6 +343,46 @@ namespace WinSync.Forms
             this.panel_header.Name = "panel_header";
             this.panel_header.Size = new System.Drawing.Size(567, 34);
             this.panel_header.TabIndex = 13;
+            // 
+            // button_pr
+            // 
+            this.button_pr.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.button_pr.BackColor = System.Drawing.Color.Transparent;
+            this.button_pr.BackgroundImage = global::WinSync.Properties.Resources.ic_pause_white;
+            this.button_pr.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
+            this.button_pr.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.button_pr.FlatAppearance.BorderSize = 0;
+            this.button_pr.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(28)))), ((int)(((byte)(67)))), ((int)(((byte)(102)))));
+            this.button_pr.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.button_pr.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.999999F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.button_pr.ForeColor = System.Drawing.Color.White;
+            this.button_pr.Location = new System.Drawing.Point(493, 0);
+            this.button_pr.Margin = new System.Windows.Forms.Padding(0);
+            this.button_pr.Name = "button_pr";
+            this.button_pr.Size = new System.Drawing.Size(38, 34);
+            this.button_pr.TabIndex = 21;
+            this.button_pr.UseVisualStyleBackColor = false;
+            this.button_pr.Click += new System.EventHandler(this.button_pr_Click);
+            // 
+            // button_sync
+            // 
+            this.button_sync.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.button_sync.BackColor = System.Drawing.Color.Transparent;
+            this.button_sync.BackgroundImage = global::WinSync.Properties.Resources.ic_sync_white;
+            this.button_sync.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
+            this.button_sync.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.button_sync.FlatAppearance.BorderSize = 0;
+            this.button_sync.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(28)))), ((int)(((byte)(67)))), ((int)(((byte)(102)))));
+            this.button_sync.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.button_sync.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.999999F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.button_sync.ForeColor = System.Drawing.Color.White;
+            this.button_sync.Location = new System.Drawing.Point(531, 0);
+            this.button_sync.Margin = new System.Windows.Forms.Padding(0);
+            this.button_sync.Name = "button_sync";
+            this.button_sync.Size = new System.Drawing.Size(39, 34);
+            this.button_sync.TabIndex = 1;
+            this.button_sync.UseVisualStyleBackColor = false;
+            this.button_sync.Click += new System.EventHandler(this.button_sync_Click);
             // 
             // label_title
             // 
@@ -469,8 +530,23 @@ namespace WinSync.Forms
             this.panelLeft.Size = new System.Drawing.Size(567, 647);
             this.panelLeft.TabIndex = 23;
             // 
+            // progressBar
+            // 
+            this.progressBar.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.progressBar.BackColor = System.Drawing.Color.Gainsboro;
+            this.progressBar.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(28)))), ((int)(((byte)(67)))), ((int)(((byte)(102)))));
+            this.progressBar.Location = new System.Drawing.Point(0, 34);
+            this.progressBar.Margin = new System.Windows.Forms.Padding(5);
+            this.progressBar.Maximum = 1000;
+            this.progressBar.Name = "progressBar";
+            this.progressBar.Size = new System.Drawing.Size(567, 10);
+            this.progressBar.TabIndex = 22;
+            // 
             // treeView1
             // 
+            this.treeView1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.treeView1.ImageIndex = 0;
             this.treeView1.ImageList = this.imageList1;
             this.treeView1.Location = new System.Drawing.Point(570, 0);
@@ -487,60 +563,7 @@ namespace WinSync.Forms
             this.imageList1.Images.SetKeyName(1, "ic_folder_open_black_24dp_2x.png");
             this.imageList1.Images.SetKeyName(2, "ic_insert_drive_file_black_24dp_2x.png");
             // 
-            // progressBar
-            // 
-            this.progressBar.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.progressBar.BackColor = System.Drawing.Color.Gainsboro;
-            this.progressBar.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(28)))), ((int)(((byte)(67)))), ((int)(((byte)(102)))));
-            this.progressBar.Location = new System.Drawing.Point(0, 34);
-            this.progressBar.Margin = new System.Windows.Forms.Padding(5);
-            this.progressBar.Maximum = 1000;
-            this.progressBar.Name = "progressBar";
-            this.progressBar.Size = new System.Drawing.Size(567, 10);
-            this.progressBar.TabIndex = 22;
-            // 
-            // button_pr
-            // 
-            this.button_pr.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.button_pr.BackColor = System.Drawing.Color.Transparent;
-            this.button_pr.BackgroundImage = global::WinSync.Properties.Resources.ic_pause_white;
-            this.button_pr.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
-            this.button_pr.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.button_pr.FlatAppearance.BorderSize = 0;
-            this.button_pr.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(28)))), ((int)(((byte)(67)))), ((int)(((byte)(102)))));
-            this.button_pr.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.button_pr.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.999999F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.button_pr.ForeColor = System.Drawing.Color.White;
-            this.button_pr.Location = new System.Drawing.Point(493, 0);
-            this.button_pr.Margin = new System.Windows.Forms.Padding(0);
-            this.button_pr.Name = "button_pr";
-            this.button_pr.Size = new System.Drawing.Size(38, 34);
-            this.button_pr.TabIndex = 21;
-            this.button_pr.UseVisualStyleBackColor = false;
-            this.button_pr.Click += new System.EventHandler(this.button_pr_Click);
-            // 
-            // button_sync
-            // 
-            this.button_sync.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.button_sync.BackColor = System.Drawing.Color.Transparent;
-            this.button_sync.BackgroundImage = global::WinSync.Properties.Resources.ic_sync_white;
-            this.button_sync.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
-            this.button_sync.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.button_sync.FlatAppearance.BorderSize = 0;
-            this.button_sync.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(28)))), ((int)(((byte)(67)))), ((int)(((byte)(102)))));
-            this.button_sync.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.button_sync.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.999999F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.button_sync.ForeColor = System.Drawing.Color.White;
-            this.button_sync.Location = new System.Drawing.Point(531, 0);
-            this.button_sync.Margin = new System.Windows.Forms.Padding(0);
-            this.button_sync.Name = "button_sync";
-            this.button_sync.Size = new System.Drawing.Size(39, 34);
-            this.button_sync.TabIndex = 1;
-            this.button_sync.UseVisualStyleBackColor = false;
-            this.button_sync.Click += new System.EventHandler(this.button_sync_Click);
-            // 
-            // LinkStatisticForm
+            // LinkStatisticFormAsync
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -549,7 +572,7 @@ namespace WinSync.Forms
             this.Controls.Add(this.treeView1);
             this.Controls.Add(this.panelLeft);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
-            this.Name = "LinkStatisticForm";
+            this.Name = "LinkStatisticFormAsync";
             this.Text = "Sync Details";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.LinkStatisticForm_FormClosing);
             this.Resize += new System.EventHandler(this.LinkStatisticForm_Resize);
@@ -609,5 +632,7 @@ namespace WinSync.Forms
         private System.Windows.Forms.Panel panelLeft;
         private System.Windows.Forms.TreeView treeView1;
         private System.Windows.Forms.ImageList imageList1;
+        private System.Windows.Forms.Label label_runningTasks;
+        private System.Windows.Forms.Label label13;
     }
 }

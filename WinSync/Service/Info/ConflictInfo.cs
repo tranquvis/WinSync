@@ -2,6 +2,8 @@
 {
     public abstract class ConflictInfo
     {
+        public SyncElementInfo SyncElementInfo { get; set; }
+
         public ConflictType Type { get; set; }
 
         /// <summary>
@@ -27,14 +29,19 @@
         /// <param name="conflictPath"></param>
         /// <param name="context"></param>
         /// <param name="message"></param>
-        protected ConflictInfo(ConflictType type, int conflictPath, string context, string message)
+        protected ConflictInfo(SyncElementInfo syncElementInfo, ConflictType type, int conflictPath, string context, string message)
         {
+            SyncElementInfo = syncElementInfo;
             Type = type;
             ConflictPath = conflictPath;
             Context = context;
             Message = message;
         }
 
-        public abstract string GetAbsolutePath();
+        public string GetAbsolutePath()
+        {
+            return (ConflictPath == 1 ? SyncElementInfo.SyncInfo.Link.Path1 : SyncElementInfo.SyncInfo.Link.Path2) 
+                + SyncElementInfo.ElementInfo.FullPath;
+        }
     }
 }

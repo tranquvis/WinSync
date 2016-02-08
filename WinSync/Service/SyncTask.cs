@@ -6,66 +6,34 @@ using System.Windows.Forms;
 
 namespace WinSync.Service
 {
-    public class SyncTask
+    public abstract class SyncTask
     {
-        readonly SyncInfo _si;
-        AsyncSyncService _service;
-        readonly Link _l;
+        protected readonly SyncInfo _si;
 
         /// <summary>
         /// create SyncTask for running a synchronisation
         /// </summary>
         /// <param name="l"></param>
-        public SyncTask(Link l)
+        public SyncTask(SyncInfo si)
         {
-            _l = l;
-            _si = l.SyncInfo;
+            _si = si;
         }
 
         /// <summary>
-        /// execute sanchronisation async
+        /// execute sanchronisation
         /// </summary>
         /// <returns></returns>
-        public async Task Execute()
-        {
-            _si.SyncStarted();
-            _service = new AsyncSyncService(_si);
-            try
-            {
-                await Task.Run(() => _service.ExecuteSync());
-                _si.SyncFinished();
-            }
-            catch (AggregateException e)
-            {
-                if (e.InnerException.GetType() == typeof(OperationCanceledException))
-                {
-                    _si.SyncCancelled();
-                }
-                else if (e.InnerException.GetType() == typeof(DirectoryNotFoundException))
-                {}
-            }
-            catch (OperationCanceledException) {
-                _si.SyncCancelled();
-            }
-            catch(DirectoryNotFoundException dnfe)
-            {
-                _si.SyncCancelled();
-                MessageBox.Show(dnfe.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
+        public abstract void Execute();
 
         /// <summary>
         /// cancel synchronisation
-        /// this might take some time until running task have finished
+        /// this might take some time until all running task have finished
         /// </summary>
-        public void Cancel()
-        {
-            _service.Cancel();
-        }
+        public abstract void Cancel();
 
         /// <summary>
         /// pause synchronisation
-        /// this might take some time until running task have finished
+        /// this might take some time until all running task have finished
         /// </summary>
         public void Pause()
         {
@@ -79,5 +47,7 @@ namespace WinSync.Service
         {
             _si.Paused = false;
         }
+
+        public abstract int TasksRunning(); 
     }
 }
