@@ -2,7 +2,7 @@
 
 namespace WinSync.Forms
 {
-    partial class LinkStatisticFormAsync
+    partial class LinkStatisticForm1
     {
         /// <summary>
         /// Required designer variable.
@@ -31,7 +31,7 @@ namespace WinSync.Forms
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(LinkStatisticFormAsync));
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(LinkStatisticForm1));
             this.panel1 = new System.Windows.Forms.Panel();
             this.label_runningTasks = new System.Windows.Forms.Label();
             this.label13 = new System.Windows.Forms.Label();

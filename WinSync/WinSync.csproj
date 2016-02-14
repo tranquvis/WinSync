@@ -122,6 +122,7 @@
     <Compile Include="Forms\SyncConflictRetryDialog.Designer.cs">
       <DependentUpon>SyncConflictRetryDialog.cs</DependentUpon>
     </Compile>
+    <Compile Include="Service\Helper.cs" />
     <Compile Include="Service\Info\DirTree.cs" />
     <Compile Include="Service\Info\DirConflictInfo.cs" />
     <Compile Include="Service\Info\FileConflictInfo.cs" />
@@ -164,11 +165,11 @@
     <Compile Include="Controls\MyProgressBar.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="Forms\LinkStatisticFormAsync.cs">
+    <Compile Include="Forms\LinkStatisticForm1.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Forms\LinkStatisticFormAsync.Designer.cs">
-      <DependentUpon>LinkStatisticFormAsync.cs</DependentUpon>
+    <Compile Include="Forms\LinkStatisticForm1.Designer.cs">
+      <DependentUpon>LinkStatisticForm1.cs</DependentUpon>
     </Compile>
     <Compile Include="Service\Info\SyncListener.cs" />
     <Compile Include="MyException.cs" />
@@ -201,8 +202,8 @@
     <EmbeddedResource Include="Forms\MainForm.resx">
       <DependentUpon>MainForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Forms\LinkStatisticFormAsync.resx">
-      <DependentUpon>LinkStatisticFormAsync.cs</DependentUpon>
+    <EmbeddedResource Include="Forms\LinkStatisticForm1.resx">
+      <DependentUpon>LinkStatisticForm1.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\SyncConflictRetryDialog.resx">
       <DependentUpon>SyncConflictRetryDialog.cs</DependentUpon>

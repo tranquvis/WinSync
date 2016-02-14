@@ -9,7 +9,7 @@ using System.Threading;
 
 namespace WinSync.Forms
 {
-    public partial class LinkStatisticForm2 : Form, ISyncListener
+    public partial class LinkStatisticForm1 : Form, ISyncListener
     {
         readonly Link _l;
         bool _initFlag;
@@ -20,11 +20,12 @@ namespace WinSync.Forms
         /// create a LinkStatisticsForm that displays all details of a synchronisation process
         /// </summary>
         /// <param name="l">link that contains the synchronisation information</param>
-        public LinkStatisticForm2(Link l, MainForm mainForm)
+        public LinkStatisticForm1(Link l, MainForm mainForm)
         {
+            //if (l.SyncInfo == null) Close();
+            
             _l = l;
             _mainForm = mainForm;
-
             InitializeComponent();
 
             label_title.Text = _l.Title;
@@ -39,8 +40,17 @@ namespace WinSync.Forms
                 //build tree (pause sync while building)
                 bool running = _l.IsRunning();
                 if (running) _l.PauseSync();
-                while (_l.SyncTask != null && _l.SyncTask.TasksRunning() > 0)
+                int ct = 0;
+                int i = 0;
+                while (_l.SyncTask != null && _l.SyncTask.TasksRunning() > 0 && i < 5)
                 {
+                    if (ct == _l.SyncTask.TasksRunning())
+                        i++;
+                    else
+                    {
+                        ct = _l.SyncTask.TasksRunning();
+                        i = 0;
+                    }
                     Thread.Sleep(300);
                 }
                 if(_l.SyncTask != null)
@@ -176,9 +186,10 @@ namespace WinSync.Forms
         {
             if (!_l.IsRunning())
             {
-                _mainForm.Invoke(new Action(() => { _l.Sync(); }));
+                _l.Sync();
                 _l.SyncInfo.SetListener(this);
                 listBox_syncInfo.Items.Clear();
+                treeView1.Nodes.Clear();
                 UpdateStatsAsync();
             }
             else
@@ -268,8 +279,8 @@ namespace WinSync.Forms
         private TreeNode AddDirTreeNode(TreeNodeCollection nodes, MyDirInfo dir)
         {
             TreeNode tn = new TreeNode(dir.Name);
-            tn.ImageIndex = 2;
-            tn.SelectedImageIndex = 2;
+            tn.ImageIndex = 0;
+            tn.SelectedImageIndex = 1;
             tn.Name = dir.Name;
             nodes.Add(tn);
             return tn;
@@ -289,6 +300,13 @@ namespace WinSync.Forms
             }
 
             return tnc[ei.Name];
+        }
+
+        private IEnumerable<TreeNode> NextParentNode(TreeNode tn)
+        {
+            TreeNode node = tn;
+            while(node.Parent != null)
+                yield return node = node.Parent;
         }
 
         public void OnSyncElementStateChanged(SyncElementInfo sei)
@@ -326,8 +344,11 @@ namespace WinSync.Forms
                     break;
                 case SyncElementState.ChangeFound:
                     TreeNode tn1 = getTreeNode(sei.ElementInfo);
-                    if (tn1 != null) tn1.ForeColor = Color.Blue;
-
+                    tn1.ForeColor = Color.Blue;
+                    if (tn1 != null)
+                        foreach (TreeNode ptn in NextParentNode(tn1))
+                            Invoke( new Action(() => ptn.Text = ptn.Text + " - #cf" ));
+                    
                     if (isFile)
                     {
                         Console.WriteLine("file change detected:" + sei.SyncExecutionInfo.AbsoluteDestPath);
@@ -339,7 +360,9 @@ namespace WinSync.Forms
                     break;
                 case SyncElementState.ChangeApplied:
                     TreeNode tn2 = getTreeNode(sei.ElementInfo);
-                    if(tn2 != null) tn2.ForeColor = Color.Green;
+                    if (tn2 != null)
+                        foreach (TreeNode ptn in NextParentNode(tn2))
+                            Invoke(new Action(() => ptn.Text = ptn.Text + " - #ca"));
 
                     if (isFile)
                     {
@@ -372,7 +395,7 @@ namespace WinSync.Forms
                             break;
                     }
 
-                    AddProcessLine($"Conflict ({conflictType}) at {elementType}: {sei.ConflictInfo.GetAbsolutePath()}");
+                    AddLogLine($"Conflict ({conflictType}) at {elementType}: {sei.ConflictInfo.GetAbsolutePath()}");
                     break;
             }
         }
@@ -394,14 +417,14 @@ namespace WinSync.Forms
                     break;
             }
             text += message.Message;
-            AddProcessLine(text);
+            AddLogLine(text);
         }
 
         /// <summary>
         /// add line to process listBox
         /// </summary>
         /// <param name="text">line</param>
-        private void AddProcessLine(string text)
+        private void AddLogLine(string text)
         {
             Console.WriteLine(text);
             try

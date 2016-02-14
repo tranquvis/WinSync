@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace WinSync.Service
 {
-    class TwoWayCompareResult
+    public class TwoWayCompareResult
     {
         /// <summary>
         /// synchronisation direction

@@ -13,7 +13,7 @@ namespace WinSync.Forms
 {
     public partial class MainForm : Form
     {
-        private readonly List<LinkStatisticFormAsync> _statForms = new List<LinkStatisticFormAsync>();
+        private readonly List<LinkStatisticForm1> _statForms = new List<LinkStatisticForm1>();
 
         /// <summary>
         /// Caption bar height
@@ -470,7 +470,7 @@ namespace WinSync.Forms
         {
             if (ActLink == null) return;
 
-            LinkStatisticFormAsync f = new LinkStatisticFormAsync(ActLink, this);
+            LinkStatisticForm1 f = new LinkStatisticForm1(ActLink, this);
 
             f.FormClosed += delegate
             {
@@ -491,7 +491,7 @@ namespace WinSync.Forms
         /// <param name="e"></param>
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
-            foreach (LinkStatisticFormAsync f in _statForms)
+            foreach (LinkStatisticForm1 f in _statForms)
             {
                 try
                 {
