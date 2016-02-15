@@ -1,4 +1,6 @@
-﻿namespace WinSync.Service
+﻿using System;
+
+namespace WinSync.Service
 {
     public abstract class ConflictInfo
     {
@@ -22,6 +24,8 @@
         /// </summary>
         public string Message { get; set; }
 
+        public Exception Exception { get; set; }
+
         /// <summary>
         /// create ConflictInfo
         /// </summary>
@@ -29,13 +33,15 @@
         /// <param name="conflictPath"></param>
         /// <param name="context"></param>
         /// <param name="message"></param>
-        protected ConflictInfo(SyncElementInfo syncElementInfo, ConflictType type, int conflictPath, string context, string message)
+        /// <param name="exception"></param>
+        protected ConflictInfo(SyncElementInfo syncElementInfo, ConflictType type, int conflictPath, string context, string message, Exception exception)
         {
             SyncElementInfo = syncElementInfo;
             Type = type;
             ConflictPath = conflictPath;
             Context = context;
             Message = message;
+            Exception = exception;
         }
 
         public string GetAbsolutePath()

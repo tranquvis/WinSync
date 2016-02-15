@@ -8,7 +8,7 @@ namespace WinSync.Service
 {
     public class DirConflictInfo : ConflictInfo
     {
-        public DirConflictInfo(SyncDirInfo syncDirInfo, ConflictType type, int conflictPath, string context, string message) 
-            : base(syncDirInfo, type, conflictPath, context, message) {}
+        public DirConflictInfo(SyncDirInfo syncDirInfo, ConflictType type, int conflictPath, string context, string message, Exception exception) 
+            : base(syncDirInfo, type, conflictPath, context, message, exception) {}
     }
 }

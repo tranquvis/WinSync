@@ -71,9 +71,9 @@ namespace WinSync.Service
             catch (Exception e)
             {
                 if (file.SyncInfo != null)
-                    file.Conflicted(new FileConflictInfo(file, ConflictType.Unknown, 0, "RunOneWayFileCompareTask", e.Message));
+                    file.Conflicted(new FileConflictInfo(file, ConflictType.Unknown, 0, "RunOneWayFileCompareTask", e.Message, e));
                 else
-                    file.SyncInfo.Log(new LogMessage(LogType.ERROR, e.Message));
+                    file.SyncInfo.Log(new LogMessage(LogType.ERROR, e.Message, e));
             }
 
             return false;
@@ -128,7 +128,7 @@ namespace WinSync.Service
             }
             catch (Exception e)
             {
-                file.Conflicted(new FileConflictInfo(file, ConflictType.Unknown, 0, "RunTwoWayFileCompareTask", e.Message));
+                file.Conflicted(new FileConflictInfo(file, ConflictType.Unknown, 0, "RunTwoWayFileCompareTask", e.Message, e));
             }
 
             return false;
@@ -220,7 +220,7 @@ namespace WinSync.Service
             {
                 sdei.SyncDirInfo.Conflicted(new DirConflictInfo(sdei.SyncDirInfo, ConflictType.DirNotEmpty,
                     sdei.Direction == SyncDirection.To1 ? 1 : 2, "RunFolderDeletionTask",
-                    $"The directory to be deleted was not empty. Path: {sdei.SyncDirInfo.DirInfo.FullPath}"));
+                    $"The directory to be deleted was not empty. Path: {sdei.SyncDirInfo.DirInfo.FullPath}", null));
                 return false;
             }
 
@@ -235,7 +235,7 @@ namespace WinSync.Service
             catch (Exception e)
             {
                 sdei.SyncDirInfo.Conflicted(new DirConflictInfo(sdei.SyncDirInfo, ConflictType.Unknown,
-                    sdei.Direction == SyncDirection.To2 ? 2 : 1, "RunFolderDeletionTask", e.Message));
+                    sdei.Direction == SyncDirection.To2 ? 2 : 1, "RunFolderDeletionTask", e.Message, e));
             }
             sdei.EndedNow();
 
@@ -267,7 +267,7 @@ namespace WinSync.Service
             catch (Exception e)
             {
                 sdei.SyncDirInfo.Conflicted(new DirConflictInfo(sdei.SyncDirInfo, ConflictType.Unknown,
-                    sdei.Direction == SyncDirection.To2 ? 2 : 1, "RunFolderCreationTask", e.Message));
+                    sdei.Direction == SyncDirection.To2 ? 2 : 1, "RunFolderCreationTask", e.Message, e));
             }
             sdei.EndedNow();
 
@@ -334,7 +334,7 @@ namespace WinSync.Service
             }
             catch (Exception e)
             {
-                si.Log(new LogMessage(LogType.ERROR, e.Message));
+                si.Log(new LogMessage(LogType.ERROR, e.Message, e));
             }
         }
         
@@ -476,7 +476,7 @@ namespace WinSync.Service
             }
             catch (Exception e)
             {
-                si.Log(new LogMessage(LogType.ERROR, e.Message));
+                si.Log(new LogMessage(LogType.ERROR, e.Message, e));
             }
             #endregion
         }
@@ -532,7 +532,7 @@ namespace WinSync.Service
             }
             catch (Exception e)
             {
-                si.Log(new LogMessage(LogType.ERROR, e.Message));
+                si.Log(new LogMessage(LogType.ERROR, e.Message, e));
             }
         }
 
@@ -577,7 +577,7 @@ namespace WinSync.Service
 
                     string path = parts[1];
                     int conflictPath = path.Contains(sfei.SyncFileInfo.SyncInfo.Link.Path1) ? 1 : 2;
-                    sfei.SyncFileInfo.Conflicted(new FileConflictInfo(sfei.SyncFileInfo, ConflictType.IO, conflictPath, "RunApplyFileChangeTask", ioe.Message));
+                    sfei.SyncFileInfo.Conflicted(new FileConflictInfo(sfei.SyncFileInfo, ConflictType.IO, conflictPath, "RunApplyFileChangeTask", ioe.Message, ioe));
                 }
             }
             catch (UnauthorizedAccessException uae)
@@ -589,12 +589,12 @@ namespace WinSync.Service
                     string path = parts[1];
                     int conflictPath = path.Contains(sfei.SyncFileInfo.SyncInfo.Link.Path1) ? 1 : 2;
 
-                    sfei.SyncFileInfo.Conflicted(new FileConflictInfo(sfei.SyncFileInfo, ConflictType.UA, conflictPath, "RunApplyFileChangeTask", uae.Message));
+                    sfei.SyncFileInfo.Conflicted(new FileConflictInfo(sfei.SyncFileInfo, ConflictType.UA, conflictPath, "RunApplyFileChangeTask", uae.Message, uae));
                 }
             }
             catch (Exception e)
             {
-                sfei.SyncFileInfo.Conflicted(new FileConflictInfo(sfei.SyncFileInfo, ConflictType.Unknown, 0, "RunApplyFileChangeTask", e.Message));
+                sfei.SyncFileInfo.Conflicted(new FileConflictInfo(sfei.SyncFileInfo, ConflictType.Unknown, 0, "RunApplyFileChangeTask", e.Message, e));
             }
 
             sfei.EndedNow();

@@ -22,8 +22,6 @@ namespace WinSync.Forms
         /// <param name="l">link that contains the synchronisation information</param>
         public LinkStatisticForm1(Link l, MainForm mainForm)
         {
-            //if (l.SyncInfo == null) Close();
-            
             _l = l;
             _mainForm = mainForm;
             InitializeComponent();
@@ -35,8 +33,6 @@ namespace WinSync.Forms
 
             if (_l.SyncInfo != null)
             {
-                _l.SyncInfo.SetListener(this);
-
                 //build tree (pause sync while building)
                 bool running = _l.IsRunning();
                 if (running) _l.PauseSync();
@@ -56,8 +52,8 @@ namespace WinSync.Forms
                 if(_l.SyncTask != null)
                 {
                     BuildTreeRecursively(treeView1.Nodes, _l.SyncInfo.DirTree);
+                    _l.SyncInfo.SetListener(this);
                     if (running) _l.ResumeSync();
-                    UpdateStatsAsync();
                 }
             }
             StartUpdateRoutine();
@@ -316,25 +312,26 @@ namespace WinSync.Forms
             switch (sei.SyncState)
             {
                 case SyncElementState.ElementFound:
+                    
                     //update treeview
+                    TreeNodeCollection tnc = treeView1.Nodes;
+                    TreeNode treeNode;
+                    for (int i = 0; i < sei.ElementInfo.TreePath.Count; i++)
+                    {
+                        treeNode = tnc[sei.ElementInfo.TreePath[i].Info.Name];
+                        if (treeNode == null)
+                            return;
+
+                        tnc = treeNode.Nodes;
+                    }
                     treeView1.Invoke(new Action(() =>
                     {
-                        TreeNodeCollection tnc = treeView1.Nodes;
-                        TreeNode treeNode;
-                        for (int i = 0; i < sei.ElementInfo.TreePath.Count; i++)
-                        {
-                            treeNode = tnc[sei.ElementInfo.TreePath[i].Info.Name];
-                            if (treeNode == null)
-                                return;
-
-                            tnc = treeNode.Nodes;
-                        }
-                        
                         if (isFile)
                             AddFileTreeNode(tnc, (MyFileInfo)sei.ElementInfo);
                         else
                             AddDirTreeNode(tnc, (MyDirInfo)sei.ElementInfo);
                     }));
+                        
                     break;
                 case SyncElementState.ChangeDetectingStarted:
                     Console.WriteLine("Start detecting file:" + sei.ElementInfo.FullPath);
@@ -344,10 +341,15 @@ namespace WinSync.Forms
                     break;
                 case SyncElementState.ChangeFound:
                     TreeNode tn1 = getTreeNode(sei.ElementInfo);
+                    if (tn1 == null) //TODO: tn1 is null once when starting statisticForm while sync running
+                        break;
                     tn1.ForeColor = Color.Blue;
+                    
                     if (tn1 != null)
-                        foreach (TreeNode ptn in NextParentNode(tn1))
-                            Invoke( new Action(() => ptn.Text = ptn.Text + " - #cf" ));
+                        treeView1.Invoke( new Action(() => {
+                            foreach (TreeNode ptn in NextParentNode(tn1))
+                                ptn.Text = ptn.Text + " - #cf";
+                        }));
                     
                     if (isFile)
                     {
@@ -361,8 +363,10 @@ namespace WinSync.Forms
                 case SyncElementState.ChangeApplied:
                     TreeNode tn2 = getTreeNode(sei.ElementInfo);
                     if (tn2 != null)
-                        foreach (TreeNode ptn in NextParentNode(tn2))
-                            Invoke(new Action(() => ptn.Text = ptn.Text + " - #ca"));
+                        treeView1.Invoke(new Action(() => {
+                            foreach (TreeNode ptn in NextParentNode(tn2))
+                                ptn.Text = ptn.Text + " - #ca";
+                        }));
 
                     if (isFile)
                     {

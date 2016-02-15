@@ -287,66 +287,7 @@ namespace WinSync.Service
 
             _listener?.OnSyncElementStateChanged(sei);
         }
-
-
-        /*
-        public void FileFound(MyFileInfo file)
-        {
-            List<DirTree> path = _dirTree.AddFile(file);
-            _listener?.OnFileFound(file);
-        }
-
-        public void DirFound(MyDirInfo dir)
-        {
-            List<DirTree> path = _dirTree.AddDir(dir);
-            _listener?.OnDirFound(dir);
-        }
         
-        /// <summary>
-        /// call when a difference in the files has been detected
-        /// </summary>
-        /// <param name="sfi">file information</param>
-        public void FileChangeDetected(MyFileInfo fi)
-        {
-            SyncFiles.Add(fi);
-            if (!fi.SyncInfo.Remove) TotalSize += fi.Size;
-            _listener?.OnFileChangeDetected(fi);
-        }
-
-        /// <summary>
-        /// call when a difference in the directory tree has been detected
-        /// </summary>
-        /// <param name="sdi">directory information</param>
-        public void DirChangeDetected(MyDirInfo di)
-        {
-            SyncDirs.Add(di);
-        }
-
-        /// <summary>
-        /// call when succesfully created or deleted a directory or file
-        /// </summary>
-        /// <param name="sei">sync element information</param>
-        public void AppliedChange(SyncElementInfo sei)
-        {
-            if (typeof(SyncFileInfo) == sei.GetType())
-                FilesDone++;
-            else
-                DirsDone++;
-
-            SyncElementStateChanged(sei);
-        }
-        /// <summary>
-        /// call when dir or file conflicted
-        /// </summary>
-        /// <param name="ci">conflict info</param>
-        public void ElementConflicted(ConflictInfo ci)
-        {
-            ConflictInfos.Add(ci);
-            Listener?.OnConflicted(ci);
-        }
-        
-        */
-
         public void Log(LogMessage message)
         {
             LogStack.Push(message);

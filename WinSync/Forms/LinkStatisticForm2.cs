@@ -16,6 +16,9 @@ namespace WinSync.Forms
         bool updateStatsAsyncRunning;
         MainForm _mainForm;
 
+        bool stateChangedEventsAToken;
+        List<SyncElementInfo> stateChangedEvents = new List<SyncElementInfo>();
+
         /// <summary>
         /// create a LinkStatisticsForm that displays all details of a synchronisation process
         /// </summary>
@@ -24,7 +27,6 @@ namespace WinSync.Forms
         {
             _l = l;
             _mainForm = mainForm;
-
             InitializeComponent();
 
             label_title.Text = _l.Title;
@@ -34,26 +36,33 @@ namespace WinSync.Forms
 
             if (_l.SyncInfo != null)
             {
-                _l.SyncInfo.SetListener(this);
-
                 //build tree (pause sync while building)
                 bool running = _l.IsRunning();
                 if (running) _l.PauseSync();
-                while (_l.SyncTask != null && _l.SyncTask.TasksRunning() > 0)
+                int ct = 0;
+                int i = 0;
+                while (_l.SyncTask != null && _l.SyncTask.TasksRunning() > 0 && i < 5)
                 {
+                    if (ct == _l.SyncTask.TasksRunning())
+                        i++;
+                    else
+                    {
+                        ct = _l.SyncTask.TasksRunning();
+                        i = 0;
+                    }
                     Thread.Sleep(300);
                 }
-                if(_l.SyncTask != null)
+                if (_l.SyncTask != null)
                 {
                     BuildTreeRecursively(treeView1.Nodes, _l.SyncInfo.DirTree);
+                    _l.SyncInfo.SetListener(this);
                     if (running) _l.ResumeSync();
-                    UpdateStatsAsync();
                 }
             }
             StartUpdateRoutine();
-            
+
         }
-        
+
         public void StartUpdateRoutine()
         {
             Task.Run(async () =>
@@ -61,10 +70,13 @@ namespace WinSync.Forms
                 while (!IsDisposed)
                 {
                     if (!updateStatsAsyncRunning && _l.IsRunning())
+                    {
+                        _l.SyncInfo?.SetListener(this);
                         Invoke(new Action(() => {
-                            _l.SyncInfo?.SetListener(this);
                             UpdateStatsAsync();
                         }));
+                        StartStateChangedEventsCheckingAsync();
+                    }
 
                     Invoke(new Action(() =>
                     {
@@ -81,7 +93,7 @@ namespace WinSync.Forms
         /// </summary>
         public void UpdateStats()
         {
-            if(_l.IsRunning())
+            if (_l.IsRunning())
             {
                 //display cancel and pause/continue button
                 button_sync.BackgroundImage = Properties.Resources.ic_cancel_white;
@@ -144,7 +156,7 @@ namespace WinSync.Forms
             label_detail_progress.Text = $"{_l.SyncInfo.Progress:0.00}%";
             label_detail_status.Text = _l.SyncInfo.State.Title;
             panel_header.BackColor = _l.SyncInfo.State.Color;
-            
+
             label_syncedFilesCount.Text = $"{ _l.SyncInfo.FilesDone:#,#} of {_l.SyncInfo.FilesFound:#,#}";
             label_syncedFilesSize.Text = $"{_l.SyncInfo.SizeApplied / (1024.0 * 1024.0):#,#0.00} of " +
                     $"{_l.SyncInfo.TotalSize / (1024.0 * 1024.0):#,#0.00}MB";
@@ -152,7 +164,7 @@ namespace WinSync.Forms
             if (_l.SyncInfo.State == SyncState.ApplyingFileChanges || _initFlag)
             {
                 progressBar.Value = (int)(_l.SyncInfo.Progress * 10);
-                
+
                 label_speed.Text = $"{_l.SyncInfo.ActSpeed:0.00} Mbit/s";
                 label_averageSpeed.Text = $"{_l.SyncInfo.AverageSpeed:0.00} Mbit/s";
             }
@@ -161,7 +173,7 @@ namespace WinSync.Forms
 
             _initFlag = false;
         }
-        
+
         private void LinkStatisticForm_FormClosing(object sender, FormClosingEventArgs e)
         {
             _l.SyncInfo?.RemoveListener(this);
@@ -176,10 +188,11 @@ namespace WinSync.Forms
         {
             if (!_l.IsRunning())
             {
-                _mainForm.Invoke(new Action(() => { _l.Sync(); }));
+                _l.Sync();
                 _l.SyncInfo.SetListener(this);
                 listBox_syncInfo.Items.Clear();
-                UpdateStatsAsync();
+                treeView1.Nodes.Clear();
+                stateChangedEvents = new List<SyncElementInfo>();
             }
             else
             {
@@ -210,7 +223,7 @@ namespace WinSync.Forms
         /// <param name="e"></param>
         private void LinkStatisticForm_Resize(object sender, EventArgs e)
         {
-            if(panel2.Height < 5)
+            if (panel2.Height < 5)
             {
                 shadow_top2.Visible = false;
                 shadow_bottom2.Visible = false;
@@ -243,35 +256,34 @@ namespace WinSync.Forms
 
         private void BuildTreeRecursively(TreeNodeCollection nodes, DirTree dirTree)
         {
-            foreach(MyFileInfo file in dirTree.Files)
+            foreach (MyFileInfo file in dirTree.Files)
             {
-                AddFileTreeNode(nodes, file);
+                nodes.Add(GetTreeNodeFromFile(file));
             }
 
             foreach (DirTree dir in dirTree.Dirs)
             {
-                TreeNode tn = AddDirTreeNode(nodes, dir.Info);
+                TreeNode tn = GetTreeNodeFromDir(dir.Info);
+                nodes.Add(tn);
                 BuildTreeRecursively(tn.Nodes, dir);
             }
         }
 
-        private TreeNode AddFileTreeNode(TreeNodeCollection nodes, MyFileInfo file)
+        private TreeNode GetTreeNodeFromFile(MyFileInfo file)
         {
             TreeNode tn = new TreeNode(file.Name);
             tn.ImageIndex = 2;
             tn.SelectedImageIndex = 2;
             tn.Name = file.Name;
-            nodes.Add(tn);
             return tn;
         }
 
-        private TreeNode AddDirTreeNode(TreeNodeCollection nodes, MyDirInfo dir)
+        private TreeNode GetTreeNodeFromDir(MyDirInfo dir)
         {
             TreeNode tn = new TreeNode(dir.Name);
-            tn.ImageIndex = 2;
-            tn.SelectedImageIndex = 2;
+            tn.ImageIndex = 0;
+            tn.SelectedImageIndex = 1;
             tn.Name = dir.Name;
-            nodes.Add(tn);
             return tn;
         }
 
@@ -291,42 +303,91 @@ namespace WinSync.Forms
             return tnc[ei.Name];
         }
 
+        private IEnumerable<TreeNode> NextParentNode(TreeNode tn)
+        {
+            TreeNode node = tn;
+            while (node.Parent != null)
+                yield return node = node.Parent;
+        }
+
         public void OnSyncElementStateChanged(SyncElementInfo sei)
+        {
+            while (stateChangedEventsAToken || stateChangedEvents.Count > 1000)
+                Thread.Sleep(1);
+            stateChangedEventsAToken = true;
+            stateChangedEvents.Add(sei);
+            stateChangedEventsAToken = false;
+        }
+
+        public async void StartStateChangedEventsCheckingAsync()
+        {
+            await Task.Run(async () =>
+            {
+                while (_l.IsRunning())
+                {
+                    //update tree
+                    List<SyncElementInfo> temp = new List<SyncElementInfo>();
+
+                    while (stateChangedEventsAToken)
+                        await Task.Delay(1);
+                    stateChangedEventsAToken = true;
+
+                    temp.AddRange(stateChangedEvents);
+                    stateChangedEvents.Clear();
+
+                    stateChangedEventsAToken = false;
+
+                    foreach (SyncElementInfo sei in temp)
+                        ProcessStateChangedEventAsync(sei);
+                    //------------------
+
+                    await Task.Delay(1);
+                }
+            });
+        }
+
+        public void ProcessStateChangedEventAsync(SyncElementInfo sei)
         {
             bool isFile = typeof(SyncFileInfo) == sei.GetType();
 
             switch (sei.SyncState)
             {
                 case SyncElementState.ElementFound:
-                    //update treeview
-                    treeView1.Invoke(new Action(() =>
-                    {
-                        TreeNodeCollection tnc = treeView1.Nodes;
-                        TreeNode treeNode;
-                        for (int i = 0; i < sei.ElementInfo.TreePath.Count; i++)
-                        {
-                            treeNode = tnc[sei.ElementInfo.TreePath[i].Info.Name];
-                            if (treeNode == null)
-                                return;
 
-                            tnc = treeNode.Nodes;
-                        }
-                        
-                        if (isFile)
-                            AddFileTreeNode(tnc, (MyFileInfo)sei.ElementInfo);
-                        else
-                            AddDirTreeNode(tnc, (MyDirInfo)sei.ElementInfo);
-                    }));
+                    //update treeview
+                    TreeNodeCollection tnc = treeView1.Nodes;
+                    TreeNode treeNode;
+                    for (int i = 0; i < sei.ElementInfo.TreePath.Count; i++)
+                    {
+                        treeNode = tnc[sei.ElementInfo.TreePath[i].Info.Name];
+                        if (treeNode == null)
+                            return;
+
+                        tnc = treeNode.Nodes;
+                    }
+
+                    TreeNode newTN = isFile ? GetTreeNodeFromFile((MyFileInfo)sei.ElementInfo) :
+                        GetTreeNodeFromDir((MyDirInfo)sei.ElementInfo);
+
+                    treeView1.Invoke(new Action(() => tnc.Add(newTN)));
+
                     break;
                 case SyncElementState.ChangeDetectingStarted:
-                    Console.WriteLine("Start detecting file:" + sei.ElementInfo.FullPath);
                     break;
                 case SyncElementState.NoChangeFound:
 
                     break;
                 case SyncElementState.ChangeFound:
                     TreeNode tn1 = getTreeNode(sei.ElementInfo);
-                    if (tn1 != null) tn1.ForeColor = Color.Blue;
+                    if (tn1 == null) //TODO: tn1 is null once when starting statisticForm while sync running
+                        break;
+                    tn1.ForeColor = Color.Blue;
+
+                    if (tn1 != null)
+                        treeView1.Invoke(new Action(() => {
+                            foreach (TreeNode ptn in NextParentNode(tn1))
+                                ptn.Text = ptn.Text + " - #cf";
+                        }));
 
                     if (isFile)
                     {
@@ -339,7 +400,11 @@ namespace WinSync.Forms
                     break;
                 case SyncElementState.ChangeApplied:
                     TreeNode tn2 = getTreeNode(sei.ElementInfo);
-                    if(tn2 != null) tn2.ForeColor = Color.Green;
+                    if (tn2 != null)
+                        treeView1.Invoke(new Action(() => {
+                            foreach (TreeNode ptn in NextParentNode(tn2))
+                                ptn.Text = ptn.Text + " - #ca";
+                        }));
 
                     if (isFile)
                     {
@@ -372,7 +437,9 @@ namespace WinSync.Forms
                             break;
                     }
 
-                    AddProcessLine($"Conflict ({conflictType}) at {elementType}: {sei.ConflictInfo.GetAbsolutePath()}");
+                    Invoke(new Action(() => 
+                        AddLogLine($"Conflict ({conflictType}) at {elementType}: {sei.ConflictInfo.GetAbsolutePath()}")
+                    ));
                     break;
             }
         }
@@ -394,21 +461,19 @@ namespace WinSync.Forms
                     break;
             }
             text += message.Message;
-            AddProcessLine(text);
+            Invoke(new Action(() => AddLogLine(text)));
         }
 
         /// <summary>
         /// add line to process listBox
         /// </summary>
         /// <param name="text">line</param>
-        private void AddProcessLine(string text)
+        private void AddLogLine(string text)
         {
             Console.WriteLine(text);
             try
             {
-                listBox_syncInfo.Invoke(new Action(() =>
-                        listBox_syncInfo.Items.Insert(0, text)
-                    ));
+                listBox_syncInfo.Items.Insert(0, text);
             }
             catch (ObjectDisposedException)
             {

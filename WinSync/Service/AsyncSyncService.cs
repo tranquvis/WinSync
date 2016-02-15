@@ -241,16 +241,8 @@ namespace WinSync.Service
             //add apply file change tasks
             foreach (SyncFileInfo sfi in syncFiles)
             {
-                Task<SyncFileExecutionInfo> t;
-                try
-                {
-                    t = RunApplyFileChangeTask(sfi.SyncFileExecutionInfo);
-                    _fileApplyTasks.Add(t);
-                }
-                catch(Exception e)
-                {
-                    _si.Log(new LogMessage(LogType.ERROR, e.Message));
-                }
+                Task<SyncFileExecutionInfo> t = RunApplyFileChangeTask(sfi.SyncFileExecutionInfo);
+                _fileApplyTasks.Add(t);
             }
 
             //run apply file change tasks

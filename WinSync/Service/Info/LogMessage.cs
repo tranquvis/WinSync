@@ -11,10 +11,13 @@ namespace WinSync.Service
         public LogType Type { get; set; }
         public string Message { get; set; }
 
-        public LogMessage(LogType type, string message)
+        public Exception Exception { get; set; }
+
+        public LogMessage(LogType type, string message, Exception exception)
         {
             Type = type;
             Message = message;
+            Exception = exception;
         }
     }
 }
