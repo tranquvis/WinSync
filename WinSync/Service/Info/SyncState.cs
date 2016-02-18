@@ -4,6 +4,7 @@ namespace WinSync.Service
 {
     public class SyncState
     {
+        public static SyncState FetchingElements = new SyncState(Color.FromArgb(73, 175, 230), "fetching files/dirs");
         public static SyncState DetectingChanges = new SyncState(Color.FromArgb(73, 175, 230), "detecting changes");
         public static SyncState CreatingFolders = new SyncState(Color.FromArgb(64, 152, 230), "creating folders");
         public static SyncState ApplyingFileChanges = new SyncState(Color.FromArgb(31, 118, 194), "applying file changes");

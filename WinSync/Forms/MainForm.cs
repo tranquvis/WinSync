@@ -114,7 +114,7 @@ namespace WinSync.Forms
             }
 
             label_detail_title.Text = ActLink.Title;
-            label_detail_progress.Text = $"{ActLink.SyncInfo.Progress:0.00}%";
+            label_detail_progress.Text = $"{ActLink.SyncInfo.SyncProgress:0.00}%";
             label_detail_status.Text = ActLink.SyncInfo.State.Title;
             panel_detail_header.BackColor = ActLink.SyncInfo.State.Color;
             panel_syncDetail.Visible = true;
@@ -133,7 +133,7 @@ namespace WinSync.Forms
             }
 
             label_detail_title.Text = ActLink.Title;
-            label_detail_progress.Text = $"{ActLink.SyncInfo.Progress:0.0}%";
+            label_detail_progress.Text = $"{ActLink.SyncInfo.SyncProgress:0.0}%";
             label_detail_status.Text = ActLink.SyncInfo.State.Title;
             label_timeLeft.Text = ActLink.SyncInfo.TimeRemainingEst.ToString(@"hh\:mm\:ss");
             panel_detail_header.BackColor = ActLink.SyncInfo.State.Color;
@@ -408,7 +408,7 @@ namespace WinSync.Forms
             while (ActLink?.SyncInfo != null)
             {
                 label_detail_title.Text = ActLink.Title;
-                label_detail_progress.Text = $"{ActLink.SyncInfo.Progress:0.0}%";
+                label_detail_progress.Text = $"{ActLink.SyncInfo.SyncProgress:0.0}%";
                 label_detail_status.Text = ActLink.SyncInfo.State.Title;
 
                 label_timeLeft.Text = ActLink.SyncInfo.TimeRemainingEst.ToString(@"hh\:mm\:ss");
@@ -419,9 +419,9 @@ namespace WinSync.Forms
                 {
                     if (ActLink.IsRunning())
                     {
-                        ActLinkLine.Progress = ActLink.SyncInfo.Progress;
+                        ActLinkLine.Progress = ActLink.SyncInfo.SyncProgress;
 
-                        label_detail_progress.Text = $"{ActLink.SyncInfo.Progress:0.0}%";
+                        label_detail_progress.Text = $"{ActLink.SyncInfo.SyncProgress:0.0}%";
                         label_detail_status.Text = ActLink.SyncInfo.State.Title;
 
                         button_sync.BackgroundImage = Properties.Resources.ic_cancel_white;

@@ -337,17 +337,16 @@ namespace WinSync.Service
                 si.Log(new LogMessage(LogType.ERROR, e.Message, e));
             }
         }
-        
+
         /// <summary>
-        /// detect changes for Two-Way synchronisation in directory
-        /// files and directories to remove are also detected
+        /// fetch files and detect subdirectory changes for Two-Way synchronisation recursively
         /// </summary>
         /// <param name="dir">the directory, in which you want to search</param>
         /// <param name="si">sync info</param>
-        /// <param name="onChangeFound">is called when a file change was found</param>
+        /// <param name="onFileFound">is called when a file was found</param>
         /// <param name="interruptChecker">is called when the cancellation or pause request should be checked in order to handel them</param>
-        public static void FetchFileChangesInDirRecursively_TwoWay(MyDirInfo dir, SyncInfo si, 
-            Action<SyncFileInfo> onChangeFound, Func<bool> interruptChecker)
+        public static void FetchFilesInDirRecursively_TwoWay(MyDirInfo dir, SyncInfo si, 
+            Action<SyncFileInfo> onFileFound, Func<bool> interruptChecker)
         {
             interruptChecker();
 
@@ -374,7 +373,7 @@ namespace WinSync.Service
 
                         MyDirInfo newDir = new MyDirInfo(dir.FullPath, newDirname);
                         new SyncDirInfo(si, newDir);
-                        FetchFileChangesInDirRecursively_TwoWay(newDir, si, onChangeFound, interruptChecker);
+                        FetchFilesInDirRecursively_TwoWay(newDir, si, onFileFound, interruptChecker);
                     }
                 }
                 else
@@ -412,7 +411,7 @@ namespace WinSync.Service
                         {
                             MyDirInfo newDir = new MyDirInfo(dir.FullPath, newDirname);
                             new SyncDirInfo(si, newDir);
-                            FetchFileChangesInDirRecursively_TwoWay(newDir, si, onChangeFound, interruptChecker);
+                            FetchFilesInDirRecursively_TwoWay(newDir, si, onFileFound, interruptChecker);
                         }
                     }
                 }
@@ -454,7 +453,7 @@ namespace WinSync.Service
 
                         fileNames.Add(name);
 
-                        onChangeFound(file.SyncFileInfo);
+                        onFileFound(file.SyncFileInfo);
                     }
                 }
 
@@ -470,7 +469,7 @@ namespace WinSync.Service
                         MyFileInfo file = new MyFileInfo(dir.FullPath, name);
                         new SyncFileInfo(si, file);
 
-                        onChangeFound(file.SyncFileInfo);
+                        onFileFound(file.SyncFileInfo);
                     }
                 }
             }
@@ -480,18 +479,18 @@ namespace WinSync.Service
             }
             #endregion
         }
-        
+
         /// <summary>
-        /// detect changes for One-Way synchronisation in directories recursively
+        /// fetch files and detect subdirectory changes for One-Way synchronisation recursively
         /// </summary>
         /// <param name="sourceHomePath">absolute source folder path (homepath as defined in link)</param>
         /// <param name="destHomePath">absolute destination folder path (homepath as defined in link)</param>
         /// <param name="dir">the directory, in which you want to search</param>
         /// <param name="si">sync info</param>
-        /// <param name="onChangeFound">is called when a file change was found</param>
+        /// <param name="onFileFound">is called when a file was found</param>
         /// <param name="interruptChecker">is called when the cancellation or pause request should be checked in order to handel them</param>
-        public static void FetchFileChangesInDirRecursively_OneWay(string sourceHomePath, string destHomePath, MyDirInfo dir, 
-            SyncInfo si, Action<SyncFileInfo> onChangeFound, Func<bool> interruptChecker)
+        public static void FetchFilesInDirRecursively_OneWay(string sourceHomePath, string destHomePath, MyDirInfo dir, 
+            SyncInfo si, Action<SyncFileInfo> onFileFound, Func<bool> interruptChecker)
         {
             interruptChecker();
 
@@ -512,8 +511,8 @@ namespace WinSync.Service
                     string name = Delimon.Win32.IO.Path.GetFileName(dirpath);
                     MyDirInfo newDir = new MyDirInfo(dir.FullPath, name);
                     new SyncDirInfo(si, newDir);
-                    FetchFileChangesInDirRecursively_OneWay(sourceHomePath, destHomePath, newDir, 
-                        si, onChangeFound, interruptChecker);
+                    FetchFilesInDirRecursively_OneWay(sourceHomePath, destHomePath, newDir, 
+                        si, onFileFound, interruptChecker);
                 }
 
                 //loop through all files in source directory
@@ -523,7 +522,7 @@ namespace WinSync.Service
                     string name = Delimon.Win32.IO.Path.GetFileName(filepath);
                     MyFileInfo file = new MyFileInfo(dir.FullPath, name);
                     new SyncFileInfo(si, file);
-                    onChangeFound(file.SyncFileInfo);
+                    onFileFound(file.SyncFileInfo);
                 }
             }
             catch (OperationCanceledException)

@@ -152,13 +152,13 @@ namespace WinSync.Service
 
 
             _si.State = SyncState.CreatingFolders;
-            await CreateFolders(_si.SyncDirInfos);
+            await CreateFolders(_si.SyncDirExecutionInfos);
 
             _si.State = SyncState.ApplyingFileChanges;
-            await DoApplyFileChanges(_si.SyncFileInfos);
+            await DoApplyFileChanges(_si.SyncFileExecutionInfos);
 
             _si.State = SyncState.RemoveRedundantDirs;
-            await RemoveFolders(_si.SyncDirInfos);
+            await RemoveFolders(_si.SyncDirExecutionInfos);
         }
 
         /// <summary>
@@ -166,11 +166,11 @@ namespace WinSync.Service
         /// </summary>
         /// <param name="syncDirs">directory informations</param>
         /// <returns></returns>
-        private async Task CreateFolders(List<SyncDirInfo> syncDirs)
+        private async Task CreateFolders(List<SyncDirExecutionInfo> syncDirs)
         {
-            foreach (SyncDirInfo sdi in syncDirs.Where(d => !d.SyncExecutionInfo.Remove))
+            foreach (SyncDirExecutionInfo sdi in syncDirs.Where(d => !d.Remove))
             {
-                Task t = RunFolderCreationTask(sdi.SyncDirExecutionInfo);
+                Task t = RunFolderCreationTask(sdi);
                 if (t != null) await t;
             }
         }
@@ -180,11 +180,11 @@ namespace WinSync.Service
         /// </summary>
         /// <param name="syncDirs">directory informations</param>
         /// <returns></returns>
-        private async Task RemoveFolders(List<SyncDirInfo> syncDirs)
+        private async Task RemoveFolders(List<SyncDirExecutionInfo> syncDirs)
         {
-            foreach (SyncDirInfo sdi in syncDirs.Where(d => d.SyncExecutionInfo.Remove).Reverse())
+            foreach (SyncDirExecutionInfo sdei in syncDirs.Where(d => d.Remove).Reverse())
             {
-                Task t = RunFolderDeletionTask(sdi.SyncDirExecutionInfo);
+                Task t = RunFolderDeletionTask(sdei);
                 if (t != null) await t;
             }
         }
@@ -236,12 +236,12 @@ namespace WinSync.Service
         /// apply file changes to all synchronisation files async
         /// </summary>
         /// <returns>task</returns>
-        private async Task DoApplyFileChanges(List<SyncFileInfo> syncFiles)
+        private async Task DoApplyFileChanges(List<SyncFileExecutionInfo> syncFiles)
         {
             //add apply file change tasks
-            foreach (SyncFileInfo sfi in syncFiles)
+            foreach (SyncFileExecutionInfo sfei in syncFiles)
             {
-                Task<SyncFileExecutionInfo> t = RunApplyFileChangeTask(sfi.SyncFileExecutionInfo);
+                Task<SyncFileExecutionInfo> t = RunApplyFileChangeTask(sfei);
                 _fileApplyTasks.Add(t);
             }
 
@@ -283,7 +283,7 @@ namespace WinSync.Service
         private async Task GetSyncFilesTwoWay()
         {
             //Fetching files recursively
-            Helper.FetchFileChangesInDirRecursively_TwoWay(new MyDirInfo("", ""), _si, 
+            Helper.FetchFilesInDirRecursively_TwoWay(new MyDirInfo("", ""), _si, 
                 (sfi) => _detectFileTasks.Add(RunTwoWayFileCompareTask(sfi)),
                 () => pauseIfRequested(false, MainTaskId));
 
@@ -305,7 +305,7 @@ namespace WinSync.Service
         private async Task GetSyncFilesOneWay(string sourceHomePath, string destHomePath)
         {
             //Fetching files recursively
-            Helper.FetchFileChangesInDirRecursively_OneWay(sourceHomePath, destHomePath, new MyDirInfo("", ""),
+            Helper.FetchFilesInDirRecursively_OneWay(sourceHomePath, destHomePath, new MyDirInfo("", ""),
                 _si, (sfi) => _detectFileTasks.Add(RunOneWayFileCompareTask(sourceHomePath, destHomePath, sfi)),
                 () => pauseIfRequested(false, MainTaskId));
             

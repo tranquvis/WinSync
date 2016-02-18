@@ -6,6 +6,7 @@ using System.Windows.Forms;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Threading;
+using System.Linq;
 
 namespace WinSync.Forms
 {
@@ -17,7 +18,7 @@ namespace WinSync.Forms
         MainForm _mainForm;
 
         bool stateChangedEventsAToken;
-        List<SyncElementInfo> stateChangedEvents = new List<SyncElementInfo>();
+        List<StateChangedEvent> stateChangedEvents = new List<StateChangedEvent>();
 
         /// <summary>
         /// create a LinkStatisticsForm that displays all details of a synchronisation process
@@ -107,8 +108,8 @@ namespace WinSync.Forms
                 button_sync.BackgroundImage = Properties.Resources.ic_sync_white;
                 button_pr.Visible = false;
 
-                progressBar.Value = (int)(_l.SyncInfo.Progress * 10);
-                label_detail_progress.Text = $"{_l.SyncInfo.Progress:0.00}%";
+                progressBar.Value = (int)(_l.SyncInfo.SyncProgress * 10);
+                label_detail_progress.Text = $"{_l.SyncInfo.SyncProgress:0.00}%";
                 label_detail_status.Text = _l.SyncInfo.State.Title;
 
                 UpdateProgressInfos();
@@ -141,8 +142,8 @@ namespace WinSync.Forms
             button_sync.BackgroundImage = Properties.Resources.ic_sync_white;
             button_pr.Visible = false;
 
-            progressBar.Value = (int)(_l.SyncInfo.Progress * 10);
-            label_detail_progress.Text = $"{_l.SyncInfo.Progress:0.00}%";
+            progressBar.Value = (int)(_l.SyncInfo.SyncProgress * 10);
+            label_detail_progress.Text = $"{_l.SyncInfo.SyncProgress:0.00}%";
             label_detail_status.Text = _l.SyncInfo.State.Title;
 
             UpdateProgressInfos();
@@ -153,17 +154,17 @@ namespace WinSync.Forms
         /// </summary>
         public void UpdateProgressInfos()
         {
-            label_detail_progress.Text = $"{_l.SyncInfo.Progress:0.00}%";
+            label_detail_progress.Text = $"{_l.SyncInfo.SyncProgress:0.00}%";
             label_detail_status.Text = _l.SyncInfo.State.Title;
             panel_header.BackColor = _l.SyncInfo.State.Color;
 
-            label_syncedFilesCount.Text = $"{ _l.SyncInfo.FilesDone:#,#} of {_l.SyncInfo.FilesFound:#,#}";
+            label_syncedFilesCount.Text = $"{ _l.SyncInfo.FileChangesApplied:#,#} of {_l.SyncInfo.ChangedFilesFound:#,#}";
             label_syncedFilesSize.Text = $"{_l.SyncInfo.SizeApplied / (1024.0 * 1024.0):#,#0.00} of " +
                     $"{_l.SyncInfo.TotalSize / (1024.0 * 1024.0):#,#0.00}MB";
 
             if (_l.SyncInfo.State == SyncState.ApplyingFileChanges || _initFlag)
             {
-                progressBar.Value = (int)(_l.SyncInfo.Progress * 10);
+                progressBar.Value = (int)(_l.SyncInfo.SyncProgress * 10);
 
                 label_speed.Text = $"{_l.SyncInfo.ActSpeed:0.00} Mbit/s";
                 label_averageSpeed.Text = $"{_l.SyncInfo.AverageSpeed:0.00} Mbit/s";
@@ -192,7 +193,7 @@ namespace WinSync.Forms
                 _l.SyncInfo.SetListener(this);
                 listBox_syncInfo.Items.Clear();
                 treeView1.Nodes.Clear();
-                stateChangedEvents = new List<SyncElementInfo>();
+                stateChangedEvents = new List<StateChangedEvent>();
             }
             else
             {
@@ -258,36 +259,46 @@ namespace WinSync.Forms
         {
             foreach (MyFileInfo file in dirTree.Files)
             {
-                nodes.Add(GetTreeNodeFromFile(file));
+                nodes.Add(GetTreeNodeFromElement(file));
             }
 
             foreach (DirTree dir in dirTree.Dirs)
             {
-                TreeNode tn = GetTreeNodeFromDir(dir.Info);
+                TreeNode tn = GetTreeNodeFromElement(dir.Info);
                 nodes.Add(tn);
                 BuildTreeRecursively(tn.Nodes, dir);
             }
         }
 
-        private TreeNode GetTreeNodeFromFile(MyFileInfo file)
+        private TreeNode GetTreeNodeFromElement(MyElementInfo ei)
         {
-            TreeNode tn = new TreeNode(file.Name);
-            tn.ImageIndex = 2;
-            tn.SelectedImageIndex = 2;
-            tn.Name = file.Name;
+            SyncElementStateHelper helper = SyncElementStateHelper.GetFromSES(ei.SyncElementInfo != null ? ei.SyncElementInfo.SyncState : 0);
+
+            TreeNode tn = new TreeNode(ei.Name);
+
+            if(ei.GetType() == typeof(MyFileInfo))
+            {
+                tn.ImageIndex = helper.FileImageIndex;
+                tn.SelectedImageIndex = helper.FileImageIndex;
+            }
+            else
+            {
+                tn.ImageIndex = helper.FolderImageIndex;
+                tn.SelectedImageIndex = helper.FolderImageIndex;
+            }
+
+            tn.Name = ei.Name;
+
             return tn;
         }
 
-        private TreeNode GetTreeNodeFromDir(MyDirInfo dir)
-        {
-            TreeNode tn = new TreeNode(dir.Name);
-            tn.ImageIndex = 0;
-            tn.SelectedImageIndex = 1;
-            tn.Name = dir.Name;
-            return tn;
-        }
-
-        private TreeNode getTreeNode(MyElementInfo ei)
+        /// <summary>
+        /// get TreeNode of treeView1 from ElementInfo
+        /// </summary>
+        /// <param name="ei">ElementInfo</param>
+        /// <param name="create">if the tree nodes should be created if they do not exist</param>
+        /// <returns>null if the required tree nodes do not exist (only possible if create is disabled)</returns>
+        private TreeNode getTreeNode(MyElementInfo ei, bool create, bool update, bool invoke)
         {
             TreeNodeCollection tnc = treeView1.Nodes;
             TreeNode treeNode;
@@ -295,12 +306,71 @@ namespace WinSync.Forms
             {
                 treeNode = tnc[ei.TreePath[i].Info.Name];
                 if (treeNode == null)
-                    return null;
+                {
+                    if(!create) return null;
+
+                    //create tree node
+                    treeNode = GetTreeNodeFromElement(ei.TreePath[i].Info);
+                    Action a = new Action(() => tnc.Add(treeNode));
+                    if (invoke) treeView1.Invoke(a);
+                    else a();
+                }
+                if (update)
+                {
+                    UpdateTreeNode(treeNode, ei.TreePath[i].Info, ei.SyncElementInfo.SyncState, invoke);
+                }
 
                 tnc = treeNode.Nodes;
             }
 
-            return tnc[ei.Name];
+            TreeNode resultNode = tnc[ei.Name];
+            if(resultNode == null)
+            {
+                resultNode = GetTreeNodeFromElement(ei);
+
+                Action a = new Action(() => tnc.Add(resultNode));
+                if (invoke) treeView1.Invoke(a);
+                else a();
+            }
+            if (update)
+            {
+                UpdateTreeNode(resultNode, ei, null, invoke);
+            }
+
+            return resultNode;
+        }
+
+        /// <summary>
+        /// update tree node in treeview1
+        /// </summary>
+        /// <param name="tn"></param>
+        /// <param name="ei"></param>
+        /// <param name="childState"></param>
+        private void UpdateTreeNode(TreeNode tn, MyElementInfo ei, SyncElementState? childState, bool invoke)
+        {
+            if(ei.SyncElementInfo != null)
+            {
+                SyncElementStateHelper helper = SyncElementStateHelper.GetFromSES(ei.SyncElementInfo.SyncState);
+                tn.ForeColor = helper.TextColor;
+            }
+            if(childState != null)
+            {
+                SyncElementStateHelper childHelper = SyncElementStateHelper.GetFromSES(childState.Value);
+                if (ei.GetType() == typeof(MyDirInfo))
+                {
+                    if (childHelper.FolderImageIndex > tn.ImageIndex)
+                    {
+                        Action action = new Action(() =>
+                        {
+                            tn.ImageIndex = childHelper.FolderImageIndex;
+                            tn.SelectedImageIndex = childHelper.FolderImageIndex;
+                        });
+
+                        if (invoke) treeView1.Invoke(action);
+                        else action();
+                    }
+                }
+            }
         }
 
         private IEnumerable<TreeNode> NextParentNode(TreeNode tn)
@@ -315,10 +385,11 @@ namespace WinSync.Forms
             while (stateChangedEventsAToken || stateChangedEvents.Count > 1000)
                 Thread.Sleep(1);
             stateChangedEventsAToken = true;
-            stateChangedEvents.Add(sei);
+            stateChangedEvents.Add(new StateChangedEvent(sei, sei.SyncState));
             stateChangedEventsAToken = false;
         }
 
+        List<StateChangedEvent> tempSCE;
         public async void StartStateChangedEventsCheckingAsync()
         {
             await Task.Run(async () =>
@@ -326,19 +397,19 @@ namespace WinSync.Forms
                 while (_l.IsRunning())
                 {
                     //update tree
-                    List<SyncElementInfo> temp = new List<SyncElementInfo>();
-
                     while (stateChangedEventsAToken)
                         await Task.Delay(1);
                     stateChangedEventsAToken = true;
 
-                    temp.AddRange(stateChangedEvents);
-                    stateChangedEvents.Clear();
+                    tempSCE = new List<StateChangedEvent>(stateChangedEvents);
+                    stateChangedEvents = new List<StateChangedEvent>();
 
                     stateChangedEventsAToken = false;
 
-                    foreach (SyncElementInfo sei in temp)
-                        ProcessStateChangedEventAsync(sei);
+                    foreach (StateChangedEvent sce in tempSCE.Where(x => x.CreateState == x.SyncElementInfo.SyncState))
+                    {
+                        ProcessStateChangedEventAsync(sce);
+                    }
                     //------------------
 
                     await Task.Delay(1);
@@ -346,48 +417,26 @@ namespace WinSync.Forms
             });
         }
 
-        public void ProcessStateChangedEventAsync(SyncElementInfo sei)
+        public void ProcessStateChangedEventAsync(StateChangedEvent sce)
         {
+            SyncElementInfo sei = sce.SyncElementInfo;
+
             bool isFile = typeof(SyncFileInfo) == sei.GetType();
 
-            switch (sei.SyncState)
+            switch (sce.CreateState)
             {
                 case SyncElementState.ElementFound:
 
                     //update treeview
-                    TreeNodeCollection tnc = treeView1.Nodes;
-                    TreeNode treeNode;
-                    for (int i = 0; i < sei.ElementInfo.TreePath.Count; i++)
-                    {
-                        treeNode = tnc[sei.ElementInfo.TreePath[i].Info.Name];
-                        if (treeNode == null)
-                            return;
-
-                        tnc = treeNode.Nodes;
-                    }
-
-                    TreeNode newTN = isFile ? GetTreeNodeFromFile((MyFileInfo)sei.ElementInfo) :
-                        GetTreeNodeFromDir((MyDirInfo)sei.ElementInfo);
-
-                    treeView1.Invoke(new Action(() => tnc.Add(newTN)));
+                    getTreeNode(sei.ElementInfo, true, false, true);
 
                     break;
                 case SyncElementState.ChangeDetectingStarted:
                     break;
                 case SyncElementState.NoChangeFound:
-
                     break;
                 case SyncElementState.ChangeFound:
-                    TreeNode tn1 = getTreeNode(sei.ElementInfo);
-                    if (tn1 == null) //TODO: tn1 is null once when starting statisticForm while sync running
-                        break;
-                    tn1.ForeColor = Color.Blue;
-
-                    if (tn1 != null)
-                        treeView1.Invoke(new Action(() => {
-                            foreach (TreeNode ptn in NextParentNode(tn1))
-                                ptn.Text = ptn.Text + " - #cf";
-                        }));
+                    TreeNode tn1 = getTreeNode(sei.ElementInfo, true, true, true);
 
                     if (isFile)
                     {
@@ -399,12 +448,7 @@ namespace WinSync.Forms
                     }
                     break;
                 case SyncElementState.ChangeApplied:
-                    TreeNode tn2 = getTreeNode(sei.ElementInfo);
-                    if (tn2 != null)
-                        treeView1.Invoke(new Action(() => {
-                            foreach (TreeNode ptn in NextParentNode(tn2))
-                                ptn.Text = ptn.Text + " - #ca";
-                        }));
+                    TreeNode tn2 = getTreeNode(sei.ElementInfo, true, true, true);
 
                     if (isFile)
                     {
@@ -440,6 +484,9 @@ namespace WinSync.Forms
                     Invoke(new Action(() => 
                         AddLogLine($"Conflict ({conflictType}) at {elementType}: {sei.ConflictInfo.GetAbsolutePath()}")
                     ));
+                    
+                    TreeNode tn3 = getTreeNode(sei.ElementInfo, true, true, true);
+
                     break;
             }
         }
@@ -482,6 +529,58 @@ namespace WinSync.Forms
             {
                 //window handle wasn't created
             }
+        }
+    }
+
+    public class SyncElementStateHelper
+    {
+        private static readonly SyncElementStateHelper[] SyncStates;
+
+        static SyncElementStateHelper()
+        {
+            SyncStates = new SyncElementStateHelper[6];
+            SyncStates[(int)SyncElementState.ElementFound] = new SyncElementStateHelper(Color.Black, 1, 0);
+            SyncStates[(int)SyncElementState.ChangeDetectingStarted] = new SyncElementStateHelper(Color.Black, 1, 0);
+            SyncStates[(int)SyncElementState.NoChangeFound] = new SyncElementStateHelper(Color.Black, 1, 0);
+            SyncStates[(int)SyncElementState.ChangeFound] = new SyncElementStateHelper(Color.Blue, 2, 0);
+            SyncStates[(int)SyncElementState.ChangeApplied] = new SyncElementStateHelper(Color.Green, 3, 0);
+            SyncStates[(int)SyncElementState.Conflicted] = new SyncElementStateHelper(Color.Red, 4, 0);
+        }
+
+        /// <summary>
+        /// get SyncElementStateHelper from SyncElementState
+        /// </summary>
+        public static SyncElementStateHelper GetFromSES(SyncElementState ses)
+        {
+            return SyncStates[(int)ses];
+        }
+        
+        public Color TextColor { get; }
+        public int FolderImageIndex { get; }
+        public int FileImageIndex { get; }
+
+        private SyncElementStateHelper(Color textColor, int folderImageIndex, int fileImageIndex)
+        {
+            TextColor = textColor;
+            FolderImageIndex = folderImageIndex;
+            FileImageIndex = fileImageIndex;
+        }
+    }
+
+    public class StateChangedEvent
+    {
+        public SyncElementInfo SyncElementInfo { get; set; }
+        public SyncElementState CreateState { get; set; }
+
+        /// <summary>
+        /// create StateChangedEvent
+        /// </summary>
+        /// <param name="syncElementInfo">reference to the element, which state changed</param>
+        /// <param name="createState">the state of the element, which should be preserved</param>
+        public StateChangedEvent(SyncElementInfo syncElementInfo, SyncElementState createState)
+        {
+            SyncElementInfo = syncElementInfo;
+            CreateState = createState;
         }
     }
 }

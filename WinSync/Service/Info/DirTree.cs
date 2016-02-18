@@ -86,6 +86,18 @@ namespace WinSync.Service
 
         public List<string> DirNames => _dirs.ConvertAll<string>(dir => dir.Info.Name);
 
+        public static IEnumerable<MyFileInfo> GetFiles(DirTree dt)
+        {
+            foreach (DirTree subdir in dt.Dirs)
+                foreach (var f in GetFiles(subdir))
+                    yield return f;
+
+            foreach (MyFileInfo f in dt.Files)
+            {
+                yield return f;
+            }
+        }
+
         //public bool HasDuplicateDirs => _dirs.Count(dir => _dirs.Count(x => x.Info.Name == dir.Info.Name) > 1) > 0;
     }
 }

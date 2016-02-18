@@ -22,8 +22,8 @@ namespace WinSync.Service
         /// </summary>
         public SyncState State { get; set; } = SyncState.DetectingChanges;
 
-        public List<SyncDirInfo> SyncDirInfos { get; private set; }
-        public List<SyncFileInfo> SyncFileInfos { get; private set; }
+        public List<SyncDirExecutionInfo> SyncDirExecutionInfos { get; private set; }
+        public List<SyncFileExecutionInfo> SyncFileExecutionInfos { get; private set; }
 
         public List<ConflictInfo> ConflictInfos { get; private set; }
         public Stack<LogMessage> LogStack { get; private set; }
@@ -44,10 +44,14 @@ namespace WinSync.Service
             Paused = false;
             TotalSize = 0;
             SizeApplied = 0;
-            DirsDone = 0;
-            FilesDone = 0;
-            SyncDirInfos = new List<SyncDirInfo>();
-            SyncFileInfos = new List<SyncFileInfo>();
+            DirChangesApplied = 0;
+            FileChangesApplied = 0;
+            FilesFound = 0;
+            DirsFound = 0;
+            DetectedFilesCount = 0;
+            DetectedDirsCount = 0;
+            SyncDirExecutionInfos = new List<SyncDirExecutionInfo>();
+            SyncFileExecutionInfos = new List<SyncFileExecutionInfo>();
             ConflictInfos = new List<ConflictInfo>();
             LogStack = new Stack<LogMessage>();
 
@@ -131,7 +135,7 @@ namespace WinSync.Service
         /// <summary>
         /// synchronisation progress percentage
         /// </summary>
-        public float Progress
+        public float SyncProgress
         {
             get
             {
@@ -148,7 +152,9 @@ namespace WinSync.Service
         /// <summary>
         /// count of remaining files to synchronise
         /// </summary>
-        public long FilesRemaining => DirsFound - FilesFound;
+        public long FilesRemaining => ChangedFilesFound - FileChangesApplied;
+
+        public float DetectProgress => DetectedFilesCount * 100f / FilesFound;
 
         /// <summary>
         /// estimated time until the synchronisation finishs
@@ -164,24 +170,44 @@ namespace WinSync.Service
         }
 
         /// <summary>
+        /// count of files that has been found in the sync dir
+        /// </summary>
+        public long FilesFound { get; private set; }
+
+        /// <summary>
+        /// count of subdirs that has been found in the sync dir
+        /// </summary>
+        public long DirsFound { get; private set; }
+
+        /// <summary>
+        /// count of files, on which the detect changes process has been applied
+        /// </summary>
+        public long DetectedFilesCount { get; private set; }
+
+        /// <summary>
+        /// count of subdirs, on which the detect changes process has been applied
+        /// </summary>
+        public long DetectedDirsCount { get; private set; }
+
+        /// <summary>
         /// count of detected files, which schould be synchronised
         /// </summary>
-        public long FilesFound => SyncFileInfos.Count;
+        public long ChangedFilesFound => SyncFileExecutionInfos.Count;
 
         /// <summary>
         /// count of detected directories to synchronise
         /// </summary>
-        public long DirsFound => SyncDirInfos.Count;
+        public long ChangedDirsFound => SyncDirExecutionInfos.Count;
 
         /// <summary>
         /// count of synchronised files
         /// </summary>
-        public long FilesDone { get; private set; }
+        public long FileChangesApplied { get; private set; }
 
         /// <summary>
         /// count of synchronised directories (independent of files in this directories)
         /// </summary>
-        public long DirsDone { get; private set; }
+        public long DirChangesApplied { get; private set; }
 
         /// <summary>
         /// actual synchronisation speed
@@ -257,8 +283,16 @@ namespace WinSync.Service
             switch (sei.SyncState)
             {
                 case SyncElementState.ElementFound:
-                    if (isFile) DirTree.AddFile((MyFileInfo)sei.ElementInfo);
-                    else DirTree.AddDir((MyDirInfo)sei.ElementInfo);
+                    if (isFile)
+                    {
+                        FilesFound++;
+                        DirTree.AddFile((MyFileInfo)sei.ElementInfo);
+                    }
+                    else
+                    {
+                        DirsFound++;
+                        DirTree.AddDir((MyDirInfo)sei.ElementInfo);
+                    }
                     break;
                 case SyncElementState.ChangeDetectingStarted:
 
@@ -269,16 +303,16 @@ namespace WinSync.Service
                 case SyncElementState.ChangeFound:
                     if (isFile)
                     {
-                        SyncFileInfos.Add((SyncFileInfo)sei);
+                        SyncFileExecutionInfos.Add((SyncFileExecutionInfo)sei.SyncExecutionInfo);
                         if(!sei.SyncExecutionInfo.Remove)
                             TotalSize += ((MyFileInfo)sei.ElementInfo).Size;
                     }
                     else
-                        SyncDirInfos.Add((SyncDirInfo)sei);
+                        SyncDirExecutionInfos.Add((SyncDirExecutionInfo)sei.SyncExecutionInfo);
                     break;
                 case SyncElementState.ChangeApplied:
-                    if (isFile) FilesDone++;
-                    else DirsDone++;
+                    if (isFile) FileChangesApplied++;
+                    else DirChangesApplied++;
                     break;
                 case SyncElementState.Conflicted:
                     ConflictInfos.Add(sei.ConflictInfo);
@@ -286,6 +320,14 @@ namespace WinSync.Service
             }
 
             _listener?.OnSyncElementStateChanged(sei);
+        }
+
+        public void DetectingEnded(SyncElementInfo sei)
+        {
+            if (typeof(SyncFileInfo) == sei.GetType())
+                DetectedFilesCount++;
+            else
+                DetectedDirsCount++;
         }
         
         public void Log(LogMessage message)

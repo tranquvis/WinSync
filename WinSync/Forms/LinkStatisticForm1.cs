@@ -101,8 +101,8 @@ namespace WinSync.Forms
                 button_sync.BackgroundImage = Properties.Resources.ic_sync_white;
                 button_pr.Visible = false;
 
-                progressBar.Value = (int)(_l.SyncInfo.Progress * 10);
-                label_detail_progress.Text = $"{_l.SyncInfo.Progress:0.00}%";
+                progressBar.Value = (int)(_l.SyncInfo.SyncProgress * 10);
+                label_detail_progress.Text = $"{_l.SyncInfo.SyncProgress:0.00}%";
                 label_detail_status.Text = _l.SyncInfo.State.Title;
 
                 UpdateProgressInfos();
@@ -135,8 +135,8 @@ namespace WinSync.Forms
             button_sync.BackgroundImage = Properties.Resources.ic_sync_white;
             button_pr.Visible = false;
 
-            progressBar.Value = (int)(_l.SyncInfo.Progress * 10);
-            label_detail_progress.Text = $"{_l.SyncInfo.Progress:0.00}%";
+            progressBar.Value = (int)(_l.SyncInfo.SyncProgress * 10);
+            label_detail_progress.Text = $"{_l.SyncInfo.SyncProgress:0.00}%";
             label_detail_status.Text = _l.SyncInfo.State.Title;
 
             UpdateProgressInfos();
@@ -147,17 +147,17 @@ namespace WinSync.Forms
         /// </summary>
         public void UpdateProgressInfos()
         {
-            label_detail_progress.Text = $"{_l.SyncInfo.Progress:0.00}%";
+            label_detail_progress.Text = $"{_l.SyncInfo.SyncProgress:0.00}%";
             label_detail_status.Text = _l.SyncInfo.State.Title;
             panel_header.BackColor = _l.SyncInfo.State.Color;
             
-            label_syncedFilesCount.Text = $"{ _l.SyncInfo.FilesDone:#,#} of {_l.SyncInfo.FilesFound:#,#}";
+            label_syncedFilesCount.Text = $"{ _l.SyncInfo.FileChangesApplied:#,#} of {_l.SyncInfo.ChangedFilesFound:#,#}";
             label_syncedFilesSize.Text = $"{_l.SyncInfo.SizeApplied / (1024.0 * 1024.0):#,#0.00} of " +
                     $"{_l.SyncInfo.TotalSize / (1024.0 * 1024.0):#,#0.00}MB";
 
             if (_l.SyncInfo.State == SyncState.ApplyingFileChanges || _initFlag)
             {
-                progressBar.Value = (int)(_l.SyncInfo.Progress * 10);
+                progressBar.Value = (int)(_l.SyncInfo.SyncProgress * 10);
                 
                 label_speed.Text = $"{_l.SyncInfo.ActSpeed:0.00} Mbit/s";
                 label_averageSpeed.Text = $"{_l.SyncInfo.AverageSpeed:0.00} Mbit/s";
