@@ -52,7 +52,7 @@ namespace WinSync.Service
             Delimon.Win32.IO.FileInfo srcFileInfo;
             Delimon.Win32.IO.FileInfo destFileInfo;
 
-            file.SyncState = SyncElementState.ChangeDetectingStarted;
+            file.SyncStatus = SyncElementStatus.ChangeDetectingStarted;
 
             string sf = sourcePath + file.FileInfo.FullPath;
             string df = destPath + file.FileInfo.FullPath;
@@ -90,7 +90,7 @@ namespace WinSync.Service
         {
             if (interruptChecker()) return true;
 
-            file.SyncState = SyncElementState.ChangeDetectingStarted;
+            file.SyncStatus = SyncElementStatus.ChangeDetectingStarted;
             
             string pd1 = file.SyncInfo.Link.Path1 + file.FileInfo.Path;
             string pd2 = file.SyncInfo.Link.Path2 + file.FileInfo.Path;
@@ -119,7 +119,7 @@ namespace WinSync.Service
                 TwoWayCompareResult compResult = Helper.CompareFiles_TwoWay(fi1, fi2, file.SyncInfo.Link.Remove, pdi1, pdi2);
 
                 if (compResult == null)
-                    file.SyncState = SyncElementState.NoChangeFound;
+                    file.SyncStatus = SyncElementStatus.NoChangeFound;
                 else
                 {
                     file.FileInfo.Size = fi1.Exists ? fi1.Length : fi2.Length;
@@ -230,7 +230,7 @@ namespace WinSync.Service
             try
             {
                 ddi.Delete();
-                sdei.SyncDirInfo.SyncState = SyncElementState.ChangeApplied;
+                sdei.SyncDirInfo.SyncStatus = SyncElementStatus.ChangeApplied;
             }
             catch (Exception e)
             {
@@ -262,7 +262,7 @@ namespace WinSync.Service
             try
             {
                 Delimon.Win32.IO.Directory.CreateDirectory(ddp);
-                sdei.SyncElementInfo.SyncState = SyncElementState.ChangeApplied;
+                sdei.SyncElementInfo.SyncStatus = SyncElementStatus.ChangeApplied;
             }
             catch (Exception e)
             {
@@ -566,7 +566,7 @@ namespace WinSync.Service
                     //FileMove2(sfp, dfp, interruptChecker);
                     File.Copy(sfp, dfp, true);
                 }
-                sfei.SyncFileInfo.SyncState = SyncElementState.ChangeApplied;
+                sfei.SyncFileInfo.SyncStatus = SyncElementStatus.ChangeApplied;
             }
             catch (IOException ioe)
             {

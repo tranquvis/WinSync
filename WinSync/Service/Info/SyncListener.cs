@@ -41,10 +41,10 @@ namespace WinSync.Service
         */
 
         /// <summary>
-        /// is called when the sync state of a directory or file changed
+        /// is called when the sync status of a directory or file changed
         /// </summary>
         /// <param name="sei">sync info of the element</param>
-        void OnSyncElementStateChanged(SyncElementInfo sei);
+        void OnSyncElementStatusChanged(SyncElementInfo sei);
         
         /// <summary>
         /// is called when a log message has been received

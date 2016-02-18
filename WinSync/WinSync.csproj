@@ -128,7 +128,7 @@
     <Compile Include="Service\Info\FileConflictInfo.cs" />
     <Compile Include="Service\Info\MyElementInfo.cs" />
     <Compile Include="Service\Info\SyncElementInfo.cs" />
-    <Compile Include="Service\Info\SyncElementState.cs" />
+    <Compile Include="Service\Info\SyncElementStatus.cs" />
     <Compile Include="Service\Info\LogMessage.cs" />
     <Compile Include="Service\Info\LogType.cs" />
     <Compile Include="Service\Info\MyDirInfo.cs" />
@@ -141,7 +141,7 @@
     <Compile Include="Service\Info\ConflictType.cs" />
     <Compile Include="Service\Info\SyncDirInfo.cs" />
     <Compile Include="Service\Info\SyncFileInfo.cs" />
-    <Compile Include="Service\Info\SyncState.cs" />
+    <Compile Include="Service\Info\SyncStatus.cs" />
     <Compile Include="Forms\EditLinkForm.cs">
       <SubType>Form</SubType>
     </Compile>

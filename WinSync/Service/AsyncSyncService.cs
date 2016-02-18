@@ -131,7 +131,7 @@ namespace WinSync.Service
                 throw new DirectoryNotFoundException("The directories to sync do not exist on this System.");
             }
 
-            _si.State = SyncState.DetectingChanges;
+            _si.Status = SyncStatus.DetectingChanges;
 
             if (_si.Link.Direction == SyncDirection.To1)
             {
@@ -151,13 +151,13 @@ namespace WinSync.Service
             }
 
 
-            _si.State = SyncState.CreatingFolders;
+            _si.Status = SyncStatus.CreatingFolders;
             await CreateFolders(_si.SyncDirExecutionInfos);
 
-            _si.State = SyncState.ApplyingFileChanges;
+            _si.Status = SyncStatus.ApplyingFileChanges;
             await DoApplyFileChanges(_si.SyncFileExecutionInfos);
 
-            _si.State = SyncState.RemoveRedundantDirs;
+            _si.Status = SyncStatus.RemoveRedundantDirs;
             await RemoveFolders(_si.SyncDirExecutionInfos);
         }
 

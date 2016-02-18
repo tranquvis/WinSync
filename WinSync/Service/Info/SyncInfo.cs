@@ -20,7 +20,7 @@ namespace WinSync.Service
         /// <summary>
         /// synchronisation status
         /// </summary>
-        public SyncState State { get; set; } = SyncState.DetectingChanges;
+        public SyncStatus Status { get; set; } = SyncStatus.DetectingChanges;
 
         public List<SyncDirExecutionInfo> SyncDirExecutionInfos { get; private set; }
         public List<SyncFileExecutionInfo> SyncFileExecutionInfos { get; private set; }
@@ -139,9 +139,9 @@ namespace WinSync.Service
         {
             get
             {
-                if (State == SyncState.DetectingChanges)
+                if (Status == SyncStatus.DetectingChanges)
                     return 0;
-                if (State == SyncState.Finished)
+                if (Status == SyncStatus.Finished)
                     return 100;
                 if(TotalSize == 0 || SizeApplied == 0)
                     return 0;
@@ -243,7 +243,7 @@ namespace WinSync.Service
         {
             Running = false;
             Finished = true;
-            State = SyncState.Finished;
+            Status = SyncStatus.Finished;
             EndTime = DateTime.Now;
         }
 
@@ -254,7 +254,7 @@ namespace WinSync.Service
         {
             Running = false;
             Finished = true;
-            State = SyncState.Aborted;
+            Status = SyncStatus.Aborted;
             EndTime = DateTime.Now;
         }
 
@@ -276,13 +276,13 @@ namespace WinSync.Service
             _timePaused += DateTime.Now - LastPauseStart;
         }
 
-        public void SyncElementStateChanged(SyncElementInfo sei)
+        public void SyncElementStatusChanged(SyncElementInfo sei)
         {
             bool isFile = typeof(SyncFileInfo) == sei.GetType();
 
-            switch (sei.SyncState)
+            switch (sei.SyncStatus)
             {
-                case SyncElementState.ElementFound:
+                case SyncElementStatus.ElementFound:
                     if (isFile)
                     {
                         FilesFound++;
@@ -294,13 +294,13 @@ namespace WinSync.Service
                         DirTree.AddDir((MyDirInfo)sei.ElementInfo);
                     }
                     break;
-                case SyncElementState.ChangeDetectingStarted:
+                case SyncElementStatus.ChangeDetectingStarted:
 
                     break;
-                case SyncElementState.NoChangeFound:
+                case SyncElementStatus.NoChangeFound:
 
                     break;
-                case SyncElementState.ChangeFound:
+                case SyncElementStatus.ChangeFound:
                     if (isFile)
                     {
                         SyncFileExecutionInfos.Add((SyncFileExecutionInfo)sei.SyncExecutionInfo);
@@ -310,16 +310,16 @@ namespace WinSync.Service
                     else
                         SyncDirExecutionInfos.Add((SyncDirExecutionInfo)sei.SyncExecutionInfo);
                     break;
-                case SyncElementState.ChangeApplied:
+                case SyncElementStatus.ChangeApplied:
                     if (isFile) FileChangesApplied++;
                     else DirChangesApplied++;
                     break;
-                case SyncElementState.Conflicted:
+                case SyncElementStatus.Conflicted:
                     ConflictInfos.Add(sei.ConflictInfo);
                     break;
             }
 
-            _listener?.OnSyncElementStateChanged(sei);
+            _listener?.OnSyncElementStatusChanged(sei);
         }
 
         public void DetectingEnded(SyncElementInfo sei)

@@ -17,8 +17,8 @@ namespace WinSync.Forms
         bool updateStatsAsyncRunning;
         MainForm _mainForm;
 
-        bool stateChangedEventsAToken;
-        List<StateChangedEvent> stateChangedEvents = new List<StateChangedEvent>();
+        bool statusChangedEventsAToken;
+        List<StatusChangedEvent> statusChangedEvents = new List<StatusChangedEvent>();
 
         /// <summary>
         /// create a LinkStatisticsForm that displays all details of a synchronisation process
@@ -30,10 +30,11 @@ namespace WinSync.Forms
             _mainForm = mainForm;
             InitializeComponent();
 
+            tabControl_left1.SelectedIndex = 1;
             label_title.Text = _l.Title;
-            label_folder1.Text = _l.Path1;
-            label_folder2.Text = _l.Path2;
-            label_direction.Text = _l.Direction.ToString();
+            label_link_folder1.Text = _l.Path1;
+            label_link_folder2.Text = _l.Path2;
+            label_link_direction.Text = _l.Direction.ToString();
 
             if (_l.SyncInfo != null)
             {
@@ -76,12 +77,12 @@ namespace WinSync.Forms
                         Invoke(new Action(() => {
                             UpdateStatsAsync();
                         }));
-                        StartStateChangedEventsCheckingAsync();
+                        StartStatusChangedEventsCheckingAsync();
                     }
 
                     Invoke(new Action(() =>
                     {
-                        label_runningTasks.Text = (_l.SyncTask == null ? 0 : _l.SyncTask.TasksRunning()).ToString();
+                        label_syst_runningTasks.Text = (_l.SyncTask == null ? 0 : _l.SyncTask.TasksRunning()).ToString();
                     }));
 
                     await Task.Delay(500);
@@ -109,8 +110,8 @@ namespace WinSync.Forms
                 button_pr.Visible = false;
 
                 progressBar.Value = (int)(_l.SyncInfo.SyncProgress * 10);
-                label_detail_progress.Text = $"{_l.SyncInfo.SyncProgress:0.00}%";
-                label_detail_status.Text = _l.SyncInfo.State.Title;
+                label_syst_progress.Text = $"{_l.SyncInfo.SyncProgress:0.00}%";
+                label_syst_status.Text = _l.SyncInfo.Status.Title;
 
                 UpdateProgressInfos();
             }
@@ -143,8 +144,8 @@ namespace WinSync.Forms
             button_pr.Visible = false;
 
             progressBar.Value = (int)(_l.SyncInfo.SyncProgress * 10);
-            label_detail_progress.Text = $"{_l.SyncInfo.SyncProgress:0.00}%";
-            label_detail_status.Text = _l.SyncInfo.State.Title;
+            label_syst_progress.Text = $"{_l.SyncInfo.SyncProgress:0.00}%";
+            label_syst_status.Text = _l.SyncInfo.Status.Title;
 
             UpdateProgressInfos();
         }
@@ -154,23 +155,23 @@ namespace WinSync.Forms
         /// </summary>
         public void UpdateProgressInfos()
         {
-            label_detail_progress.Text = $"{_l.SyncInfo.SyncProgress:0.00}%";
-            label_detail_status.Text = _l.SyncInfo.State.Title;
-            panel_header.BackColor = _l.SyncInfo.State.Color;
+            label_syst_progress.Text = $"{_l.SyncInfo.SyncProgress:0.00}%";
+            label_syst_status.Text = _l.SyncInfo.Status.Title;
+            panel_header.BackColor = _l.SyncInfo.Status.Color;
 
-            label_syncedFilesCount.Text = $"{ _l.SyncInfo.FileChangesApplied:#,#} of {_l.SyncInfo.ChangedFilesFound:#,#}";
-            label_syncedFilesSize.Text = $"{_l.SyncInfo.SizeApplied / (1024.0 * 1024.0):#,#0.00} of " +
+            label_syst_syncedFilesCount.Text = $"{ _l.SyncInfo.FileChangesApplied:#,#} of {_l.SyncInfo.ChangedFilesFound:#,#}";
+            label_syst_syncedFilesSize.Text = $"{_l.SyncInfo.SizeApplied / (1024.0 * 1024.0):#,#0.00} of " +
                     $"{_l.SyncInfo.TotalSize / (1024.0 * 1024.0):#,#0.00}MB";
 
-            if (_l.SyncInfo.State == SyncState.ApplyingFileChanges || _initFlag)
+            if (_l.SyncInfo.Status == SyncStatus.ApplyingFileChanges || _initFlag)
             {
                 progressBar.Value = (int)(_l.SyncInfo.SyncProgress * 10);
 
-                label_speed.Text = $"{_l.SyncInfo.ActSpeed:0.00} Mbit/s";
-                label_averageSpeed.Text = $"{_l.SyncInfo.AverageSpeed:0.00} Mbit/s";
+                label_syst_speed.Text = $"{_l.SyncInfo.ActSpeed:0.00} Mbit/s";
+                label_syst_averageSpeed.Text = $"{_l.SyncInfo.AverageSpeed:0.00} Mbit/s";
             }
 
-            label_totalTime.Text = _l.SyncInfo.TotalTime.ToString(@"hh\:mm\:ss");
+            label_syst_totalTime.Text = _l.SyncInfo.TotalTime.ToString(@"hh\:mm\:ss");
 
             _initFlag = false;
         }
@@ -191,9 +192,9 @@ namespace WinSync.Forms
             {
                 _l.Sync();
                 _l.SyncInfo.SetListener(this);
-                listBox_syncInfo.Items.Clear();
+                listBox_log.Items.Clear();
                 treeView1.Nodes.Clear();
-                stateChangedEvents = new List<StateChangedEvent>();
+                statusChangedEvents = new List<StatusChangedEvent>();
             }
             else
             {
@@ -218,40 +219,18 @@ namespace WinSync.Forms
         }
 
         /// <summary>
-        /// hide or show shadows when resizing
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
         private void LinkStatisticForm_Resize(object sender, EventArgs e)
         {
-            if (panel2.Height < 5)
-            {
-                shadow_top2.Visible = false;
-                shadow_bottom2.Visible = false;
-            }
-            else
-            {
-                shadow_top2.Visible = true;
-                shadow_bottom2.Visible = true;
-            }
-
-            if (panel1.Height < 5)
-            {
-                shadow_top1.Visible = false;
-                shadow_bottom1.Visible = false;
-            }
-            else
-            {
-                shadow_top1.Visible = true;
-                shadow_bottom1.Visible = true;
-            }
         }
 
         private void listBox_syncInfo_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.Control && e.KeyCode == Keys.C)
             {
-                Clipboard.SetData(DataFormats.Text, (string)listBox_syncInfo.SelectedItem);
+                Clipboard.SetData(DataFormats.Text, (string)listBox_log.SelectedItem);
             }
         }
 
@@ -272,7 +251,7 @@ namespace WinSync.Forms
 
         private TreeNode GetTreeNodeFromElement(MyElementInfo ei)
         {
-            SyncElementStateHelper helper = SyncElementStateHelper.GetFromSES(ei.SyncElementInfo != null ? ei.SyncElementInfo.SyncState : 0);
+            SyncElementStatusHelper helper = SyncElementStatusHelper.GetFromSES(ei.SyncElementInfo != null ? ei.SyncElementInfo.SyncStatus : 0);
 
             TreeNode tn = new TreeNode(ei.Name);
 
@@ -317,7 +296,7 @@ namespace WinSync.Forms
                 }
                 if (update)
                 {
-                    UpdateTreeNode(treeNode, ei.TreePath[i].Info, ei.SyncElementInfo.SyncState, invoke);
+                    UpdateTreeNode(treeNode, ei.TreePath[i].Info, ei.SyncElementInfo.SyncStatus, invoke);
                 }
 
                 tnc = treeNode.Nodes;
@@ -345,17 +324,17 @@ namespace WinSync.Forms
         /// </summary>
         /// <param name="tn"></param>
         /// <param name="ei"></param>
-        /// <param name="childState"></param>
-        private void UpdateTreeNode(TreeNode tn, MyElementInfo ei, SyncElementState? childState, bool invoke)
+        /// <param name="childStatus"></param>
+        private void UpdateTreeNode(TreeNode tn, MyElementInfo ei, SyncElementStatus? childStatus, bool invoke)
         {
             if(ei.SyncElementInfo != null)
             {
-                SyncElementStateHelper helper = SyncElementStateHelper.GetFromSES(ei.SyncElementInfo.SyncState);
+                SyncElementStatusHelper helper = SyncElementStatusHelper.GetFromSES(ei.SyncElementInfo.SyncStatus);
                 tn.ForeColor = helper.TextColor;
             }
-            if(childState != null)
+            if(childStatus != null)
             {
-                SyncElementStateHelper childHelper = SyncElementStateHelper.GetFromSES(childState.Value);
+                SyncElementStatusHelper childHelper = SyncElementStatusHelper.GetFromSES(childStatus.Value);
                 if (ei.GetType() == typeof(MyDirInfo))
                 {
                     if (childHelper.FolderImageIndex > tn.ImageIndex)
@@ -380,35 +359,35 @@ namespace WinSync.Forms
                 yield return node = node.Parent;
         }
 
-        public void OnSyncElementStateChanged(SyncElementInfo sei)
+        public void OnSyncElementStatusChanged(SyncElementInfo sei)
         {
-            while (stateChangedEventsAToken || stateChangedEvents.Count > 1000)
+            while (statusChangedEventsAToken || statusChangedEvents.Count > 1000)
                 Thread.Sleep(1);
-            stateChangedEventsAToken = true;
-            stateChangedEvents.Add(new StateChangedEvent(sei, sei.SyncState));
-            stateChangedEventsAToken = false;
+            statusChangedEventsAToken = true;
+            statusChangedEvents.Add(new StatusChangedEvent(sei, sei.SyncStatus));
+            statusChangedEventsAToken = false;
         }
 
-        List<StateChangedEvent> tempSCE;
-        public async void StartStateChangedEventsCheckingAsync()
+        List<StatusChangedEvent> tempSCE;
+        public async void StartStatusChangedEventsCheckingAsync()
         {
             await Task.Run(async () =>
             {
                 while (_l.IsRunning())
                 {
                     //update tree
-                    while (stateChangedEventsAToken)
+                    while (statusChangedEventsAToken)
                         await Task.Delay(1);
-                    stateChangedEventsAToken = true;
+                    statusChangedEventsAToken = true;
 
-                    tempSCE = new List<StateChangedEvent>(stateChangedEvents);
-                    stateChangedEvents = new List<StateChangedEvent>();
+                    tempSCE = new List<StatusChangedEvent>(statusChangedEvents);
+                    statusChangedEvents = new List<StatusChangedEvent>();
 
-                    stateChangedEventsAToken = false;
+                    statusChangedEventsAToken = false;
 
-                    foreach (StateChangedEvent sce in tempSCE.Where(x => x.CreateState == x.SyncElementInfo.SyncState))
+                    foreach (StatusChangedEvent sce in tempSCE.Where(x => x.CreateStatus == x.SyncElementInfo.SyncStatus))
                     {
-                        ProcessStateChangedEventAsync(sce);
+                        ProcessStatusChangedEventAsync(sce);
                     }
                     //------------------
 
@@ -417,25 +396,25 @@ namespace WinSync.Forms
             });
         }
 
-        public void ProcessStateChangedEventAsync(StateChangedEvent sce)
+        public void ProcessStatusChangedEventAsync(StatusChangedEvent sce)
         {
             SyncElementInfo sei = sce.SyncElementInfo;
 
             bool isFile = typeof(SyncFileInfo) == sei.GetType();
 
-            switch (sce.CreateState)
+            switch (sce.CreateStatus)
             {
-                case SyncElementState.ElementFound:
+                case SyncElementStatus.ElementFound:
 
                     //update treeview
                     getTreeNode(sei.ElementInfo, true, false, true);
 
                     break;
-                case SyncElementState.ChangeDetectingStarted:
+                case SyncElementStatus.ChangeDetectingStarted:
                     break;
-                case SyncElementState.NoChangeFound:
+                case SyncElementStatus.NoChangeFound:
                     break;
-                case SyncElementState.ChangeFound:
+                case SyncElementStatus.ChangeFound:
                     TreeNode tn1 = getTreeNode(sei.ElementInfo, true, true, true);
 
                     if (isFile)
@@ -447,7 +426,7 @@ namespace WinSync.Forms
                         Console.WriteLine("directory change detected:" + sei.SyncExecutionInfo.AbsoluteDestPath);
                     }
                     break;
-                case SyncElementState.ChangeApplied:
+                case SyncElementStatus.ChangeApplied:
                     TreeNode tn2 = getTreeNode(sei.ElementInfo, true, true, true);
 
                     if (isFile)
@@ -465,7 +444,7 @@ namespace WinSync.Forms
                             Console.WriteLine("Directory created:" + sei.SyncExecutionInfo.AbsoluteDestPath);
                     }
                     break;
-                case SyncElementState.Conflicted:
+                case SyncElementStatus.Conflicted:
                     string elementType = isFile ? "file" : "dir";
                     string conflictType = "";
                     switch (sei.ConflictInfo.Type)
@@ -520,7 +499,7 @@ namespace WinSync.Forms
             Console.WriteLine(text);
             try
             {
-                listBox_syncInfo.Items.Insert(0, text);
+                listBox_log.Items.Insert(0, text);
             }
             catch (ObjectDisposedException)
             {
@@ -532,34 +511,34 @@ namespace WinSync.Forms
         }
     }
 
-    public class SyncElementStateHelper
+    public class SyncElementStatusHelper
     {
-        private static readonly SyncElementStateHelper[] SyncStates;
+        private static readonly SyncElementStatusHelper[] SyncStatuses;
 
-        static SyncElementStateHelper()
+        static SyncElementStatusHelper()
         {
-            SyncStates = new SyncElementStateHelper[6];
-            SyncStates[(int)SyncElementState.ElementFound] = new SyncElementStateHelper(Color.Black, 1, 0);
-            SyncStates[(int)SyncElementState.ChangeDetectingStarted] = new SyncElementStateHelper(Color.Black, 1, 0);
-            SyncStates[(int)SyncElementState.NoChangeFound] = new SyncElementStateHelper(Color.Black, 1, 0);
-            SyncStates[(int)SyncElementState.ChangeFound] = new SyncElementStateHelper(Color.Blue, 2, 0);
-            SyncStates[(int)SyncElementState.ChangeApplied] = new SyncElementStateHelper(Color.Green, 3, 0);
-            SyncStates[(int)SyncElementState.Conflicted] = new SyncElementStateHelper(Color.Red, 4, 0);
+            SyncStatuses = new SyncElementStatusHelper[6];
+            SyncStatuses[(int)SyncElementStatus.ElementFound] = new SyncElementStatusHelper(Color.Black, 1, 0);
+            SyncStatuses[(int)SyncElementStatus.ChangeDetectingStarted] = new SyncElementStatusHelper(Color.Black, 1, 0);
+            SyncStatuses[(int)SyncElementStatus.NoChangeFound] = new SyncElementStatusHelper(Color.Black, 1, 0);
+            SyncStatuses[(int)SyncElementStatus.ChangeFound] = new SyncElementStatusHelper(Color.Blue, 2, 0);
+            SyncStatuses[(int)SyncElementStatus.ChangeApplied] = new SyncElementStatusHelper(Color.Green, 3, 0);
+            SyncStatuses[(int)SyncElementStatus.Conflicted] = new SyncElementStatusHelper(Color.Red, 4, 0);
         }
 
         /// <summary>
-        /// get SyncElementStateHelper from SyncElementState
+        /// get SyncElementStatusHelper from SyncElementStatus
         /// </summary>
-        public static SyncElementStateHelper GetFromSES(SyncElementState ses)
+        public static SyncElementStatusHelper GetFromSES(SyncElementStatus ses)
         {
-            return SyncStates[(int)ses];
+            return SyncStatuses[(int)ses];
         }
         
         public Color TextColor { get; }
         public int FolderImageIndex { get; }
         public int FileImageIndex { get; }
 
-        private SyncElementStateHelper(Color textColor, int folderImageIndex, int fileImageIndex)
+        private SyncElementStatusHelper(Color textColor, int folderImageIndex, int fileImageIndex)
         {
             TextColor = textColor;
             FolderImageIndex = folderImageIndex;
@@ -567,20 +546,20 @@ namespace WinSync.Forms
         }
     }
 
-    public class StateChangedEvent
+    public class StatusChangedEvent
     {
         public SyncElementInfo SyncElementInfo { get; set; }
-        public SyncElementState CreateState { get; set; }
+        public SyncElementStatus CreateStatus { get; set; }
 
         /// <summary>
-        /// create StateChangedEvent
+        /// create StatusChangedEvent
         /// </summary>
-        /// <param name="syncElementInfo">reference to the element, which state changed</param>
-        /// <param name="createState">the state of the element, which should be preserved</param>
-        public StateChangedEvent(SyncElementInfo syncElementInfo, SyncElementState createState)
+        /// <param name="syncElementInfo">reference to the element, whose status has been changed</param>
+        /// <param name="createStatus">the status of the element, which should be preserved</param>
+        public StatusChangedEvent(SyncElementInfo syncElementInfo, SyncElementStatus createStatus)
         {
             SyncElementInfo = syncElementInfo;
-            CreateState = createState;
+            CreateStatus = createStatus;
         }
     }
 }

@@ -103,7 +103,7 @@ namespace WinSync.Forms
 
                 progressBar.Value = (int)(_l.SyncInfo.SyncProgress * 10);
                 label_detail_progress.Text = $"{_l.SyncInfo.SyncProgress:0.00}%";
-                label_detail_status.Text = _l.SyncInfo.State.Title;
+                label_detail_status.Text = _l.SyncInfo.Status.Title;
 
                 UpdateProgressInfos();
             }
@@ -137,7 +137,7 @@ namespace WinSync.Forms
 
             progressBar.Value = (int)(_l.SyncInfo.SyncProgress * 10);
             label_detail_progress.Text = $"{_l.SyncInfo.SyncProgress:0.00}%";
-            label_detail_status.Text = _l.SyncInfo.State.Title;
+            label_detail_status.Text = _l.SyncInfo.Status.Title;
 
             UpdateProgressInfos();
         }
@@ -148,14 +148,14 @@ namespace WinSync.Forms
         public void UpdateProgressInfos()
         {
             label_detail_progress.Text = $"{_l.SyncInfo.SyncProgress:0.00}%";
-            label_detail_status.Text = _l.SyncInfo.State.Title;
-            panel_header.BackColor = _l.SyncInfo.State.Color;
+            label_detail_status.Text = _l.SyncInfo.Status.Title;
+            panel_header.BackColor = _l.SyncInfo.Status.Color;
             
             label_syncedFilesCount.Text = $"{ _l.SyncInfo.FileChangesApplied:#,#} of {_l.SyncInfo.ChangedFilesFound:#,#}";
             label_syncedFilesSize.Text = $"{_l.SyncInfo.SizeApplied / (1024.0 * 1024.0):#,#0.00} of " +
                     $"{_l.SyncInfo.TotalSize / (1024.0 * 1024.0):#,#0.00}MB";
 
-            if (_l.SyncInfo.State == SyncState.ApplyingFileChanges || _initFlag)
+            if (_l.SyncInfo.Status == SyncStatus.ApplyingFileChanges || _initFlag)
             {
                 progressBar.Value = (int)(_l.SyncInfo.SyncProgress * 10);
                 
@@ -305,13 +305,13 @@ namespace WinSync.Forms
                 yield return node = node.Parent;
         }
 
-        public void OnSyncElementStateChanged(SyncElementInfo sei)
+        public void OnSyncElementStatusChanged(SyncElementInfo sei)
         {
             bool isFile = typeof(SyncFileInfo) == sei.GetType();
 
-            switch (sei.SyncState)
+            switch (sei.SyncStatus)
             {
-                case SyncElementState.ElementFound:
+                case SyncElementStatus.ElementFound:
                     
                     //update treeview
                     TreeNodeCollection tnc = treeView1.Nodes;
@@ -333,13 +333,13 @@ namespace WinSync.Forms
                     }));
                         
                     break;
-                case SyncElementState.ChangeDetectingStarted:
+                case SyncElementStatus.ChangeDetectingStarted:
                     Console.WriteLine("Start detecting file:" + sei.ElementInfo.FullPath);
                     break;
-                case SyncElementState.NoChangeFound:
+                case SyncElementStatus.NoChangeFound:
 
                     break;
-                case SyncElementState.ChangeFound:
+                case SyncElementStatus.ChangeFound:
                     TreeNode tn1 = getTreeNode(sei.ElementInfo);
                     if (tn1 == null) //TODO: tn1 is null once when starting statisticForm while sync running
                         break;
@@ -360,7 +360,7 @@ namespace WinSync.Forms
                         Console.WriteLine("directory change detected:" + sei.SyncExecutionInfo.AbsoluteDestPath);
                     }
                     break;
-                case SyncElementState.ChangeApplied:
+                case SyncElementStatus.ChangeApplied:
                     TreeNode tn2 = getTreeNode(sei.ElementInfo);
                     if (tn2 != null)
                         treeView1.Invoke(new Action(() => {
@@ -383,7 +383,7 @@ namespace WinSync.Forms
                             Console.WriteLine("Directory created:" + sei.SyncExecutionInfo.AbsoluteDestPath);
                     }
                     break;
-                case SyncElementState.Conflicted:
+                case SyncElementStatus.Conflicted:
                     string elementType = isFile ? "file" : "dir";
                     string conflictType = "";
                     switch (sei.ConflictInfo.Type)

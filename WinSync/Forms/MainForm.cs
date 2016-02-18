@@ -115,8 +115,8 @@ namespace WinSync.Forms
 
             label_detail_title.Text = ActLink.Title;
             label_detail_progress.Text = $"{ActLink.SyncInfo.SyncProgress:0.00}%";
-            label_detail_status.Text = ActLink.SyncInfo.State.Title;
-            panel_detail_header.BackColor = ActLink.SyncInfo.State.Color;
+            label_detail_status.Text = ActLink.SyncInfo.Status.Title;
+            panel_detail_header.BackColor = ActLink.SyncInfo.Status.Color;
             panel_syncDetail.Visible = true;
 
             if (!ActLink.IsRunning())
@@ -134,9 +134,9 @@ namespace WinSync.Forms
 
             label_detail_title.Text = ActLink.Title;
             label_detail_progress.Text = $"{ActLink.SyncInfo.SyncProgress:0.0}%";
-            label_detail_status.Text = ActLink.SyncInfo.State.Title;
+            label_detail_status.Text = ActLink.SyncInfo.Status.Title;
             label_timeLeft.Text = ActLink.SyncInfo.TimeRemainingEst.ToString(@"hh\:mm\:ss");
-            panel_detail_header.BackColor = ActLink.SyncInfo.State.Color;
+            panel_detail_header.BackColor = ActLink.SyncInfo.Status.Color;
             panel_syncDetail.Visible = true;
         }
 
@@ -331,7 +331,7 @@ namespace WinSync.Forms
                         continue;
 
 
-                    linkLine.StatusColor = l.SyncInfo.State.Color;
+                    linkLine.StatusColor = l.SyncInfo.Status.Color;
 
                     if (l.IsRunning())
                     {
@@ -342,7 +342,7 @@ namespace WinSync.Forms
 
                         linkLine.ProgressBar.Visible = true;
 
-                        if (l.SyncInfo.State == SyncState.ApplyingFileChanges)
+                        if (l.SyncInfo.Status == SyncStatus.ApplyingFileChanges)
                             linkLine.ProgressBar.Style = ProgressBarStyle.Blocks;
                         else
                         {
@@ -409,11 +409,11 @@ namespace WinSync.Forms
             {
                 label_detail_title.Text = ActLink.Title;
                 label_detail_progress.Text = $"{ActLink.SyncInfo.SyncProgress:0.0}%";
-                label_detail_status.Text = ActLink.SyncInfo.State.Title;
+                label_detail_status.Text = ActLink.SyncInfo.Status.Title;
 
                 label_timeLeft.Text = ActLink.SyncInfo.TimeRemainingEst.ToString(@"hh\:mm\:ss");
 
-                panel_detail_header.BackColor = ActLink.SyncInfo.State.Color;
+                panel_detail_header.BackColor = ActLink.SyncInfo.Status.Color;
 
                 if (_currentPos >= 0)
                 {
@@ -422,7 +422,7 @@ namespace WinSync.Forms
                         ActLinkLine.Progress = ActLink.SyncInfo.SyncProgress;
 
                         label_detail_progress.Text = $"{ActLink.SyncInfo.SyncProgress:0.0}%";
-                        label_detail_status.Text = ActLink.SyncInfo.State.Title;
+                        label_detail_status.Text = ActLink.SyncInfo.Status.Title;
 
                         button_sync.BackgroundImage = Properties.Resources.ic_cancel_white;
 

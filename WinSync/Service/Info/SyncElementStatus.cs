@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace WinSync.Service
 {
-    public enum SyncElementState
+    public enum SyncElementStatus
     {
         ElementFound, ChangeDetectingStarted, NoChangeFound, ChangeFound, ChangeApplied, Conflicted
     }
