@@ -2,7 +2,7 @@
 
 namespace WinSync.Forms
 {
-    partial class LinkStatisticForm1
+    partial class SyncDetailInfoForm1
     {
         /// <summary>
         /// Required designer variable.
@@ -31,7 +31,7 @@ namespace WinSync.Forms
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(LinkStatisticForm1));
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(SyncDetailInfoForm1));
             this.panel1 = new System.Windows.Forms.Panel();
             this.label_runningTasks = new System.Windows.Forms.Label();
             this.label13 = new System.Windows.Forms.Label();
@@ -157,7 +157,7 @@ namespace WinSync.Forms
             this.label11.Name = "label11";
             this.label11.Size = new System.Drawing.Size(99, 17);
             this.label11.TabIndex = 28;
-            this.label11.Text = "Sync Statistics";
+            this.label11.Text = "Sync Info";
             // 
             // shadow_bottom2
             // 
@@ -563,7 +563,7 @@ namespace WinSync.Forms
             this.imageList1.Images.SetKeyName(1, "ic_folder_open_black_24dp_2x.png");
             this.imageList1.Images.SetKeyName(2, "ic_insert_drive_file_black_24dp_2x.png");
             // 
-            // LinkStatisticFormAsync
+            // SyncDetailInfoForm1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -572,10 +572,10 @@ namespace WinSync.Forms
             this.Controls.Add(this.treeView1);
             this.Controls.Add(this.panelLeft);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
-            this.Name = "LinkStatisticFormAsync";
+            this.Name = "SyncDetailInfoForm1";
             this.Text = "Sync Details";
-            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.LinkStatisticForm_FormClosing);
-            this.Resize += new System.EventHandler(this.LinkStatisticForm_Resize);
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.SyncDetailInfoForm1_FormClosing);
+            this.Resize += new System.EventHandler(this.SyncDetailInfoForm1_Resize);
             this.panel1.ResumeLayout(false);
             this.panel1.PerformLayout();
             this.panel2.ResumeLayout(false);

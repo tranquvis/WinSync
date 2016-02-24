@@ -7,22 +7,24 @@ using WinSync.Service;
 
 namespace WinSync.Controls
 {
-    public partial class LinkLine : UserControl
+    public partial class LinkRow : UserControl
     {
         private static Color MyBackColor = Color.WhiteSmoke;
         private static Color MySelectBackColor = Color.LightGray;
 
+        public Link Link { get; private set; }
+
         /// <summary>
-        /// create a LinkLine that displays link info and controls
+        /// create a LinkRow that displays information and controls for a link and its synchronisation
         /// </summary>
-        public LinkLine(Link link)
+        public LinkRow(Link link)
         {
             InitializeComponent();
 
             Link = link;
             UpdateData();
 
-            //add on click listener to inner panel and children
+            //add on-click-listener to inner panel and its children
             inner.MouseClick += OnInnerClick;
             foreach (Control c in inner.Controls)
             {
@@ -30,86 +32,70 @@ namespace WinSync.Controls
             }
         }
 
-        public SyncButton SyncB => syncButton;
-        public Label TitleL => label_title;
-        public Label Path1L => label_path1;
-        public Label Path2L => label_path2;
-        public PictureBox DirectionP => pictureBox_direction;
-        public ProgressBar ProgressBar => progressBar;
-
-        public Color StatusColor
-        {
-            get { return BackColor; }
-            set { BackColor = value; }
-        }
-
+        /// <summary>
+        /// update form to meet the link data
+        /// </summary>
         public void UpdateData()
         {
-            Title = Link.Title;
-            Path1 = Link.Path1;
-            Path2 = Link.Path2;
-            Direction = Link.Direction;
+            label_title.Text = Link.Title;
+            label_path1.Text = Link.Path1;
+            label_path2.Text = Link.Path2;
+
+            //update direction image
+            if (Link.Direction == SyncDirection.To1)
+                pictureBox_direction.Image = Properties.Resources.ic_up;
+            else if (Link.Direction == SyncDirection.To2)
+                pictureBox_direction.Image = Properties.Resources.ic_down;
+            else if (Link.Direction == SyncDirection.TwoWay)
+                pictureBox_direction.Image = Properties.Resources.ic_two_way;
         }
 
-        public Link Link { get; }
-
-        public string Title
-        {
-            set { TitleL.Text = value; }
-        }
-        public string Path1
-        {
-            set { Path1L.Text = value; }
-        }
-
-        public string Path2
-        {
-            set { Path2L.Text = value; }
-        }
-        
-        public SyncDirection Direction
-        {
-            set
-            {
-                if (value == SyncDirection.To1)
-                    DirectionP.Image = Properties.Resources.ic_up;
-                else if (value == SyncDirection.To2)
-                    DirectionP.Image = Properties.Resources.ic_down;
-                else if (value == SyncDirection.TwoWay)
-                    DirectionP.Image = Properties.Resources.ic_two_way;
-            }
-        }
-        
         /// <summary>
-        /// Set info icon
-        /// 0 -> success, 1 -> error, -1 -> no info
+        /// update form to meet the link synchronisation data
         /// </summary>
-        public int InfoIcon
+        public void UpdateSyncData()
         {
-            set
+            BackColor = Link.SyncInfo.Status.Color;
+
+            if (Link.SyncInfo == null)
             {
-                switch (value)
+                syncButton.SwitchToSync();
+                return;
+            }
+
+            //update result image
+            if(Link.SyncInfo.Status == SyncStatus.Finished || Link.SyncInfo.Status == SyncStatus.Aborted)
+                pictureBox_result.Image = Properties.Resources.ic_check_green_72px;
+            else if(Link.SyncInfo.Status == SyncStatus.Conflicted)
+                pictureBox_result.Image = Properties.Resources.ic_error_outline_red_72px;
+            else
+                pictureBox_result.Image = null;
+
+            if (Link.SyncInfo.Running)
+            {
+                //update progress bar
+                progressBar.Visible = true;
+                progressBar.Value = (int)Link.SyncInfo.SyncProgress;
+
+                if (Link.SyncInfo.Status == SyncStatus.ApplyingFileChanges)
+                    progressBar.Style = ProgressBarStyle.Blocks;
+                else
                 {
-                    case -1:
-                        pictureBox_result.Image = null;
-                        break;
-                    case 0:
-                        pictureBox_result.Image = Properties.Resources.ic_check_green_72px;
-                        break;
-                    case 1:
-                        pictureBox_result.Image = Properties.Resources.ic_error_outline_red_72px;
-                        break;
+                    if (Link.SyncInfo.Paused)
+                        progressBar.MarqueeAnimationSpeed = 0;
+                    else
+                    {
+                        if (progressBar.MarqueeAnimationSpeed == 0)
+                            progressBar.MarqueeAnimationSpeed = 30;
+                        progressBar.Style = ProgressBarStyle.Marquee;
+                    }
                 }
-            }
-        }
 
-        /// <summary>
-        /// progress in percent
-        /// </summary>
-        public float Progress
-        {
-            get { return ProgressBar.Value * 100.0f / ProgressBar.Maximum; }
-            set { ProgressBar.Value = (int) (value * ProgressBar.Maximum / 100.0f); }
+                //update sync button
+                syncButton.SwitchToCancel();
+            }
+            else
+                syncButton.SwitchToSync();
         }
 
         private bool _selected;
@@ -122,13 +108,12 @@ namespace WinSync.Controls
                 inner.BackColor = value ? MySelectBackColor : MyBackColor;
             }
         }
-
+        
         public EventHandler DeleteEventHandler { private get; set; } = null;
         public EventHandler EditEventHandler { private get; set; } = null;
         public Action SelectEventHandler { private get; set; } = null;
         public EventHandler SyncEventHandler { private get; set; } = null;
         public EventHandler CancelEventHandler { private get; set; } = null;
-
 
         /// <summary>
         /// show context menu for editing and deleting link on right click
@@ -177,6 +162,10 @@ namespace WinSync.Controls
                 CancelEventHandler?.Invoke(sender, e);
         }
 
+        /// <summary>
+        /// open directory path in explorer
+        /// </summary>
+        /// <param name="path"></param>
         private void OpenInExplorer(string path)
         {
             Process.Start(path);

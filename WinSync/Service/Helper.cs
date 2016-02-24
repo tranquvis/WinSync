@@ -302,7 +302,7 @@ namespace WinSync.Service
                     //remove destination directory if source directory doesn't exist (if remove is enabled)
                     if (si.Link.Remove && !new Delimon.Win32.IO.DirectoryInfo(newDir.FullPath).Exists)
                     {
-                        new SyncDirInfo(si, dir);
+                        new SyncDirInfo(si, newDir);
                         new SyncDirExecutionInfo(newDir.SyncDirInfo, si.Link.Direction, true);
                     }
 

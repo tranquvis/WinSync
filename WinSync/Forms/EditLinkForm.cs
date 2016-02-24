@@ -106,7 +106,7 @@ namespace WinSync.Forms
                 DataManager.UpdateLink(_link, _oldName);
                 Close();
             }
-            catch(MyException me)
+            catch(BadInputException me)
             {
                 me.ShowMsgBox();
             }

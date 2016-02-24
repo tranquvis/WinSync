@@ -93,7 +93,7 @@ namespace WinSync.Forms
                 _mainForm.AddLink(l);
                 Close();
             }
-            catch(MyException me)
+            catch(BadInputException me)
             {
                 me.ShowMsgBox();
             }

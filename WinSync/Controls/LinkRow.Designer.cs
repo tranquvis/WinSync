@@ -1,6 +1,6 @@
 ﻿namespace WinSync.Controls
 {
-    partial class LinkLine
+    partial class LinkRow
     {
         /// <summary> 
         /// Erforderliche Designervariable.
@@ -28,7 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(LinkLine));
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(LinkRow));
             this.label_path1 = new System.Windows.Forms.Label();
             this.label_title = new System.Windows.Forms.Label();
             this.label_path2 = new System.Windows.Forms.Label();
@@ -154,14 +154,14 @@
             this.syncButton.UseVisualStyleBackColor = false;
             this.syncButton.Click += new System.EventHandler(this.syncButton_Click);
             // 
-            // LinkLine
+            // LinkRow
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.Silver;
             this.Controls.Add(this.inner);
             this.Margin = new System.Windows.Forms.Padding(0, 2, 0, 0);
-            this.Name = "LinkLine";
+            this.Name = "LinkRow";
             this.Size = new System.Drawing.Size(535, 47);
             this.inner.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox_direction)).EndInit();

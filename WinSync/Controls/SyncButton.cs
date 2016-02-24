@@ -10,6 +10,9 @@ namespace WinSync.Controls
 
         public bool StateSync = true; // true if the sync button is visible
 
+        /// <summary>
+        /// create SyncButton, which can switch between sync and cancel buttons
+        /// </summary>
         public SyncButton()
         {
             BackColor = Color.White;
@@ -21,15 +24,25 @@ namespace WinSync.Controls
             Cursor = Cursors.Hand;
         }
 
+        /// <summary>
+        /// switch button appearance to display sync button
+        /// </summary>
         public void SwitchToSync()
         {
+            if (StateSync) return;
+
             BackgroundImage = SyncImage;
             StateSync = true;
             Invalidate();
         }
 
+        /// <summary>
+        /// switch button appearance to display cancel button
+        /// </summary>
         public void SwitchToCancel()
         {
+            if (!StateSync) return;
+
             BackgroundImage = CancelImage;
             StateSync = false;
             Invalidate();

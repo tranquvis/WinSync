@@ -9,7 +9,7 @@ using System.Threading;
 
 namespace WinSync.Forms
 {
-    public partial class LinkStatisticForm1 : Form, ISyncListener
+    public partial class SyncDetailInfoForm1 : Form, ISyncListener
     {
         readonly Link _l;
         bool _initFlag;
@@ -17,10 +17,10 @@ namespace WinSync.Forms
         MainForm _mainForm;
 
         /// <summary>
-        /// create a LinkStatisticsForm that displays all details of a synchronisation process
+        /// create SyncDetailInfoForm1 that displays all details of a synchronisation process
         /// </summary>
         /// <param name="l">link that contains the synchronisation information</param>
-        public LinkStatisticForm1(Link l, MainForm mainForm)
+        public SyncDetailInfoForm1(Link l, MainForm mainForm)
         {
             _l = l;
             _mainForm = mainForm;
@@ -153,7 +153,7 @@ namespace WinSync.Forms
             
             label_syncedFilesCount.Text = $"{ _l.SyncInfo.FileChangesApplied:#,#} of {_l.SyncInfo.ChangedFilesFound:#,#}";
             label_syncedFilesSize.Text = $"{_l.SyncInfo.SizeApplied / (1024.0 * 1024.0):#,#0.00} of " +
-                    $"{_l.SyncInfo.TotalSize / (1024.0 * 1024.0):#,#0.00}MB";
+                    $"{_l.SyncInfo.TotalFileSize / (1024.0 * 1024.0):#,#0.00}MB";
 
             if (_l.SyncInfo.Status == SyncStatus.ApplyingFileChanges || _initFlag)
             {
@@ -168,7 +168,7 @@ namespace WinSync.Forms
             _initFlag = false;
         }
         
-        private void LinkStatisticForm_FormClosing(object sender, FormClosingEventArgs e)
+        private void SyncDetailInfoForm1_FormClosing(object sender, FormClosingEventArgs e)
         {
             _l.SyncInfo?.RemoveListener(this);
         }
@@ -215,7 +215,7 @@ namespace WinSync.Forms
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void LinkStatisticForm_Resize(object sender, EventArgs e)
+        private void SyncDetailInfoForm1_Resize(object sender, EventArgs e)
         {
             if(panel2.Height < 5)
             {
@@ -341,7 +341,7 @@ namespace WinSync.Forms
                     break;
                 case SyncElementStatus.ChangeFound:
                     TreeNode tn1 = getTreeNode(sei.ElementInfo);
-                    if (tn1 == null) //TODO: tn1 is null once when starting statisticForm while sync running
+                    if (tn1 == null)
                         break;
                     tn1.ForeColor = Color.Blue;
                     

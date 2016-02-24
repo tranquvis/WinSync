@@ -10,10 +10,10 @@ using System.Linq;
 
 namespace WinSync.Forms
 {
-    public partial class LinkStatisticForm2 : Form, ISyncListener
+    public partial class SyncDetailInfoForm2 : Form, ISyncListener
     {
         readonly Link _l;
-        bool _initFlag;
+        SyncInfo SI => _l.SyncInfo;
         bool updateStatsAsyncRunning;
         MainForm _mainForm;
 
@@ -21,14 +21,15 @@ namespace WinSync.Forms
         List<StatusChangedEvent> statusChangedEvents = new List<StatusChangedEvent>();
 
         /// <summary>
-        /// create a LinkStatisticsForm that displays all details of a synchronisation process
+        /// create SyncDetailInfoForm2 that displays all details of a synchronisation process
         /// </summary>
         /// <param name="l">link that contains the synchronisation information</param>
-        public LinkStatisticForm2(Link l, MainForm mainForm)
+        public SyncDetailInfoForm2(Link l, MainForm mainForm)
         {
             _l = l;
             _mainForm = mainForm;
             InitializeComponent();
+            SyncStatusHelper.Init(this);
 
             tabControl_left1.SelectedIndex = 1;
             label_title.Text = _l.Title;
@@ -36,7 +37,7 @@ namespace WinSync.Forms
             label_link_folder2.Text = _l.Path2;
             label_link_direction.Text = _l.Direction.ToString();
 
-            if (_l.SyncInfo != null)
+            if (SI != null)
             {
                 //build tree (pause sync while building)
                 bool running = _l.IsRunning();
@@ -56,8 +57,8 @@ namespace WinSync.Forms
                 }
                 if (_l.SyncTask != null)
                 {
-                    BuildTreeRecursively(treeView1.Nodes, _l.SyncInfo.DirTree);
-                    _l.SyncInfo.SetListener(this);
+                    BuildTreeRecursively(treeView1.Nodes, SI.DirTree);
+                    SI.SetListener(this);
                     if (running) _l.ResumeSync();
                 }
             }
@@ -73,7 +74,7 @@ namespace WinSync.Forms
                 {
                     if (!updateStatsAsyncRunning && _l.IsRunning())
                     {
-                        _l.SyncInfo?.SetListener(this);
+                        SI?.SetListener(this);
                         Invoke(new Action(() => {
                             UpdateStatsAsync();
                         }));
@@ -100,7 +101,7 @@ namespace WinSync.Forms
                 //display cancel and pause/continue button
                 button_sync.BackgroundImage = Properties.Resources.ic_cancel_white;
                 button_pr.Visible = true;
-                button_pr.BackgroundImage = _l.SyncInfo.Paused ? Properties.Resources.ic_play_white : Properties.Resources.ic_pause_white;
+                button_pr.BackgroundImage = SI.Paused ? Properties.Resources.ic_play_white : Properties.Resources.ic_pause_white;
 
                 UpdateProgressInfos();
             }
@@ -109,9 +110,10 @@ namespace WinSync.Forms
                 button_sync.BackgroundImage = Properties.Resources.ic_sync_white;
                 button_pr.Visible = false;
 
-                progressBar.Value = (int)(_l.SyncInfo.SyncProgress * 10);
-                label_syst_progress.Text = $"{_l.SyncInfo.SyncProgress:0.00}%";
-                label_syst_status.Text = _l.SyncInfo.Status.Title;
+                progressBar.Value = (int)(SI.SyncProgress * 10);
+                label_syst_progress.Text = $"{SI.SyncProgress:0.00}%";
+
+                statusProgressBar1.ActivatedStatus = SI.Status;
 
                 UpdateProgressInfos();
             }
@@ -123,7 +125,6 @@ namespace WinSync.Forms
         public async void UpdateStatsAsync()
         {
             updateStatsAsyncRunning = true;
-            _initFlag = true;
 
             //display cancel and pause button
             button_sync.BackgroundImage = Properties.Resources.ic_cancel_white;
@@ -131,10 +132,8 @@ namespace WinSync.Forms
 
             while (_l.IsRunning())
             {
-                button_pr.BackgroundImage = _l.SyncInfo.Paused ? Properties.Resources.ic_play_white : Properties.Resources.ic_pause_white;
                 UpdateProgressInfos();
-
-                await Task.Delay(200);
+                await Task.Delay(250);
             }
 
             updateStatsAsyncRunning = false;
@@ -143,42 +142,103 @@ namespace WinSync.Forms
             button_sync.BackgroundImage = Properties.Resources.ic_sync_white;
             button_pr.Visible = false;
 
-            progressBar.Value = (int)(_l.SyncInfo.SyncProgress * 10);
-            label_syst_progress.Text = $"{_l.SyncInfo.SyncProgress:0.00}%";
-            label_syst_status.Text = _l.SyncInfo.Status.Title;
+            progressBar.Value = (int)(SI.SyncProgress * 10);
 
             UpdateProgressInfos();
         }
+
+        SyncStatus _oldStatus;
+        bool _oldPaused;
+
+        const int _generalSuspendRounds = 4;
+        int _generalRoundCount = 0;
 
         /// <summary>
         /// update progress stats in form
         /// </summary>
         public void UpdateProgressInfos()
         {
-            label_syst_progress.Text = $"{_l.SyncInfo.SyncProgress:0.00}%";
-            label_syst_status.Text = _l.SyncInfo.Status.Title;
-            panel_header.BackColor = _l.SyncInfo.Status.Color;
+            DateTime t = DateTime.Now;
 
-            label_syst_syncedFilesCount.Text = $"{ _l.SyncInfo.FileChangesApplied:#,#} of {_l.SyncInfo.ChangedFilesFound:#,#}";
-            label_syst_syncedFilesSize.Text = $"{_l.SyncInfo.SizeApplied / (1024.0 * 1024.0):#,#0.00} of " +
-                    $"{_l.SyncInfo.TotalSize / (1024.0 * 1024.0):#,#0.00}MB";
-
-            if (_l.SyncInfo.Status == SyncStatus.ApplyingFileChanges || _initFlag)
+            if(_generalRoundCount <= 0)
             {
-                progressBar.Value = (int)(_l.SyncInfo.SyncProgress * 10);
+                #region general
+                progressBar.Value = (int)(SI.SyncProgress * 10);
+                label_syst_progress.Text = $"{SI.SyncProgress:0.00}%";
+                label_syst_totalTime.Text = SI.TotalTime.ToString(@"hh\:mm\:ss");
+                #endregion
 
-                label_syst_speed.Text = $"{_l.SyncInfo.ActSpeed:0.00} Mbit/s";
-                label_syst_averageSpeed.Text = $"{_l.SyncInfo.AverageSpeed:0.00} Mbit/s";
+                if (SI.Paused != _oldPaused)
+                {
+                    button_pr.BackgroundImage = SI.Paused ? Properties.Resources.ic_play_white : Properties.Resources.ic_pause_white;
+                    _oldPaused = SI.Paused;
+                }
+
+                if (SI.Status != _oldStatus)
+                {
+                    panel_header.BackColor = SI.Status.Color;
+                    statusProgressBar1.ActivatedStatus = SI.Status;
+
+                    if (_oldStatus != null)
+                    {
+                        SyncStatusHelper oldHelper = SyncStatusHelper.GetFromStatus(_oldStatus);
+                        foreach (Control c in oldHelper.InfControls)
+                            c.Visible = false;
+                    }
+
+                    SyncStatusHelper newHelper = SyncStatusHelper.GetFromStatus(SI.Status);
+                    foreach (Control c in newHelper.InfControls)
+                        c.Visible = true;
+
+                    _oldStatus = SI.Status;
+                }
+
+                _generalRoundCount = _generalSuspendRounds;
             }
+            else
+                _generalRoundCount--;
 
-            label_syst_totalTime.Text = _l.SyncInfo.TotalTime.ToString(@"hh\:mm\:ss");
+            if (SI.Status == SyncStatus.FetchingElements)
+            {
+                label_fetchFD_filesFound.Text = SI.FilesFound.ToString();
+                label_fetchFD_foldersFound.Text = SI.DirsFound.ToString();
+            }
+            else if(SI.Status == SyncStatus.DetectingChanges)
+            {
+                label_detectCh_changesDetected.Text = (SI.ChangedFilesFound + SI.ChangedDirsFound).ToString();
+                label_detectCh_FDDone.Text = (SI.DetectedFilesCount + SI.DetectedDirsCount).ToString();
 
-            _initFlag = false;
+                label_detectCh_filesToCopy.Text = SI.ChangedFilesToCopyFound.ToString();
+                label_detectCh_filesToRemove.Text = SI.ChangedFilesToRemoveFound.ToString();
+                label_detectCh_foldersToCreate.Text = SI.ChangedDirsToCreateFound.ToString();
+                label_detectCh_foldersToRemove.Text = SI.ChangedDirsToRemoveFound.ToString();
+            }
+            else if (SI.Status == SyncStatus.CreatingFolders)
+            {
+                label_crDirs_dirsCreated.Text = $"{SI.DirChangesApplied} of {SI.DirsFound}";
+            }
+            else if (SI.Status == SyncStatus.ApplyingFileChanges)
+            {
+                label_applyCh_speed_current.Text = $"{SI.ActSpeed:0.00} Mbit/s";
+                label_applyCh_speed_average.Text = $"{SI.AverageSpeed:0.00} Mbit/s";
+
+                label_applyCh_copiedFilesCount.Text = $"{ SI.CopiedFiles:#,#} of {SI.ChangedFilesToCopyFound:#,#}";
+                label_applyCh_copiedFilesSize.Text = $"{SI.FileSizeCopied / (1024.0 * 1024.0):#,#0.00} of " +
+                        $"{SI.TotalFileSizeToCopy / (1024.0 * 1024.0):#,#0.00}MB";
+
+                label_applyCh_removedFilesCount.Text = $"{ SI.RemovedFiles:#,#} of {SI.ChangedFilesToCopyFound:#,#}";
+                label_applyCh_removedFilesSize.Text = $"{SI.FileSizeRemoved / (1024.0 * 1024.0):#,#0.00} of " +
+                        $"{SI.TotalFileSizeToRemove / (1024.0 * 1024.0):#,#0.00}MB";
+            }
+            else if (SI.Status == SyncStatus.RemoveDirs)
+            {
+                label_remDirs_foldersRemoved.Text = $"{SI.RemovedDirs} of {SI.ChangedDirsToRemoveFound}";
+            }
         }
 
-        private void LinkStatisticForm_FormClosing(object sender, FormClosingEventArgs e)
+        private void SyncDetailInfoForm2_FormClosing(object sender, FormClosingEventArgs e)
         {
-            _l.SyncInfo?.RemoveListener(this);
+            SI?.RemoveListener(this);
         }
 
         /// <summary>
@@ -191,7 +251,7 @@ namespace WinSync.Forms
             if (!_l.IsRunning())
             {
                 _l.Sync();
-                _l.SyncInfo.SetListener(this);
+                SI.SetListener(this);
                 listBox_log.Items.Clear();
                 treeView1.Nodes.Clear();
                 statusChangedEvents = new List<StatusChangedEvent>();
@@ -210,7 +270,10 @@ namespace WinSync.Forms
         /// <param name="e"></param>
         private void button_pr_Click(object sender, EventArgs e)
         {
-            if (_l.SyncInfo.Paused)
+            if (SI == null)
+                return;
+
+            if (SI.Paused)
                 _l.ResumeSync();
             else
                 _l.PauseSync();
@@ -222,7 +285,7 @@ namespace WinSync.Forms
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void LinkStatisticForm_Resize(object sender, EventArgs e)
+        private void SyncDetailInfoForm2_Resize(object sender, EventArgs e)
         {
         }
 
@@ -306,7 +369,7 @@ namespace WinSync.Forms
             if(resultNode == null)
             {
                 resultNode = GetTreeNodeFromElement(ei);
-
+                
                 Action a = new Action(() => tnc.Add(resultNode));
                 if (invoke) treeView1.Invoke(a);
                 else a();
@@ -399,7 +462,6 @@ namespace WinSync.Forms
         public void ProcessStatusChangedEventAsync(StatusChangedEvent sce)
         {
             SyncElementInfo sei = sce.SyncElementInfo;
-
             bool isFile = typeof(SyncFileInfo) == sei.GetType();
 
             switch (sce.CreateStatus)
@@ -408,7 +470,6 @@ namespace WinSync.Forms
 
                     //update treeview
                     getTreeNode(sei.ElementInfo, true, false, true);
-
                     break;
                 case SyncElementStatus.ChangeDetectingStarted:
                     break;
@@ -419,11 +480,11 @@ namespace WinSync.Forms
 
                     if (isFile)
                     {
-                        Console.WriteLine("file change detected:" + sei.SyncExecutionInfo.AbsoluteDestPath);
+                        //Console.WriteLine("file change detected:" + sei.SyncExecutionInfo.AbsoluteDestPath);
                     }
                     else
                     {
-                        Console.WriteLine("directory change detected:" + sei.SyncExecutionInfo.AbsoluteDestPath);
+                        //Console.WriteLine("directory change detected:" + sei.SyncExecutionInfo.AbsoluteDestPath);
                     }
                     break;
                 case SyncElementStatus.ChangeApplied:
@@ -432,16 +493,24 @@ namespace WinSync.Forms
                     if (isFile)
                     {
                         if (sei.SyncExecutionInfo.Remove)
-                            Console.WriteLine("file deleted:" + sei.SyncExecutionInfo.AbsoluteDestPath);
+                        {
+                            //Console.WriteLine("file deleted:" + sei.SyncExecutionInfo.AbsoluteDestPath);
+                        }
                         else
-                            Console.WriteLine("file copied:" + sei.SyncExecutionInfo.AbsoluteDestPath);
+                        {
+                            //Console.WriteLine("file copied:" + sei.SyncExecutionInfo.AbsoluteDestPath);
+                        }
                     }
                     else
                     {
                         if (sei.SyncExecutionInfo.Remove)
-                            Console.WriteLine("directory removed:" + sei.SyncExecutionInfo.AbsoluteDestPath);
+                        {
+                            //Console.WriteLine("directory removed:" + sei.SyncExecutionInfo.AbsoluteDestPath);
+                        }
                         else
-                            Console.WriteLine("Directory created:" + sei.SyncExecutionInfo.AbsoluteDestPath);
+                        {
+                            //Console.WriteLine("Directory created:" + sei.SyncExecutionInfo.AbsoluteDestPath);
+                        }
                     }
                     break;
                 case SyncElementStatus.Conflicted:
@@ -509,21 +578,83 @@ namespace WinSync.Forms
                 //window handle wasn't created
             }
         }
+
+        private class SyncStatusHelper
+        {
+            private static SyncStatusHelper[] helpers;
+
+            public SyncStatus Status { get; }
+            public List<Control> InfControls { get; }
+
+            /// <summary>
+            /// create SyncStatusHelper
+            /// </summary>
+            /// <param name="status"></param>
+            /// <param name="infControls">controls that should be displayed when the associated Status is active</param>
+            private SyncStatusHelper(SyncStatus status, List<Control> infControls)
+            {
+                Status = status;
+                InfControls = infControls;
+            }
+
+            public static void Init(SyncDetailInfoForm2 form)
+            {
+                helpers = new SyncStatusHelper[7];
+
+                helpers[0] = new SyncStatusHelper(SyncStatus.FetchingElements, new List<Control>()
+                    {form.panel_fetchFD});
+                helpers[1] = new SyncStatusHelper(SyncStatus.DetectingChanges, new List<Control>()
+                    {form.panel_detectCh, form.panel_detectCh_chTypes});
+                helpers[2] = new SyncStatusHelper(SyncStatus.CreatingFolders, new List<Control>()
+                    {form.panel_crDirs });
+                helpers[3] = new SyncStatusHelper(SyncStatus.ApplyingFileChanges, new List<Control>()
+                    {form.panel_applyCh_speed, form.panel_applyCh_syncedFiles});
+                helpers[4] = new SyncStatusHelper(SyncStatus.RemoveDirs, new List<Control>()
+                    {form.panel_remDirs});
+                helpers[5] = new SyncStatusHelper(SyncStatus.Finished, new List<Control>()
+                    {});
+                helpers[6] = new SyncStatusHelper(SyncStatus.Aborted, new List<Control>()
+                    {});
+            }
+
+            public static SyncStatusHelper GetFromStatus(SyncStatus status)
+            {
+                return helpers.First(x => x.Status == status);
+            }
+        }
+
+        #region debug
+        DateTime _deubgMT;
+        private void MTS()
+        {
+            _deubgMT = DateTime.Now;
+        }
+        private double MTE()
+        {
+            return (DateTime.Now - _deubgMT).TotalMilliseconds;
+        }
+        private double MTEP()
+        {
+            double span = (DateTime.Now - _deubgMT).TotalMilliseconds;
+            Console.WriteLine($"{span}");
+            return span;
+        }
+        #endregion
     }
 
     public class SyncElementStatusHelper
     {
-        private static readonly SyncElementStatusHelper[] SyncStatuses;
+        private static readonly SyncElementStatusHelper[] helpers;
 
         static SyncElementStatusHelper()
         {
-            SyncStatuses = new SyncElementStatusHelper[6];
-            SyncStatuses[(int)SyncElementStatus.ElementFound] = new SyncElementStatusHelper(Color.Black, 1, 0);
-            SyncStatuses[(int)SyncElementStatus.ChangeDetectingStarted] = new SyncElementStatusHelper(Color.Black, 1, 0);
-            SyncStatuses[(int)SyncElementStatus.NoChangeFound] = new SyncElementStatusHelper(Color.Black, 1, 0);
-            SyncStatuses[(int)SyncElementStatus.ChangeFound] = new SyncElementStatusHelper(Color.Blue, 2, 0);
-            SyncStatuses[(int)SyncElementStatus.ChangeApplied] = new SyncElementStatusHelper(Color.Green, 3, 0);
-            SyncStatuses[(int)SyncElementStatus.Conflicted] = new SyncElementStatusHelper(Color.Red, 4, 0);
+            helpers = new SyncElementStatusHelper[6];
+            helpers[(int)SyncElementStatus.ElementFound] = new SyncElementStatusHelper(Color.Black, 1, 0);
+            helpers[(int)SyncElementStatus.ChangeDetectingStarted] = new SyncElementStatusHelper(Color.Black, 1, 0);
+            helpers[(int)SyncElementStatus.NoChangeFound] = new SyncElementStatusHelper(Color.Black, 1, 0);
+            helpers[(int)SyncElementStatus.ChangeFound] = new SyncElementStatusHelper(Color.Blue, 2, 0);
+            helpers[(int)SyncElementStatus.ChangeApplied] = new SyncElementStatusHelper(Color.Green, 3, 0);
+            helpers[(int)SyncElementStatus.Conflicted] = new SyncElementStatusHelper(Color.Red, 4, 0);
         }
 
         /// <summary>
@@ -531,7 +662,7 @@ namespace WinSync.Forms
         /// </summary>
         public static SyncElementStatusHelper GetFromSES(SyncElementStatus ses)
         {
-            return SyncStatuses[(int)ses];
+            return helpers[(int)ses];
         }
         
         public Color TextColor { get; }

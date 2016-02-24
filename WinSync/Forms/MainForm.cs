@@ -13,14 +13,14 @@ namespace WinSync.Forms
 {
     public partial class MainForm : Form
     {
-        private readonly List<LinkStatisticForm2> _statForms = new List<LinkStatisticForm2>();
+        private readonly List<SyncDetailInfoForm2> _statForms = new List<SyncDetailInfoForm2>();
 
         /// <summary>
         /// Caption bar height
         /// </summary>
         private const int CaptionHeight = 40;
 
-        private readonly List<LinkLine> _linkLines = new List<LinkLine>(); 
+        private readonly List<LinkRow> _linkRows = new List<LinkRow>(); 
         private List<Link> _links;
 
         /// <summary>
@@ -30,11 +30,11 @@ namespace WinSync.Forms
 
         private int _currentPos = -1;
 
-        private bool updateStatsAsyncRunning;
-        private bool updateDetailStatsAsync;
+        private bool _updateStatsAsyncRunning;
+        private bool _updateDetailStatsAsync;
 
         public Link ActLink => _links.Count > 0 && _currentPos > -1 ? _links[_currentPos] : null;
-        public LinkLine ActLinkLine => _linkLines.Count > 0 && _currentPos > -1 ? _linkLines[_currentPos] : null;
+        public LinkRow ActLinkRow => _linkRows.Count > 0 && _currentPos > -1 ? _linkRows[_currentPos] : null;
 
         public MainForm()
         {
@@ -51,9 +51,9 @@ namespace WinSync.Forms
             {
                 while (!IsDisposed)
                 {
-                    if (!updateStatsAsyncRunning && SyncRunning())
+                    if (!_updateStatsAsyncRunning && SyncRunning())
                         Invoke(new Action(() => { UpdateStatsAsync(); }));
-                    if (!updateDetailStatsAsync && ActLink?.SyncInfo != null)
+                    if (!_updateDetailStatsAsync && ActLink?.SyncInfo != null)
                         Invoke(new Action(() => { UpdateDetailStatsAsync(); })); 
 
                     await Task.Delay(500);
@@ -73,21 +73,21 @@ namespace WinSync.Forms
         public void AddLink(Link link)
         {
             _links.Add(link);
-            LinkLine ll = new LinkLine(link);
-            ll.DeleteEventHandler = delegate { Delete(_linkLines.IndexOf(ll)); };
-            ll.EditEventHandler = delegate { Edit(_linkLines.IndexOf(ll)); };
-            ll.SelectEventHandler = delegate { LineSelect(_linkLines.IndexOf(ll)); };
-            ll.SyncEventHandler = delegate { Sync(_linkLines.IndexOf(ll)); };
-            ll.CancelEventHandler = delegate { Cancel(_linkLines.IndexOf(ll)); };
+            LinkRow ll = new LinkRow(link);
+            ll.DeleteEventHandler = delegate { Delete(_linkRows.IndexOf(ll)); };
+            ll.EditEventHandler = delegate { Edit(_linkRows.IndexOf(ll)); };
+            ll.SelectEventHandler = delegate { LineSelect(_linkRows.IndexOf(ll)); };
+            ll.SyncEventHandler = delegate { Sync(_linkRows.IndexOf(ll)); };
+            ll.CancelEventHandler = delegate { Cancel(_linkRows.IndexOf(ll)); };
 
-            _linkLines.Add(ll);
-            dataTable.Controls.Add(ll, 0, _linkLines.Count);
+            _linkRows.Add(ll);
+            dataTable.Controls.Add(ll, 0, _linkRows.Count);
         }
         
         public void RemoveLink(int pos)
         {
             _links.RemoveAt(pos);
-            _linkLines.RemoveAt(pos);
+            _linkRows.RemoveAt(pos);
             dataTable.Controls.RemoveAt(pos);
         }
 
@@ -99,7 +99,7 @@ namespace WinSync.Forms
             //fetch links from file
             DataManager.CreateDataFileIfNotExist();
             SetLinks(DataManager.GetLinkList());
-            dataTable.Controls.Add(new Shadow(dataTable.Width), 0, _linkLines.Count+1);
+            dataTable.Controls.Add(new Shadow(dataTable.Width), 0, _linkRows.Count+1);
         }
 
         /// <summary>
@@ -196,7 +196,7 @@ namespace WinSync.Forms
         /// <param name="e"></param>
         private void button_openDetailForm_Click(object sender, EventArgs e)
         {
-            Thread t = new Thread(OpenStatFormInBackground);
+            Thread t = new Thread(OpenSyncDetailInfoFormInBackground);
             t.SetApartmentState(ApartmentState.STA);
             t.Start();
         }
@@ -210,10 +210,10 @@ namespace WinSync.Forms
         {
             _currentPos = pos;
             //deselect others
-            for (int i = 0; i < _linkLines.Count; i++)
+            for (int i = 0; i < _linkRows.Count; i++)
             {
                 if (i != pos)
-                    _linkLines[i].Selected = false;
+                    _linkRows[i].Selected = false;
             }
 
             UpdateDetailStatsAsync();
@@ -227,7 +227,7 @@ namespace WinSync.Forms
         {
             EditLinkForm form = new EditLinkForm(_links[pos]);
             form.ShowDialog();
-            _linkLines[pos].UpdateData();
+            _linkRows[pos].UpdateData();
         }
 
         /// <summary>
@@ -246,13 +246,6 @@ namespace WinSync.Forms
         /// <param name="pos">link position in _links</param>
         private void Sync(int pos)
         {
-            _linkLines[pos].SyncB.SwitchToCancel();
-            _linkLines[pos].InfoIcon = -1;
-
-            ProgressBar pb = _linkLines[pos].ProgressBar;
-            pb.Visible = true;
-            pb.Value = 0;
-
             label_p.Visible = true;
             label_p.Text = @"0";
             progressBar_total.Visible = true;
@@ -262,14 +255,14 @@ namespace WinSync.Forms
 
             _links[pos].Sync();
 
-            //Start UpdateStatsAsync asynchronous Method when this is the first synchronisation process
+            _linkRows[pos].UpdateSyncData();
+
+            //Start UpdateStatsAsync if this is the first synchronisation process
             if (first)
                 UpdateStatsAsync();
 
             if (_currentPos == pos)
-            {
                 UpdateDetailStatsAsync();
-            }
         }
 
         /// <summary>
@@ -278,17 +271,16 @@ namespace WinSync.Forms
         /// <param name="pos">link pos in _links</param>
         private void Cancel(int pos)
         {
-            _linkLines[pos].SyncB.SwitchToSync();
-
             _links[pos].CancelSync();
 
-            _linkLines[pos].ProgressBar.Visible = false;
+            _linkRows[pos].UpdateSyncData();
 
             if (!SyncRunning())
             {
                 progressBar_total.Visible = false;
                 label_p.Visible = false;
             }
+
             UpdateDetails();
         }
 
@@ -302,11 +294,12 @@ namespace WinSync.Forms
         }
 
         /// <summary>
-        /// start updating synchronisation overview statistics every 100 ms while any synchronisation is running
+        /// start updating synchronisation info overview every 100 ms, 
+        /// while any synchronisation is running
         /// </summary>
         public async void UpdateStatsAsync()
         {
-            updateStatsAsyncRunning = true;
+            _updateStatsAsyncRunning = true;
 
             progressBar_total.Visible = true;
             shadow_progressbar.Visible = true;
@@ -325,36 +318,15 @@ namespace WinSync.Forms
                 for (int i = 0; i < _links.Count; i++)
                 {
                     Link l = _links[i];
-                    LinkLine linkLine = _linkLines[i];
+                    LinkRow linkRow = _linkRows[i];
 
                     if (l.SyncInfo == null)
                         continue;
-
-
-                    linkLine.StatusColor = l.SyncInfo.Status.Color;
+                    
+                    linkRow.UpdateSyncData();
 
                     if (l.IsRunning())
                     {
-                        if (linkLine.SyncB.StateSync)
-                        {
-                            linkLine.SyncB.SwitchToCancel();
-                        }
-
-                        linkLine.ProgressBar.Visible = true;
-
-                        if (l.SyncInfo.Status == SyncStatus.ApplyingFileChanges)
-                            linkLine.ProgressBar.Style = ProgressBarStyle.Blocks;
-                        else
-                        {
-                            if (l.SyncInfo.Paused)
-                                linkLine.ProgressBar.MarqueeAnimationSpeed = 0;
-                            else
-                            {
-                                if(linkLine.ProgressBar.MarqueeAnimationSpeed == 0)
-                                    linkLine.ProgressBar.MarqueeAnimationSpeed = 30;
-                                linkLine.ProgressBar.Style = ProgressBarStyle.Marquee;
-                            }
-                        }
                     }
                     else
                     {
@@ -367,12 +339,6 @@ namespace WinSync.Forms
                             continue;
                         }
                         _syncFinsihedFlags.Add(l);
-
-                        //--- on synchronisation finished ---
-                        linkLine.ProgressBar.Visible = false;
-
-                        linkLine.SyncB.SwitchToSync();
-                        linkLine.InfoIcon = l.SyncInfo.Conflicted ? 1 : 0;
 
                         //show dialog if conflicts occurred to ask for retrying
                         if (l.SyncInfo != null && l.SyncInfo.Finished && l.SyncInfo.Conflicted)
@@ -388,7 +354,7 @@ namespace WinSync.Forms
                     lastLoop = !lastLoop;
             }
 
-            updateStatsAsyncRunning = false;
+            _updateStatsAsyncRunning = false;
 
             progressBar_total.Visible = false;
             shadow_progressbar.Visible = false;
@@ -400,7 +366,7 @@ namespace WinSync.Forms
         /// </summary>
         public async void UpdateDetailStatsAsync()
         {
-            updateDetailStatsAsync = true;
+            _updateDetailStatsAsync = true;
 
             //if (ActLink?.SyncInfo != null)
                 panel_syncDetail.Visible = true;
@@ -419,8 +385,6 @@ namespace WinSync.Forms
                 {
                     if (ActLink.IsRunning())
                     {
-                        ActLinkLine.Progress = ActLink.SyncInfo.SyncProgress;
-
                         label_detail_progress.Text = $"{ActLink.SyncInfo.SyncProgress:0.0}%";
                         label_detail_status.Text = ActLink.SyncInfo.Status.Title;
 
@@ -439,9 +403,9 @@ namespace WinSync.Forms
                 await Task.Delay(300);
             }
 
-            updateDetailStatsAsync = false;
+            _updateDetailStatsAsync = false;
 
-            //panel_syncDetail.Visible = false;
+            //panel_syncDetail.Visible = false; TODO
         }
 
         /// <summary>
@@ -456,7 +420,7 @@ namespace WinSync.Forms
             foreach (Link l in _links)
             {
                 if (!l.IsRunning()) continue;
-                total += l.SyncInfo.TotalSize;
+                total += l.SyncInfo.TotalFileSize;
                 p += l.SyncInfo.SizeApplied;
             }
 
@@ -464,13 +428,13 @@ namespace WinSync.Forms
         }
 
         /// <summary>
-        /// open Link Statistic Form of selected link in new thread
+        /// open SyncDetailInfoForm of selected link in new thread
         /// </summary>
-        private void OpenStatFormInBackground()
+        private void OpenSyncDetailInfoFormInBackground()
         {
             if (ActLink == null) return;
 
-            LinkStatisticForm2 f = new LinkStatisticForm2(ActLink, this);
+            SyncDetailInfoForm2 f = new SyncDetailInfoForm2(ActLink, this);
 
             f.FormClosed += delegate
             {
@@ -485,13 +449,13 @@ namespace WinSync.Forms
         }
 
         /// <summary>
-        /// close all link statistic forms on main form closin
+        /// close all SyncDetailInfoForms on main form closing
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
-            foreach (LinkStatisticForm2 f in _statForms)
+            foreach (SyncDetailInfoForm2 f in _statForms)
             {
                 try
                 {
@@ -527,7 +491,7 @@ namespace WinSync.Forms
         {
             for(int i = 0; i < _links.Count; i++)
             {
-                _linkLines[i].Visible = checkBox_availableSyncsOnly.Checked ? _links[i].IsExecutable() : true;
+                _linkRows[i].Visible = checkBox_availableSyncsOnly.Checked ? _links[i].IsExecutable() : true;
             }
         }
 

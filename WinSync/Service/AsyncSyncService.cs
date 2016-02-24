@@ -157,7 +157,7 @@ namespace WinSync.Service
             _si.Status = SyncStatus.ApplyingFileChanges;
             await DoApplyFileChanges(_si.SyncFileExecutionInfos);
 
-            _si.Status = SyncStatus.RemoveRedundantDirs;
+            _si.Status = SyncStatus.RemoveDirs;
             await RemoveFolders(_si.SyncDirExecutionInfos);
         }
 

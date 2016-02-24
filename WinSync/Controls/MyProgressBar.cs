@@ -15,6 +15,10 @@ namespace WinSync.Controls
             SetStyle(ControlStyles.UserPaint, true);
         }
 
+        /// <summary>
+        /// custom paint progress bar to change its color
+        /// </summary>
+        /// <param name="e"></param>
         protected override void OnPaint(PaintEventArgs e)
         {
             Rectangle rec = e.ClipRectangle;

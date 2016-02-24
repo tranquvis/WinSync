@@ -13,7 +13,7 @@ namespace WinSync.Service
         public SyncElementExecutionInfo(SyncElementInfo syncElementInfo, SyncDirection dir, bool remove)
         {
             SyncElementInfo = syncElementInfo;
-            syncElementInfo.SyncExecutionInfo = this;
+            SyncElementInfo.SyncExecutionInfo = this;
             Direction = dir;
             Remove = remove;
             SyncElementInfo.SyncStatus = SyncElementStatus.ChangeFound;

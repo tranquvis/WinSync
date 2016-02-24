@@ -33,7 +33,7 @@ namespace WinSync.Data
         public static void AddLink(Link link)
         {
             if (LinkExists(link.Title))
-                throw MyException.LinkAlreadyExists;
+                throw BadInputException.LinkAlreadyExists;
             
             List<string> lines = new List<string>(File.ReadAllLines(LinksDataFilePath));
 
@@ -56,7 +56,7 @@ namespace WinSync.Data
         public static void UpdateLink(Link link, string oldTitle)
         {
             if (link.Title != oldTitle && LinkExists(link.Title))
-                throw MyException.LinkAlreadyExists;
+                throw BadInputException.LinkAlreadyExists;
 
             List<string> lines = new List<string>(File.ReadAllLines(LinksDataFilePath));
             bool linkSec = false;
