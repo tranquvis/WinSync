@@ -11,16 +11,16 @@ namespace WinSync.Forms
 {
     public partial class SyncDetailInfoForm1 : Form, ISyncListener
     {
-        readonly Link _l;
+        readonly SyncLink _l;
         bool _initFlag;
-        bool updateStatsAsyncRunning;
+        bool _updateStatsAsyncRunning;
         MainForm _mainForm;
 
         /// <summary>
         /// create SyncDetailInfoForm1 that displays all details of a synchronisation process
         /// </summary>
         /// <param name="l">link that contains the synchronisation information</param>
-        public SyncDetailInfoForm1(Link l, MainForm mainForm)
+        public SyncDetailInfoForm1(SyncLink l, MainForm mainForm)
         {
             _l = l;
             _mainForm = mainForm;
@@ -34,7 +34,7 @@ namespace WinSync.Forms
             if (_l.SyncInfo != null)
             {
                 //build tree (pause sync while building)
-                bool running = _l.IsRunning();
+                bool running = _l.IsRunning;
                 if (running) _l.PauseSync();
                 int ct = 0;
                 int i = 0;
@@ -66,7 +66,7 @@ namespace WinSync.Forms
             {
                 while (!IsDisposed)
                 {
-                    if (!updateStatsAsyncRunning && _l.IsRunning())
+                    if (!_updateStatsAsyncRunning && _l.IsRunning)
                         Invoke(new Action(() => {
                             _l.SyncInfo?.SetListener(this);
                             UpdateStatsAsync();
@@ -87,7 +87,7 @@ namespace WinSync.Forms
         /// </summary>
         public void UpdateStats()
         {
-            if(_l.IsRunning())
+            if(_l.IsRunning)
             {
                 //display cancel and pause/continue button
                 button_sync.BackgroundImage = Properties.Resources.ic_cancel_white;
@@ -114,14 +114,14 @@ namespace WinSync.Forms
         /// </summary>
         public async void UpdateStatsAsync()
         {
-            updateStatsAsyncRunning = true;
+            _updateStatsAsyncRunning = true;
             _initFlag = true;
 
             //display cancel and pause button
             button_sync.BackgroundImage = Properties.Resources.ic_cancel_white;
             button_pr.Visible = true;
 
-            while (_l.IsRunning())
+            while (_l.IsRunning)
             {
                 button_pr.BackgroundImage = _l.SyncInfo.Paused ? Properties.Resources.ic_play_white : Properties.Resources.ic_pause_white;
                 UpdateProgressInfos();
@@ -129,7 +129,7 @@ namespace WinSync.Forms
                 await Task.Delay(200);
             }
 
-            updateStatsAsyncRunning = false;
+            _updateStatsAsyncRunning = false;
 
             //after synchronisation
             button_sync.BackgroundImage = Properties.Resources.ic_sync_white;
@@ -180,7 +180,7 @@ namespace WinSync.Forms
         /// <param name="e"></param>
         private void button_sync_Click(object sender, EventArgs e)
         {
-            if (!_l.IsRunning())
+            if (!_l.IsRunning)
             {
                 _l.Sync();
                 _l.SyncInfo.SetListener(this);

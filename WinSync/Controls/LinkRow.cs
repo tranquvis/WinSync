@@ -12,12 +12,50 @@ namespace WinSync.Controls
         private static Color MyBackColor = Color.WhiteSmoke;
         private static Color MySelectBackColor = Color.LightGray;
 
-        public Link Link { get; private set; }
+        public SyncLink Link { get; private set; }
+
+        private bool _selected;
+        public bool Selected
+        {
+            get { return _selected; }
+            set
+            {
+                _selected = value;
+                inner.BackColor = value ? MySelectBackColor : MyBackColor;
+            }
+        }
+
+        #region addable event handler
+        /// <summary>
+        /// occurs, when the deletion of the link has been requested
+        /// </summary>
+        public event EventHandler LinkDeletionRequested;
 
         /// <summary>
-        /// create a LinkRow that displays information and controls for a link and its synchronisation
+        /// occurs, when editing the link has been requested
         /// </summary>
-        public LinkRow(Link link)
+        public event EventHandler EditLinkRequested;
+
+        /// <summary>
+        /// occurs, when the link has been selected
+        /// </summary>
+        public event EventHandler LinkRowSelected;
+
+        /// <summary>
+        /// occurs, when the synchronisation-start of the link has been requested
+        /// </summary>
+        public event EventHandler SyncStartRequested;
+
+        /// <summary>
+        /// occurs, when the cancellation of the link has been requested
+        /// </summary>
+        public event EventHandler SyncCancellationRequested;
+        #endregion
+
+        /// <summary>
+        /// create a LinkRow that displays information and controls for a Link and its synchronisation
+        /// </summary>
+        public LinkRow(SyncLink link)
         {
             InitializeComponent();
 
@@ -71,7 +109,7 @@ namespace WinSync.Controls
             else
                 pictureBox_result.Image = null;
 
-            if (Link.SyncInfo.Running)
+            if (Link.IsRunning)
             {
                 //update progress bar
                 progressBar.Visible = true;
@@ -95,25 +133,11 @@ namespace WinSync.Controls
                 syncButton.SwitchToCancel();
             }
             else
-                syncButton.SwitchToSync();
-        }
-
-        private bool _selected;
-        public bool Selected
-        {
-            get { return _selected; }
-            set
             {
-                _selected = value;
-                inner.BackColor = value ? MySelectBackColor : MyBackColor;
+                progressBar.Visible = false;
+                syncButton.SwitchToSync();
             }
         }
-        
-        public EventHandler DeleteEventHandler { private get; set; } = null;
-        public EventHandler EditEventHandler { private get; set; } = null;
-        public Action SelectEventHandler { private get; set; } = null;
-        public EventHandler SyncEventHandler { private get; set; } = null;
-        public EventHandler CancelEventHandler { private get; set; } = null;
 
         /// <summary>
         /// show context menu for editing and deleting link on right click
@@ -136,20 +160,18 @@ namespace WinSync.Controls
                     m.MenuItems.Add(openFolder2);
 
                     MenuItem delete = new MenuItem("Delete Link");
-                    if (DeleteEventHandler != null)
-                        delete.Click += DeleteEventHandler;
+                    delete.Click += LinkDeletionRequested;
                     m.MenuItems.Add(delete);
 
                     MenuItem edit = new MenuItem("Edit Link");
-                    if (EditEventHandler != null)
-                        edit.Click += EditEventHandler;
+                    edit.Click += EditLinkRequested;
                     m.MenuItems.Add(edit);
 
                     m.Show((Control) sender, new Point(e.X, e.Y));
                     break;
                 case MouseButtons.Left:
                     Selected = true;
-                    SelectEventHandler?.Invoke();
+                    LinkRowSelected(this, EventArgs.Empty);
                     break;
             }
         }
@@ -157,9 +179,9 @@ namespace WinSync.Controls
         private void syncButton_Click(object sender, EventArgs e)
         {
             if (syncButton.StateSync)
-                SyncEventHandler?.Invoke(sender, e);
+                SyncStartRequested(sender, e);
             else
-                CancelEventHandler?.Invoke(sender, e);
+                SyncCancellationRequested(sender, e);
         }
 
         /// <summary>

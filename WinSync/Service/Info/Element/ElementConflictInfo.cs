@@ -2,7 +2,7 @@
 
 namespace WinSync.Service
 {
-    public abstract class ConflictInfo
+    public abstract class ElementConflictInfo
     {
         public SyncElementInfo SyncElementInfo { get; set; }
 
@@ -27,14 +27,14 @@ namespace WinSync.Service
         public Exception Exception { get; set; }
 
         /// <summary>
-        /// create ConflictInfo
+        /// create ElementConflictInfo
         /// </summary>
         /// <param name="type"></param>
         /// <param name="conflictPath"></param>
         /// <param name="context"></param>
         /// <param name="message"></param>
         /// <param name="exception"></param>
-        protected ConflictInfo(SyncElementInfo syncElementInfo, ConflictType type, int conflictPath, string context, string message, Exception exception)
+        protected ElementConflictInfo(SyncElementInfo syncElementInfo, ConflictType type, int conflictPath, string context, string message, Exception exception)
         {
             SyncElementInfo = syncElementInfo;
             Type = type;

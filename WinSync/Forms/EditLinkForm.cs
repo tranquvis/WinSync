@@ -103,7 +103,7 @@ namespace WinSync.Forms
 
             try
             {
-                DataManager.UpdateLink(_link, _oldName);
+                DataManager.ChangeLink(_link, _oldName);
                 Close();
             }
             catch(BadInputException me)

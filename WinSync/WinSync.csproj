@@ -122,31 +122,26 @@
     <Compile Include="Forms\SyncDetailInfoForm2.Designer.cs">
       <DependentUpon>SyncDetailInfoForm2.cs</DependentUpon>
     </Compile>
-    <Compile Include="Forms\SyncConflictRetryDialog.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Forms\SyncConflictRetryDialog.Designer.cs">
-      <DependentUpon>SyncConflictRetryDialog.cs</DependentUpon>
-    </Compile>
     <Compile Include="Service\Helper.cs" />
     <Compile Include="Service\Info\DirTree.cs" />
-    <Compile Include="Service\Info\DirConflictInfo.cs" />
-    <Compile Include="Service\Info\FileConflictInfo.cs" />
-    <Compile Include="Service\Info\MyElementInfo.cs" />
-    <Compile Include="Service\Info\SyncElementInfo.cs" />
-    <Compile Include="Service\Info\SyncElementStatus.cs" />
+    <Compile Include="Service\Info\Element\Dir\DirConflictInfo.cs" />
+    <Compile Include="Service\Info\Element\File\FileConflictInfo.cs" />
+    <Compile Include="Service\Info\Element\MyElementInfo.cs" />
+    <Compile Include="Service\Info\Element\SyncElementInfo.cs" />
+    <Compile Include="Service\Info\Element\SyncElementStatus.cs" />
     <Compile Include="Service\Info\LogMessage.cs" />
     <Compile Include="Service\Info\LogType.cs" />
-    <Compile Include="Service\Info\MyDirInfo.cs" />
-    <Compile Include="Service\Info\MyFileInfo.cs" />
-    <Compile Include="Service\Info\SyncElementExecutionInfo.cs" />
-    <Compile Include="Service\Info\SyncDirExecutionInfo.cs" />
-    <Compile Include="Service\Info\SyncFileExecutionInfo.cs" />
-    <Compile Include="Service\Info\TwoWayCompareResult.cs" />
-    <Compile Include="Service\Info\ConflictInfo.cs" />
+    <Compile Include="Service\Info\Element\Dir\MyDirInfo.cs" />
+    <Compile Include="Service\Info\Element\File\MyFileInfo.cs" />
+    <Compile Include="Service\Info\Element\SyncElementExecutionInfo.cs" />
+    <Compile Include="Service\Info\Element\Dir\SyncDirExecutionInfo.cs" />
+    <Compile Include="Service\Info\Element\File\SyncFileExecutionInfo.cs" />
+    <Compile Include="Service\SyncLink.cs" />
+    <Compile Include="Service\TwoWayCompareResult.cs" />
+    <Compile Include="Service\Info\Element\ElementConflictInfo.cs" />
     <Compile Include="Service\Info\ConflictType.cs" />
-    <Compile Include="Service\Info\SyncDirInfo.cs" />
-    <Compile Include="Service\Info\SyncFileInfo.cs" />
+    <Compile Include="Service\Info\Element\Dir\SyncDirInfo.cs" />
+    <Compile Include="Service\Info\Element\File\SyncFileInfo.cs" />
     <Compile Include="Service\Info\SyncStatus.cs" />
     <Compile Include="Forms\EditLinkForm.cs">
       <SubType>Form</SubType>
@@ -182,11 +177,11 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Service\Info\SyncInfo.cs" />
-    <Compile Include="Service\AsyncSyncService.cs" />
-    <Compile Include="Service\AsyncSyncTask.cs" />
-    <Compile Include="Service\SyncService2.cs" />
+    <Compile Include="Service\AsyncSyncServiceOld\AsyncSyncService.cs" />
+    <Compile Include="Service\AsyncSyncServiceOld\AsyncSyncTask.cs" />
+    <Compile Include="Service\SyncService2\SyncService2.cs" />
     <Compile Include="Service\SyncTask.cs" />
-    <Compile Include="Service\SyncTask2.cs" />
+    <Compile Include="Service\SyncService2\SyncTask2.cs" />
     <EmbeddedResource Include="Controls\LinkRow.resx">
       <DependentUpon>LinkRow.cs</DependentUpon>
     </EmbeddedResource>
@@ -213,9 +208,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\SyncDetailInfoForm1.resx">
       <DependentUpon>SyncDetailInfoForm1.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Forms\SyncConflictRetryDialog.resx">
-      <DependentUpon>SyncConflictRetryDialog.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
@@ -304,6 +296,7 @@
   <ItemGroup>
     <Content Include="icon.ico" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

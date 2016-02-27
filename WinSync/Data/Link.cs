@@ -10,14 +10,10 @@ namespace WinSync.Data
         private string _title;
         private string _path1;
         private string _path2;
-
-        public SyncDirection Direction { get; set; }
-
-        /// <summary>
-        /// enables removing files and folders in destination directory if the source file doesn't exist
-        /// </summary>
-        public bool Remove { get; set; }
         
+        /// <summary>
+        /// title must be unique
+        /// </summary>
         public string Title
         {
             get { return _title; }
@@ -55,6 +51,13 @@ namespace WinSync.Data
             }
         }
 
+        public SyncDirection Direction { get; set; }
+
+        /// <summary>
+        /// enables removing files and folders in destination directory if the source file doesn't exist
+        /// </summary>
+        public bool Remove { get; set; }
+
         /// <summary>
         /// create a link providing synchronisation information
         /// </summary>
@@ -71,71 +74,7 @@ namespace WinSync.Data
             Direction = direction;
             Remove = remove;
         }
-
-        /// <summary>
-        /// contains the synchronisation executer
-        /// </summary>
-        public SyncTask SyncTask { get; private set; }
-
-        /// <summary>
-        /// contains the status information of the synchronisation
-        /// </summary>
-        public SyncInfo SyncInfo { get; private set; }
-
-        /// <summary>
-        /// check if synchronisation is running
-        /// </summary>
-        /// <returns></returns>
-        public bool IsRunning()
-        {
-            return SyncInfo != null && SyncInfo.Running && SyncTask != null;
-        }
-
-        /// <summary>
-        /// execute the synchronisation
-        /// </summary>
-        public void Sync()
-        {
-            SyncInfo = new SyncInfo(this);
-
-            SyncTask = new SyncTask2(SyncInfo);
-            SyncTask.Execute();
-        }
-
-        /// <summary>
-        /// cancel synchronisation
-        /// </summary>
-        public void CancelSync()
-        {
-            if (!IsRunning()) return;
-
-            SyncTask.Cancel();
-            SyncInfo.SyncCancelled();
-            SyncTask = null;
-        }
-
-        /// <summary>
-        /// pause synchronisation
-        /// </summary>
-        public void PauseSync()
-        {
-            if (!IsRunning()) return;
-
-            SyncTask.Pause();
-            SyncInfo.SyncPaused();
-        }
-
-        /// <summary>
-        /// resume synchronisation
-        /// </summary>
-        public void ResumeSync()
-        {
-            if (!IsRunning()) return;
-
-            SyncTask.Resume();
-            SyncInfo.SyncContinued();
-        }
-
+        
         /// <summary>
         /// get line from link to store
         /// </summary>
@@ -159,7 +98,7 @@ namespace WinSync.Data
 
             string[] parts = line.Split('\"');
 
-            if (parts.Length != 1+2*argCount)
+            if (parts.Length != 1 + 2 * argCount)
                 return null;
             if (!parts[2].Trim().Equals(":") || !parts[4].Trim().Equals(",") || !parts[6].Trim().Equals(","))
                 return null;
@@ -191,15 +130,6 @@ namespace WinSync.Data
         public Link Clone()
         {
             return new Link(Title, Path1, Path2, Direction, Remove);
-        }
-
-        /// <summary>
-        /// check if the sync is executable on the current system
-        /// </summary>
-        /// <returns></returns>
-        public bool IsExecutable()
-        {
-            return Delimon.Win32.IO.Directory.Exists(Path1) && Delimon.Win32.IO.Directory.Exists(Path2);
         }
     }
 }

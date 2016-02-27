@@ -8,11 +8,8 @@ namespace WinSync.Forms
 {
     public partial class AddLinkForm : Form
     {
-        private readonly MainForm _mainForm;
-
-        public AddLinkForm(MainForm mainForm)
+        public AddLinkForm()
         {
-            _mainForm = mainForm;
             InitializeComponent();
             comboBox_direction.DataSource = SyncDirection.NameList;
         }
@@ -90,7 +87,6 @@ namespace WinSync.Forms
             {
                 Link l = new Link(title, path1, path2, direction, remove);
                 DataManager.AddLink(l);
-                _mainForm.AddLink(l);
                 Close();
             }
             catch(BadInputException me)

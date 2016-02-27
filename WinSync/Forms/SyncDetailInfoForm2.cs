@@ -12,19 +12,26 @@ namespace WinSync.Forms
 {
     public partial class SyncDetailInfoForm2 : Form, ISyncListener
     {
-        readonly Link _l;
-        SyncInfo SI => _l.SyncInfo;
-        bool updateStatsAsyncRunning;
+        readonly SyncLink _l;
+        bool _updateStatsAsyncRunning;
+        bool _statusChangedEventsCheckingRunning;
         MainForm _mainForm;
+        bool _statusChangedEventsAToken;
+        List<StatusChangedEvent> _statusChangedEvents = new List<StatusChangedEvent>();
 
-        bool statusChangedEventsAToken;
-        List<StatusChangedEvent> statusChangedEvents = new List<StatusChangedEvent>();
+        //for more performant form updating
+        SyncStatus _oldStatus;
+        bool _oldPaused;
+        const int _generalSuspendRounds = 4;
+        int _generalRoundCount = 0;
+
+        SyncInfo SI => _l.SyncInfo;
 
         /// <summary>
         /// create SyncDetailInfoForm2 that displays all details of a synchronisation process
         /// </summary>
         /// <param name="l">link that contains the synchronisation information</param>
-        public SyncDetailInfoForm2(Link l, MainForm mainForm)
+        public SyncDetailInfoForm2(SyncLink l, MainForm mainForm)
         {
             _l = l;
             _mainForm = mainForm;
@@ -40,7 +47,7 @@ namespace WinSync.Forms
             if (SI != null)
             {
                 //build tree (pause sync while building)
-                bool running = _l.IsRunning();
+                bool running = _l.IsRunning;
                 if (running) _l.PauseSync();
                 int ct = 0;
                 int i = 0;
@@ -65,20 +72,20 @@ namespace WinSync.Forms
             StartUpdateRoutine();
 
         }
-
+        
         public void StartUpdateRoutine()
         {
             Task.Run(async () =>
             {
                 while (!IsDisposed)
                 {
-                    if (!updateStatsAsyncRunning && _l.IsRunning())
+                    if (_l.IsRunning)
                     {
                         SI?.SetListener(this);
                         Invoke(new Action(() => {
-                            UpdateStatsAsync();
+                            StartUpdatingSyncInfo();
+                            StartStatusChangedEventsCheckingAsync();
                         }));
-                        StartStatusChangedEventsCheckingAsync();
                     }
 
                     Invoke(new Action(() =>
@@ -92,75 +99,58 @@ namespace WinSync.Forms
         }
 
         /// <summary>
-        /// update all synchronisation stats once
+        /// start updating synchronisation info async while synchronisation is running
         /// </summary>
-        public void UpdateStats()
+        public async void StartUpdatingSyncInfo()
         {
-            if (_l.IsRunning())
+            if (_updateStatsAsyncRunning)
+                return;
+            _updateStatsAsyncRunning = true;
+
+            while (_l.IsRunning)
+            {
+                UpdateSyncInfo(false);
+                await Task.Delay(250);
+            }
+            UpdateSyncInfo(true);
+
+            _updateStatsAsyncRunning = false;
+        }
+
+        /// <summary>
+        /// update synchronisation info
+        /// </summary>
+        /// <param name="updateAll">if false some update processes may suspend, due to their lesser importance</param>
+        public void UpdateSyncInfo(bool updateAll)
+        {
+            if (_l.IsRunning)
             {
                 //display cancel and pause/continue button
                 button_sync.BackgroundImage = Properties.Resources.ic_cancel_white;
                 button_pr.Visible = true;
                 button_pr.BackgroundImage = SI.Paused ? Properties.Resources.ic_play_white : Properties.Resources.ic_pause_white;
 
-                UpdateProgressInfos();
             }
             else
             {
                 button_sync.BackgroundImage = Properties.Resources.ic_sync_white;
                 button_pr.Visible = false;
-
+                button_pr.BackgroundImage = Properties.Resources.ic_play_white;
                 progressBar.Value = (int)(SI.SyncProgress * 10);
                 label_syst_progress.Text = $"{SI.SyncProgress:0.00}%";
-
-                statusProgressBar1.ActivatedStatus = SI.Status;
-
-                UpdateProgressInfos();
             }
+            UpdateProgressInfos(updateAll);
         }
-
-        /// <summary>
-        /// start updating all synchronisation stats every 100 ms
-        /// </summary>
-        public async void UpdateStatsAsync()
-        {
-            updateStatsAsyncRunning = true;
-
-            //display cancel and pause button
-            button_sync.BackgroundImage = Properties.Resources.ic_cancel_white;
-            button_pr.Visible = true;
-
-            while (_l.IsRunning())
-            {
-                UpdateProgressInfos();
-                await Task.Delay(250);
-            }
-
-            updateStatsAsyncRunning = false;
-
-            //after synchronisation
-            button_sync.BackgroundImage = Properties.Resources.ic_sync_white;
-            button_pr.Visible = false;
-
-            progressBar.Value = (int)(SI.SyncProgress * 10);
-
-            UpdateProgressInfos();
-        }
-
-        SyncStatus _oldStatus;
-        bool _oldPaused;
-
-        const int _generalSuspendRounds = 4;
-        int _generalRoundCount = 0;
 
         /// <summary>
         /// update progress stats in form
         /// </summary>
-        public void UpdateProgressInfos()
+        /// <param name="updateAll">if false some update processes may suspend, due to their lesser importance</param>
+        public void UpdateProgressInfos(bool updateAll)
         {
             DateTime t = DateTime.Now;
 
-            if(_generalRoundCount <= 0)
+            if(updateAll || _generalRoundCount <= 0)
             {
                 #region general
                 progressBar.Value = (int)(SI.SyncProgress * 10);
@@ -236,217 +226,36 @@ namespace WinSync.Forms
             }
         }
 
-        private void SyncDetailInfoForm2_FormClosing(object sender, FormClosingEventArgs e)
-        {
-            SI?.RemoveListener(this);
-        }
-
-        /// <summary>
-        /// start/stop synchronisation on button click
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void button_sync_Click(object sender, EventArgs e)
-        {
-            if (!_l.IsRunning())
-            {
-                _l.Sync();
-                SI.SetListener(this);
-                listBox_log.Items.Clear();
-                treeView1.Nodes.Clear();
-                statusChangedEvents = new List<StatusChangedEvent>();
-            }
-            else
-            {
-                _l.CancelSync();
-                UpdateStats();
-            }
-        }
-
-        /// <summary>
-        /// resume/pause synchronisation on button click
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void button_pr_Click(object sender, EventArgs e)
-        {
-            if (SI == null)
-                return;
-
-            if (SI.Paused)
-                _l.ResumeSync();
-            else
-                _l.PauseSync();
-
-            UpdateStats();
-        }
-
-        /// <summary>
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void SyncDetailInfoForm2_Resize(object sender, EventArgs e)
-        {
-        }
-
-        private void listBox_syncInfo_KeyDown(object sender, KeyEventArgs e)
-        {
-            if (e.Control && e.KeyCode == Keys.C)
-            {
-                Clipboard.SetData(DataFormats.Text, (string)listBox_log.SelectedItem);
-            }
-        }
-
-        private void BuildTreeRecursively(TreeNodeCollection nodes, DirTree dirTree)
-        {
-            foreach (MyFileInfo file in dirTree.Files)
-            {
-                nodes.Add(GetTreeNodeFromElement(file));
-            }
-
-            foreach (DirTree dir in dirTree.Dirs)
-            {
-                TreeNode tn = GetTreeNodeFromElement(dir.Info);
-                nodes.Add(tn);
-                BuildTreeRecursively(tn.Nodes, dir);
-            }
-        }
-
-        private TreeNode GetTreeNodeFromElement(MyElementInfo ei)
-        {
-            SyncElementStatusHelper helper = SyncElementStatusHelper.GetFromSES(ei.SyncElementInfo != null ? ei.SyncElementInfo.SyncStatus : 0);
-
-            TreeNode tn = new TreeNode(ei.Name);
-
-            if(ei.GetType() == typeof(MyFileInfo))
-            {
-                tn.ImageIndex = helper.FileImageIndex;
-                tn.SelectedImageIndex = helper.FileImageIndex;
-            }
-            else
-            {
-                tn.ImageIndex = helper.FolderImageIndex;
-                tn.SelectedImageIndex = helper.FolderImageIndex;
-            }
-
-            tn.Name = ei.Name;
-
-            return tn;
-        }
-
-        /// <summary>
-        /// get TreeNode of treeView1 from ElementInfo
-        /// </summary>
-        /// <param name="ei">ElementInfo</param>
-        /// <param name="create">if the tree nodes should be created if they do not exist</param>
-        /// <returns>null if the required tree nodes do not exist (only possible if create is disabled)</returns>
-        private TreeNode getTreeNode(MyElementInfo ei, bool create, bool update, bool invoke)
-        {
-            TreeNodeCollection tnc = treeView1.Nodes;
-            TreeNode treeNode;
-            for (int i = 0; i < ei.TreePath.Count; i++)
-            {
-                treeNode = tnc[ei.TreePath[i].Info.Name];
-                if (treeNode == null)
-                {
-                    if(!create) return null;
-
-                    //create tree node
-                    treeNode = GetTreeNodeFromElement(ei.TreePath[i].Info);
-                    Action a = new Action(() => tnc.Add(treeNode));
-                    if (invoke) treeView1.Invoke(a);
-                    else a();
-                }
-                if (update)
-                {
-                    UpdateTreeNode(treeNode, ei.TreePath[i].Info, ei.SyncElementInfo.SyncStatus, invoke);
-                }
-
-                tnc = treeNode.Nodes;
-            }
-
-            TreeNode resultNode = tnc[ei.Name];
-            if(resultNode == null)
-            {
-                resultNode = GetTreeNodeFromElement(ei);
-                
-                Action a = new Action(() => tnc.Add(resultNode));
-                if (invoke) treeView1.Invoke(a);
-                else a();
-            }
-            if (update)
-            {
-                UpdateTreeNode(resultNode, ei, null, invoke);
-            }
-
-            return resultNode;
-        }
-
-        /// <summary>
-        /// update tree node in treeview1
-        /// </summary>
-        /// <param name="tn"></param>
-        /// <param name="ei"></param>
-        /// <param name="childStatus"></param>
-        private void UpdateTreeNode(TreeNode tn, MyElementInfo ei, SyncElementStatus? childStatus, bool invoke)
-        {
-            if(ei.SyncElementInfo != null)
-            {
-                SyncElementStatusHelper helper = SyncElementStatusHelper.GetFromSES(ei.SyncElementInfo.SyncStatus);
-                tn.ForeColor = helper.TextColor;
-            }
-            if(childStatus != null)
-            {
-                SyncElementStatusHelper childHelper = SyncElementStatusHelper.GetFromSES(childStatus.Value);
-                if (ei.GetType() == typeof(MyDirInfo))
-                {
-                    if (childHelper.FolderImageIndex > tn.ImageIndex)
-                    {
-                        Action action = new Action(() =>
-                        {
-                            tn.ImageIndex = childHelper.FolderImageIndex;
-                            tn.SelectedImageIndex = childHelper.FolderImageIndex;
-                        });
-
-                        if (invoke) treeView1.Invoke(action);
-                        else action();
-                    }
-                }
-            }
-        }
-
-        private IEnumerable<TreeNode> NextParentNode(TreeNode tn)
-        {
-            TreeNode node = tn;
-            while (node.Parent != null)
-                yield return node = node.Parent;
-        }
-
         public void OnSyncElementStatusChanged(SyncElementInfo sei)
         {
-            while (statusChangedEventsAToken || statusChangedEvents.Count > 1000)
+            while (_statusChangedEventsAToken || _statusChangedEvents.Count > 1000)
                 Thread.Sleep(1);
-            statusChangedEventsAToken = true;
-            statusChangedEvents.Add(new StatusChangedEvent(sei, sei.SyncStatus));
-            statusChangedEventsAToken = false;
+            _statusChangedEventsAToken = true;
+            _statusChangedEvents.Add(new StatusChangedEvent(sei, sei.SyncStatus));
+            _statusChangedEventsAToken = false;
         }
 
         List<StatusChangedEvent> tempSCE;
         public async void StartStatusChangedEventsCheckingAsync()
         {
+            if (_statusChangedEventsCheckingRunning)
+                return;
+
+            _statusChangedEventsCheckingRunning = true;
+
             await Task.Run(async () =>
             {
-                while (_l.IsRunning())
+                while (_l.IsRunning)
                 {
                     //update tree
-                    while (statusChangedEventsAToken)
+                    while (_statusChangedEventsAToken)
                         await Task.Delay(1);
-                    statusChangedEventsAToken = true;
+                    _statusChangedEventsAToken = true;
 
-                    tempSCE = new List<StatusChangedEvent>(statusChangedEvents);
-                    statusChangedEvents = new List<StatusChangedEvent>();
+                    tempSCE = new List<StatusChangedEvent>(_statusChangedEvents);
+                    _statusChangedEvents = new List<StatusChangedEvent>();
 
-                    statusChangedEventsAToken = false;
+                    _statusChangedEventsAToken = false;
 
                     foreach (StatusChangedEvent sce in tempSCE.Where(x => x.CreateStatus == x.SyncElementInfo.SyncStatus))
                     {
@@ -457,6 +266,9 @@ namespace WinSync.Forms
                     await Task.Delay(1);
                 }
             });
+
+            _statusChangedEventsCheckingRunning = false;
+            UpdateSyncInfo(true);
         }
 
         public void ProcessStatusChangedEventAsync(StatusChangedEvent sce)
@@ -467,7 +279,6 @@ namespace WinSync.Forms
             switch (sce.CreateStatus)
             {
                 case SyncElementStatus.ElementFound:
-
                     //update treeview
                     getTreeNode(sei.ElementInfo, true, false, true);
                     break;
@@ -477,41 +288,9 @@ namespace WinSync.Forms
                     break;
                 case SyncElementStatus.ChangeFound:
                     TreeNode tn1 = getTreeNode(sei.ElementInfo, true, true, true);
-
-                    if (isFile)
-                    {
-                        //Console.WriteLine("file change detected:" + sei.SyncExecutionInfo.AbsoluteDestPath);
-                    }
-                    else
-                    {
-                        //Console.WriteLine("directory change detected:" + sei.SyncExecutionInfo.AbsoluteDestPath);
-                    }
                     break;
                 case SyncElementStatus.ChangeApplied:
                     TreeNode tn2 = getTreeNode(sei.ElementInfo, true, true, true);
-
-                    if (isFile)
-                    {
-                        if (sei.SyncExecutionInfo.Remove)
-                        {
-                            //Console.WriteLine("file deleted:" + sei.SyncExecutionInfo.AbsoluteDestPath);
-                        }
-                        else
-                        {
-                            //Console.WriteLine("file copied:" + sei.SyncExecutionInfo.AbsoluteDestPath);
-                        }
-                    }
-                    else
-                    {
-                        if (sei.SyncExecutionInfo.Remove)
-                        {
-                            //Console.WriteLine("directory removed:" + sei.SyncExecutionInfo.AbsoluteDestPath);
-                        }
-                        else
-                        {
-                            //Console.WriteLine("Directory created:" + sei.SyncExecutionInfo.AbsoluteDestPath);
-                        }
-                    }
                     break;
                 case SyncElementStatus.Conflicted:
                     string elementType = isFile ? "file" : "dir";
@@ -578,6 +357,212 @@ namespace WinSync.Forms
                 //window handle wasn't created
             }
         }
+        
+        #region tree management
+        private void BuildTreeRecursively(TreeNodeCollection nodes, DirTree dirTree)
+        {
+            foreach (MyFileInfo file in dirTree.Files)
+            {
+                nodes.Add(GetTreeNodeFromElement(file));
+            }
+
+            foreach (DirTree dir in dirTree.Dirs)
+            {
+                TreeNode tn = GetTreeNodeFromElement(dir.Info);
+                nodes.Add(tn);
+                BuildTreeRecursively(tn.Nodes, dir);
+            }
+        }
+
+        private TreeNode GetTreeNodeFromElement(MyElementInfo ei)
+        {
+            SyncElementStatusHelper helper = SyncElementStatusHelper.GetFromSES(ei.SyncElementInfo != null ? ei.SyncElementInfo.SyncStatus : 0);
+
+            TreeNode tn = new TreeNode(ei.Name);
+
+            if (ei.GetType() == typeof(MyFileInfo))
+            {
+                tn.ImageIndex = helper.FileImageIndex;
+                tn.SelectedImageIndex = helper.FileImageIndex;
+            }
+            else
+            {
+                tn.ImageIndex = helper.FolderImageIndex;
+                tn.SelectedImageIndex = helper.FolderImageIndex;
+            }
+
+            tn.Name = ei.Name;
+
+            return tn;
+        }
+
+        /// <summary>
+        /// get TreeNode of treeView1 from ElementInfo
+        /// </summary>
+        /// <param name="ei">ElementInfo</param>
+        /// <param name="create">if the tree nodes should be created if they do not exist</param>
+        /// <returns>null if the required tree nodes do not exist (only possible if create is disabled)</returns>
+        private TreeNode getTreeNode(MyElementInfo ei, bool create, bool update, bool invoke)
+        {
+            TreeNodeCollection tnc = treeView1.Nodes;
+            TreeNode treeNode;
+            for (int i = 0; i < ei.TreePath.Count; i++)
+            {
+                treeNode = tnc[ei.TreePath[i].Info.Name];
+                if (treeNode == null)
+                {
+                    if (!create) return null;
+
+                    //create tree node
+                    treeNode = GetTreeNodeFromElement(ei.TreePath[i].Info);
+                    Action a = new Action(() => tnc.Add(treeNode));
+                    if (invoke) treeView1.Invoke(a);
+                    else a();
+                }
+                if (update)
+                {
+                    UpdateTreeNode(treeNode, ei.TreePath[i].Info, ei.SyncElementInfo.SyncStatus, invoke);
+                }
+
+                tnc = treeNode.Nodes;
+            }
+
+            TreeNode resultNode = tnc[ei.Name];
+            if (resultNode == null)
+            {
+                resultNode = GetTreeNodeFromElement(ei);
+
+                Action a = new Action(() => tnc.Add(resultNode));
+                if (invoke) treeView1.Invoke(a);
+                else a();
+            }
+            if (update)
+            {
+                UpdateTreeNode(resultNode, ei, null, invoke);
+            }
+
+            return resultNode;
+        }
+
+        /// <summary>
+        /// update tree node in treeview1
+        /// </summary>
+        /// <param name="tn"></param>
+        /// <param name="ei"></param>
+        /// <param name="childStatus"></param>
+        private void UpdateTreeNode(TreeNode tn, MyElementInfo ei, SyncElementStatus? childStatus, bool invoke)
+        {
+            if (ei.SyncElementInfo != null)
+            {
+                SyncElementStatusHelper helper = SyncElementStatusHelper.GetFromSES(ei.SyncElementInfo.SyncStatus);
+                tn.ForeColor = helper.TextColor;
+            }
+            if (childStatus != null)
+            {
+                SyncElementStatusHelper childHelper = SyncElementStatusHelper.GetFromSES(childStatus.Value);
+                if (ei.GetType() == typeof(MyDirInfo))
+                {
+                    if (childHelper.FolderImageIndex > tn.ImageIndex)
+                    {
+                        Action action = new Action(() =>
+                        {
+                            tn.ImageIndex = childHelper.FolderImageIndex;
+                            tn.SelectedImageIndex = childHelper.FolderImageIndex;
+                        });
+
+                        if (invoke) treeView1.Invoke(action);
+                        else action();
+                    }
+                }
+            }
+        }
+
+        private IEnumerable<TreeNode> NextParentNode(TreeNode tn)
+        {
+            TreeNode node = tn;
+            while (node.Parent != null)
+                yield return node = node.Parent;
+        }
+        #endregion
+
+        #region event handler
+        private void SyncDetailInfoForm2_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            SI?.RemoveListener(this);
+        }
+
+        /// <summary>
+        /// start/stop synchronisation on button click
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void button_sync_Click(object sender, EventArgs e)
+        {
+            if (!_l.IsRunning)
+            {
+                _l.Sync();
+                listBox_log.Items.Clear();
+                treeView1.Nodes.Clear();
+                SI.SetListener(this);
+                StartUpdatingSyncInfo();
+                _statusChangedEvents = new List<StatusChangedEvent>();
+            }
+            else
+            {
+                _l.CancelSync();
+            }
+        }
+
+        /// <summary>
+        /// resume/pause synchronisation on button click
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void button_pr_Click(object sender, EventArgs e)
+        {
+            if (SI == null)
+                return;
+
+            if (SI.Paused)
+                _l.ResumeSync();
+            else
+                _l.PauseSync();
+        }
+
+        /// <summary>
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void SyncDetailInfoForm2_Resize(object sender, EventArgs e)
+        {
+        }
+
+        private void listBox_syncInfo_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Control && e.KeyCode == Keys.C)
+            {
+                Clipboard.SetData(DataFormats.Text, (string)listBox_log.SelectedItem);
+            }
+        }
+        #endregion
+
+        #region debug
+        DateTime _deubgMT;
+        private void MTS()
+        {
+            _deubgMT = DateTime.Now;
+        }
+        private double MTE()
+        {
+            return (DateTime.Now - _deubgMT).TotalMilliseconds;
+        }
+        private double MTEP()
+        {
+            double span = (DateTime.Now - _deubgMT).TotalMilliseconds;
+            Console.WriteLine($"{span}");
+            return span;
+        }
+        #endregion
 
         private class SyncStatusHelper
         {
@@ -612,9 +597,9 @@ namespace WinSync.Forms
                 helpers[4] = new SyncStatusHelper(SyncStatus.RemoveDirs, new List<Control>()
                     {form.panel_remDirs});
                 helpers[5] = new SyncStatusHelper(SyncStatus.Finished, new List<Control>()
-                    {});
+                { });
                 helpers[6] = new SyncStatusHelper(SyncStatus.Aborted, new List<Control>()
-                    {});
+                { });
             }
 
             public static SyncStatusHelper GetFromStatus(SyncStatus status)
@@ -622,24 +607,6 @@ namespace WinSync.Forms
                 return helpers.First(x => x.Status == status);
             }
         }
-
-        #region debug
-        DateTime _deubgMT;
-        private void MTS()
-        {
-            _deubgMT = DateTime.Now;
-        }
-        private double MTE()
-        {
-            return (DateTime.Now - _deubgMT).TotalMilliseconds;
-        }
-        private double MTEP()
-        {
-            double span = (DateTime.Now - _deubgMT).TotalMilliseconds;
-            Console.WriteLine($"{span}");
-            return span;
-        }
-        #endregion
     }
 
     public class SyncElementStatusHelper

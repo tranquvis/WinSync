@@ -25,7 +25,7 @@ namespace WinSync.Service
         public List<SyncDirExecutionInfo> SyncDirExecutionInfos { get; private set; }
         public List<SyncFileExecutionInfo> SyncFileExecutionInfos { get; private set; }
 
-        public List<ConflictInfo> ConflictInfos { get; private set; }
+        public List<ElementConflictInfo> ConflictInfos { get; private set; }
         public Stack<LogMessage> LogStack { get; private set; }
 
         public DirTree DirTree { get; private set; }
@@ -56,7 +56,7 @@ namespace WinSync.Service
             DetectedDirsCount = 0;
             SyncDirExecutionInfos = new List<SyncDirExecutionInfo>();
             SyncFileExecutionInfos = new List<SyncFileExecutionInfo>();
-            ConflictInfos = new List<ConflictInfo>();
+            ConflictInfos = new List<ElementConflictInfo>();
             LogStack = new Stack<LogMessage>();
 
             DirTree = new DirTree(new MyDirInfo("\\", ""));
@@ -438,7 +438,10 @@ namespace WinSync.Service
             _listener?.OnLog(message);
 
             if (message.Exception != null)
-                ;
+            {
+
+            }
+                
         }
 
         /// <summary>

@@ -13,348 +13,86 @@ namespace WinSync.Forms
 {
     public partial class MainForm : Form
     {
-        private readonly List<SyncDetailInfoForm2> _statForms = new List<SyncDetailInfoForm2>();
-
-        /// <summary>
-        /// Caption bar height
-        /// </summary>
-        private const int CaptionHeight = 40;
-
-        private readonly List<LinkRow> _linkRows = new List<LinkRow>(); 
-        private List<Link> _links;
-
-        /// <summary>
-        /// store links that have already finished to make sure that finish operations are not done multiple times
-        /// </summary>
-        private readonly List<Link> _syncFinsihedFlags = new List<Link>();
-
-        private int _currentPos = -1;
-
-        private bool _updateStatsAsyncRunning;
-        private bool _updateDetailStatsAsync;
-
-        public Link ActLink => _links.Count > 0 && _currentPos > -1 ? _links[_currentPos] : null;
-        public LinkRow ActLinkRow => _linkRows.Count > 0 && _currentPos > -1 ? _linkRows[_currentPos] : null;
+        SyncLink _selectedLink;
+        readonly List<LinkRow> _linkRows = new List<LinkRow>();
+        readonly List<SyncDetailInfoForm2> _statForms = new List<SyncDetailInfoForm2>();
+        bool _updatingSyncInfoRunning;
+        bool _updatingSyncLinkInfoRunning;
 
         public MainForm()
         {
             InitializeComponent();
-            FillData();
-            panel_syncDetail.Visible = true;
+            
+            DataManager.LinkChanged += OnLinkDataChanged;
+            DataManager.LoadLinks();
 
             StartUpdateRoutine();
         }
 
-        public void StartUpdateRoutine()
+        void StartUpdateRoutine()
         {
             Task.Run(async () =>
             {
                 while (!IsDisposed)
                 {
-                    if (!_updateStatsAsyncRunning && SyncRunning())
-                        Invoke(new Action(() => { UpdateStatsAsync(); }));
-                    if (!_updateDetailStatsAsync && ActLink?.SyncInfo != null)
-                        Invoke(new Action(() => { UpdateDetailStatsAsync(); })); 
+                    if (!_updatingSyncInfoRunning && DataManager.AnySyncRunning)
+                        Invoke(new Action(() => { StartUpdatingSyncInfo(); }));
+                    if (!_updatingSyncLinkInfoRunning && _selectedLink?.SyncInfo != null)
+                        Invoke(new Action(() => { StartUpdatingSelectedSyncLinkInfo(); }));
 
                     await Task.Delay(500);
                 }
             });
         }
 
-        public void SetLinks(List<Link> links)
-        {
-            _links = new List<Link>();
-            foreach (Link link in links)
-            {
-                AddLink(link);
-            }
-        }
-
-        public void AddLink(Link link)
-        {
-            _links.Add(link);
-            LinkRow ll = new LinkRow(link);
-            ll.DeleteEventHandler = delegate { Delete(_linkRows.IndexOf(ll)); };
-            ll.EditEventHandler = delegate { Edit(_linkRows.IndexOf(ll)); };
-            ll.SelectEventHandler = delegate { LineSelect(_linkRows.IndexOf(ll)); };
-            ll.SyncEventHandler = delegate { Sync(_linkRows.IndexOf(ll)); };
-            ll.CancelEventHandler = delegate { Cancel(_linkRows.IndexOf(ll)); };
-
-            _linkRows.Add(ll);
-            dataTable.Controls.Add(ll, 0, _linkRows.Count);
-        }
-        
-        public void RemoveLink(int pos)
-        {
-            _links.RemoveAt(pos);
-            _linkRows.RemoveAt(pos);
-            dataTable.Controls.RemoveAt(pos);
-        }
-
-        /// <summary>
-        /// query data from file and fill table
-        /// </summary>
-        private void FillData()
-        {
-            //fetch links from file
-            DataManager.CreateDataFileIfNotExist();
-            SetLinks(DataManager.GetLinkList());
-            dataTable.Controls.Add(new Shadow(dataTable.Width), 0, _linkRows.Count+1);
-        }
-
-        /// <summary>
-        /// update synchronisation info of selected link in form
-        /// </summary>
-        private void UpdateDetails()
-        {
-            if (ActLink.SyncInfo == null)
-            {
-                panel_syncDetail.Visible = false;
-                return;
-            }
-
-            label_detail_title.Text = ActLink.Title;
-            label_detail_progress.Text = $"{ActLink.SyncInfo.SyncProgress:0.00}%";
-            label_detail_status.Text = ActLink.SyncInfo.Status.Title;
-            panel_detail_header.BackColor = ActLink.SyncInfo.Status.Color;
-            panel_syncDetail.Visible = true;
-
-            if (!ActLink.IsRunning())
-            {
-                button_sync.BackgroundImage = Properties.Resources.ic_sync_white;
-                button_pr.Visible = false;
-            }
-            else
-            {
-                button_sync.BackgroundImage = Properties.Resources.ic_cancel_white;
-
-                button_pr.Visible = true;
-                button_pr.BackgroundImage = ActLink.SyncInfo.Paused ? Properties.Resources.ic_play_white : Properties.Resources.ic_pause_white;
-            }
-
-            label_detail_title.Text = ActLink.Title;
-            label_detail_progress.Text = $"{ActLink.SyncInfo.SyncProgress:0.0}%";
-            label_detail_status.Text = ActLink.SyncInfo.Status.Title;
-            label_timeLeft.Text = ActLink.SyncInfo.TimeRemainingEst.ToString(@"hh\:mm\:ss");
-            panel_detail_header.BackColor = ActLink.SyncInfo.Status.Color;
-            panel_syncDetail.Visible = true;
-        }
-
-        /// <summary>
-        /// add link
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void button_addLink_Click(object sender, EventArgs e)
-        {
-            AddLinkForm form = new AddLinkForm(this);
-            form.Show();
-        }
-        
-        /// <summary>
-        /// on resume/pause button click
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void button_pr_Click(object sender, EventArgs e)
-        {
-            if (ActLink.SyncInfo == null)
-                return;
-
-            if (ActLink.SyncInfo.Paused)
-            {
-                ActLink.ResumeSync();
-            }
-            else
-            {
-                ActLink.PauseSync();
-            }
-            UpdateDetails();
-        }
-
-        /// <summary>
-        /// on synchronisation button click
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void button_sync_Click(object sender, EventArgs e)
-        {
-            if (!ActLink.IsRunning())
-            {
-                Sync(_currentPos);
-            }
-            else
-            {
-                Cancel(_currentPos);
-            }
-        }
-
-        /// <summary>
-        /// open synchronisation detail form
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void button_openDetailForm_Click(object sender, EventArgs e)
-        {
-            Thread t = new Thread(OpenSyncDetailInfoFormInBackground);
-            t.SetApartmentState(ApartmentState.STA);
-            t.Start();
-        }
-
-        /// <summary>
-        /// select line and unselect others
-        /// start updating detail stats afterwards
-        /// </summary>
-        /// <param name="pos"></param>
-        private void LineSelect(int pos)
-        {
-            _currentPos = pos;
-            //deselect others
-            for (int i = 0; i < _linkRows.Count; i++)
-            {
-                if (i != pos)
-                    _linkRows[i].Selected = false;
-            }
-
-            UpdateDetailStatsAsync();
-        }
-
-        /// <summary>
-        /// open Edit Link Form
-        /// </summary>
-        /// <param name="pos"></param>
-        private void Edit(int pos)
-        {
-            EditLinkForm form = new EditLinkForm(_links[pos]);
-            form.ShowDialog();
-            _linkRows[pos].UpdateData();
-        }
-
-        /// <summary>
-        /// delete link from data
-        /// </summary>
-        /// <param name="pos"></param>
-        private void Delete(int pos)
-        {
-            DataManager.DeleteLink(_links[pos].Title);
-            RemoveLink(pos);
-        }
-
         /// <summary>
         /// start synchronisation of link and update button
         /// </summary>
-        /// <param name="pos">link position in _links</param>
-        private void Sync(int pos)
+        /// <param name="l"></param>
+        void StartSync(SyncLink l)
         {
             label_p.Visible = true;
             label_p.Text = @"0";
             progressBar_total.Visible = true;
             progressBar_total.Value = 0;
-
-            bool first = !SyncRunning();
-
-            _links[pos].Sync();
-
-            _linkRows[pos].UpdateSyncData();
-
-            //Start UpdateStatsAsync if this is the first synchronisation process
-            if (first)
-                UpdateStatsAsync();
-
-            if (_currentPos == pos)
-                UpdateDetailStatsAsync();
+            
+            l.Sync();
+            
+            StartUpdatingSyncInfo();
+            if (_selectedLink == l)
+                StartUpdatingSelectedSyncLinkInfo();
         }
 
         /// <summary>
-        /// cancel synchronisation of link and update button
+        /// cancel synchronisation of link
         /// </summary>
-        /// <param name="pos">link pos in _links</param>
-        private void Cancel(int pos)
+        /// <param name="l"></param>
+        void CancelSync(SyncLink l)
         {
-            _links[pos].CancelSync();
-
-            _linkRows[pos].UpdateSyncData();
-
-            if (!SyncRunning())
-            {
-                progressBar_total.Visible = false;
-                label_p.Visible = false;
-            }
-
-            UpdateDetails();
+            l.CancelSync();
         }
 
         /// <summary>
-        /// check if any synchronisation is running
+        /// start updating general synchronisation info async, 
+        /// until all synchronisation have finished
         /// </summary>
-        /// <returns></returns>
-        public bool SyncRunning()
+        async void StartUpdatingSyncInfo()
         {
-            return _links.Any(l => l.IsRunning());
-        }
-
-        /// <summary>
-        /// start updating synchronisation info overview every 100 ms, 
-        /// while any synchronisation is running
-        /// </summary>
-        public async void UpdateStatsAsync()
-        {
-            _updateStatsAsyncRunning = true;
+            if (_updatingSyncInfoRunning)
+                return;
+            _updatingSyncInfoRunning = true;
 
             progressBar_total.Visible = true;
             shadow_progressbar.Visible = true;
-
-            //loop once more after all synchronisations finished
-            bool lastLoop = false;
-            _syncFinsihedFlags.Clear();
-
-            while (SyncRunning() || lastLoop)
+            
+            while (DataManager.AnySyncRunning)
             {
-                float tp = GetTotalProgress();
-                progressBar_total.Value = (int) (tp*10);
-                label_p.Text = $"{tp:0.0}%";
-
-                //check each link
-                for (int i = 0; i < _links.Count; i++)
-                {
-                    Link l = _links[i];
-                    LinkRow linkRow = _linkRows[i];
-
-                    if (l.SyncInfo == null)
-                        continue;
-                    
-                    linkRow.UpdateSyncData();
-
-                    if (l.IsRunning())
-                    {
-                    }
-                    else
-                    {
-                        if (l.SyncInfo == null || !l.SyncInfo.Finished)
-                            continue;
-
-                        if(_syncFinsihedFlags.Contains(l))
-                        {
-                            _syncFinsihedFlags.Remove(l);
-                            continue;
-                        }
-                        _syncFinsihedFlags.Add(l);
-
-                        //show dialog if conflicts occurred to ask for retrying
-                        if (l.SyncInfo != null && l.SyncInfo.Finished && l.SyncInfo.Conflicted)
-                        {
-                            DialogResult result = new SyncConflictRetryDialog(l).ShowDialog();
-                            if (result == DialogResult.Yes)
-                                Sync(i);
-                        }
-                    }
-                }
+                UpdateSyncInfo();
                 await Task.Delay(200);
-                if (!SyncRunning())
-                    lastLoop = !lastLoop;
             }
+            UpdateSyncInfo();
 
-            _updateStatsAsyncRunning = false;
+            _updatingSyncInfoRunning = false;
 
             progressBar_total.Visible = false;
             shadow_progressbar.Visible = false;
@@ -362,79 +100,91 @@ namespace WinSync.Forms
         }
 
         /// <summary>
-        /// start updating synchronisation details of selected link every 100 ms while a link is selected
+        /// update general synchronisation info
         /// </summary>
-        public async void UpdateDetailStatsAsync()
+        void UpdateSyncInfo()
         {
-            _updateDetailStatsAsync = true;
+            //update total progress info
+            float tp = DataManager.GetTotalProgress();
+            progressBar_total.Value = (int)(tp * 10);
+            label_p.Text = $"{tp:0.0}%";
 
-            //if (ActLink?.SyncInfo != null)
-                panel_syncDetail.Visible = true;
-
-            while (ActLink?.SyncInfo != null)
+            //update each sync data of link
+            foreach (SyncLink l in DataManager.Links)
             {
-                label_detail_title.Text = ActLink.Title;
-                label_detail_progress.Text = $"{ActLink.SyncInfo.SyncProgress:0.0}%";
-                label_detail_status.Text = ActLink.SyncInfo.Status.Title;
+                LinkRow linkRow = GetLinkRow(l);
 
-                label_timeLeft.Text = ActLink.SyncInfo.TimeRemainingEst.ToString(@"hh\:mm\:ss");
+                if (l.SyncInfo == null)
+                    continue;
 
-                panel_detail_header.BackColor = ActLink.SyncInfo.Status.Color;
+                linkRow.UpdateSyncData();
+            }
+        }
 
-                if (_currentPos >= 0)
-                {
-                    if (ActLink.IsRunning())
-                    {
-                        label_detail_progress.Text = $"{ActLink.SyncInfo.SyncProgress:0.0}%";
-                        label_detail_status.Text = ActLink.SyncInfo.Status.Title;
+        /// <summary>
+        /// start updating synchronisation info of selected link async, until no link is selected
+        /// </summary>
+        async void StartUpdatingSelectedSyncLinkInfo()
+        {
+            if (_updatingSyncLinkInfoRunning)
+                return;
+            _updatingSyncLinkInfoRunning = true;
 
-                        button_sync.BackgroundImage = Properties.Resources.ic_cancel_white;
+            panel_syncDetail.Visible = true;
 
-                        button_pr.Visible = true;
-                        button_pr.BackgroundImage = ActLink.SyncInfo.Paused ? Properties.Resources.ic_play_white : Properties.Resources.ic_pause_white;
-                    }
-                    else
-                    {
-                        button_sync.BackgroundImage = Properties.Resources.ic_sync_white;
-                        button_pr.Visible = false;
-                    }
-                }
-
+            while (_selectedLink != null)
+            {
+                UpdateSelectedSyncLinkInfo();
                 await Task.Delay(300);
             }
 
-            _updateDetailStatsAsync = false;
-
-            //panel_syncDetail.Visible = false; TODO
+            _updatingSyncLinkInfoRunning = false;
+            panel_syncDetail.Visible = false;
         }
 
         /// <summary>
-        /// get total progress of all syncs
+        /// update synchronisation info of selected link
         /// </summary>
-        /// <returns></returns>
-        private float GetTotalProgress()
+        void UpdateSelectedSyncLinkInfo()
         {
-            float total = 0;
-            float p = 0;
-            
-            foreach (Link l in _links)
+            label_detail_title.Text = _selectedLink.Title;
+
+            if (_selectedLink.SyncInfo != null)
             {
-                if (!l.IsRunning()) continue;
-                total += l.SyncInfo.TotalFileSize;
-                p += l.SyncInfo.SizeApplied;
+                panel_selSL_info.Visible = true;
+                label_detail_progress.Text = $"{_selectedLink.SyncInfo.SyncProgress:0.0}%";
+                label_detail_status.Text = _selectedLink.SyncInfo.Status.Title;
+                label_timeLeft.Text = _selectedLink.SyncInfo.TimeRemainingEst.ToString(@"hh\:mm\:ss");
+                panel_detail_header.BackColor = _selectedLink.SyncInfo.Status.Color;
+            }
+            else
+            {
+                //reset info
+                panel_selSL_info.Visible = false;
+                panel_detail_header.BackColor = Color.Gray;
             }
 
-            return total > 0 ? 100f / total * p : 0f;
+            if (_selectedLink.IsRunning)
+            {
+                button_sync.BackgroundImage = Properties.Resources.ic_cancel_white;
+                button_pr.Visible = true;
+                button_pr.BackgroundImage = _selectedLink.SyncInfo.Paused ? Properties.Resources.ic_play_white : Properties.Resources.ic_pause_white;
+            }
+            else
+            {
+                button_sync.BackgroundImage = Properties.Resources.ic_sync_white;
+                button_pr.Visible = false;
+            }
         }
 
         /// <summary>
-        /// open SyncDetailInfoForm of selected link in new thread
+        /// open SyncDetailInfoForm of selected link
         /// </summary>
-        private void OpenSyncDetailInfoFormInBackground()
+        void OpenSyncDetailInfoFormInBackground()
         {
-            if (ActLink == null) return;
+            if (_selectedLink == null) return;
 
-            SyncDetailInfoForm2 f = new SyncDetailInfoForm2(ActLink, this);
+            SyncDetailInfoForm2 f = new SyncDetailInfoForm2(_selectedLink, this);
 
             f.FormClosed += delegate
             {
@@ -446,6 +196,137 @@ namespace WinSync.Forms
                 Application.Run(f);
                 _statForms.Add(f);
             }
+        }
+
+        #region LinkRow management
+        LinkRow GetLinkRow(SyncLink l)
+        {
+            return _linkRows.FirstOrDefault(x => x.Link == l);
+        }
+
+        void AddLinkRow(SyncLink link)
+        {
+            LinkRow ll = new LinkRow(link);
+            ll.LinkDeletionRequested += delegate { DataManager.RemoveLink(link.Title); };
+            ll.EditLinkRequested += delegate { new EditLinkForm(link).ShowDialog(); };
+            ll.LinkRowSelected += delegate { SelectLinkRow(link); };
+            ll.SyncStartRequested += delegate { StartSync(link); };
+            ll.SyncCancellationRequested += delegate { CancelSync(link); };
+
+            _linkRows.Add(ll);
+            dataTable.Controls.Add(ll, 0, _linkRows.Count);
+        }
+
+        void RemoveLinkRow(SyncLink link)
+        {
+            for (int i = 0; i < _linkRows.Count; i++)
+            {
+                if (_linkRows[i].Link == link)
+                {
+                    _linkRows.RemoveAt(i);
+                    dataTable.Controls.RemoveAt(i);
+                    break;
+                }
+            }
+        }
+
+        /// <summary>
+        /// select LinkRow and unselect others
+        /// start updating detail stats afterwards
+        /// </summary>
+        /// <param name="l">associated SyncLink</param>
+        void SelectLinkRow(SyncLink l)
+        {
+            //deselect others
+            foreach (LinkRow lr in _linkRows.Where(x => x.Link != l))
+                lr.Selected = false;
+
+            _selectedLink = l;
+
+            StartUpdatingSelectedSyncLinkInfo();
+        }
+        #endregion
+
+        #region event handler
+
+        private void OnLinkDataChanged(int changeType, SyncLink l)
+        {
+            switch (changeType)
+            {
+                case 0:
+                    //Link added
+                    AddLinkRow(l);
+                    break;
+                case 1:
+                    //Link changed
+                    GetLinkRow(l).UpdateData();
+                    break;
+                case 2:
+                    //Link removed
+                    RemoveLinkRow(l);
+                    break;
+            }
+        }
+
+        /// <summary>
+        /// add link
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void button_addLink_Click(object sender, EventArgs e)
+        {
+            AddLinkForm form = new AddLinkForm();
+            form.Show();
+        }
+
+        /// <summary>
+        /// on resume/pause button click
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void button_pr_Click(object sender, EventArgs e)
+        {
+            if (_selectedLink.SyncInfo == null)
+                return;
+
+            if (_selectedLink.SyncInfo.Paused)
+            {
+                _selectedLink.ResumeSync();
+            }
+            else
+            {
+                _selectedLink.PauseSync();
+            }
+            UpdateSelectedSyncLinkInfo();
+        }
+
+        /// <summary>
+        /// on synchronisation button click
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void button_sync_Click(object sender, EventArgs e)
+        {
+            if (!_selectedLink.IsRunning)
+            {
+                StartSync(_selectedLink);
+            }
+            else
+            {
+                CancelSync(_selectedLink);
+            }
+        }
+
+        /// <summary>
+        /// open SyncDetailInfoForm in new thread
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void button_openDetailForm_Click(object sender, EventArgs e)
+        {
+            Thread t = new Thread(OpenSyncDetailInfoFormInBackground);
+            t.SetApartmentState(ApartmentState.STA);
+            t.Start();
         }
 
         /// <summary>
@@ -489,11 +370,18 @@ namespace WinSync.Forms
         
         private void checkBox_availableSyncsOnly_CheckedChanged(object sender, EventArgs e)
         {
-            for(int i = 0; i < _links.Count; i++)
+            foreach(LinkRow lr in _linkRows)
             {
-                _linkRows[i].Visible = checkBox_availableSyncsOnly.Checked ? _links[i].IsExecutable() : true;
+                lr.Visible = checkBox_availableSyncsOnly.Checked ? lr.Link.IsExecutable() : true;
             }
         }
+        #endregion
+
+        #region window management
+        /// <summary>
+        /// Caption bar height
+        /// </summary>
+        private const int CaptionHeight = 40;
 
         /// <summary>
         /// make window moveable
@@ -513,6 +401,7 @@ namespace WinSync.Forms
             }
             base.WndProc(ref m);
         }
+        #endregion
     }
 }
  
