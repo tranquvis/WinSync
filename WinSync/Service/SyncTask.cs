@@ -37,7 +37,7 @@ namespace WinSync.Service
         /// </summary>
         public void Pause()
         {
-            _si.Paused = true;
+            _si.SyncPaused();
         }
 
         /// <summary>
@@ -45,7 +45,7 @@ namespace WinSync.Service
         /// </summary>
         public void Resume()
         {
-            _si.Paused = false;
+            _si.SyncContinued();
         }
 
         public abstract int TasksRunning(); 

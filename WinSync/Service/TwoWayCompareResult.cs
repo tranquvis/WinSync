@@ -14,15 +14,15 @@ namespace WinSync.Service
         public SyncDirection Direction { get; set; }
 
         /// <summary>
-        /// if destination file should be removed
+        /// if destination element should be removed
         /// </summary>
         public bool Remove { get; set; }
 
         /// <summary>
-        /// 
+        /// create TwoWayCompareResult
         /// </summary>
         /// <param name="direction">synchronisation direction</param>
-        /// <param name="remove">if destination file should be removed</param>
+        /// <param name="remove">if destination element should be removed</param>
         public TwoWayCompareResult(SyncDirection direction, bool remove)
         {
             Direction = direction;

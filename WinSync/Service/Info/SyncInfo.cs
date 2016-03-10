@@ -13,9 +13,9 @@ namespace WinSync.Service
 
         public Link Link { get; private set; }
 
-        public bool Paused { get; set; }
-        public bool Running { get; set; }
-        public bool Finished { get; set; } //TODO redundant with syncStatus
+        public bool Paused { get; private set; }
+        public bool Running => !Finished;
+        public bool Finished => Status == SyncStatus.Finished || Status == SyncStatus.Conflicted || Status == SyncStatus.Aborted;
 
         /// <summary>
         /// synchronisation status
@@ -39,8 +39,7 @@ namespace WinSync.Service
         public SyncInfo(Link link)
         {
             Link = link.Clone();
-
-            Running = false;
+            
             Paused = false;
             TotalFileSizeToCopy = 0;
             TotalFileSizeToRemove = 0;
@@ -59,7 +58,9 @@ namespace WinSync.Service
             ConflictInfos = new List<ElementConflictInfo>();
             LogStack = new Stack<LogMessage>();
 
-            DirTree = new DirTree(new MyDirInfo("\\", ""));
+            MyDirInfo rootDir = new MyDirInfo("\\", "");
+            SyncDirInfo sdi = new SyncDirInfo(this, rootDir, false);
+            DirTree = new DirTree(rootDir, null, null);
         }
 
         /// <summary>
@@ -301,7 +302,6 @@ namespace WinSync.Service
         public void SyncStarted()
         {
             StartTime = DateTime.Now;
-            Running = true;
         }
 
         /// <summary>
@@ -309,8 +309,6 @@ namespace WinSync.Service
         /// </summary>
         public void SyncFinished()
         {
-            Running = false;
-            Finished = true;
             Status = SyncStatus.Finished;
             EndTime = DateTime.Now;
         }
@@ -320,8 +318,6 @@ namespace WinSync.Service
         /// </summary>
         public void SyncCancelled()
         {
-            Running = false;
-            Finished = true;
             Status = SyncStatus.Aborted;
             EndTime = DateTime.Now;
         }

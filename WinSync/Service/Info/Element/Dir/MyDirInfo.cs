@@ -14,6 +14,8 @@ namespace WinSync.Service
             set { SyncElementInfo = value; }
         }
 
+        public DirTree DirTreeInfo { get; set; }
+
         public MyDirInfo(string path, string name) : base(path, name) {}
     }
 }

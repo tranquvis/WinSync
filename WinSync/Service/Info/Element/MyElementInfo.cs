@@ -21,6 +21,14 @@ namespace WinSync.Service
         public string Name { get; set; }
 
         /// <summary>
+        /// parent directory
+        /// </summary>
+        public MyDirInfo Parent
+        {
+            get { return TreePath[TreePath.Count - 1].Info; }
+        }
+
+        /// <summary>
         /// relative file path with name
         /// </summary>
         public string FullPath

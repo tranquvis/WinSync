@@ -7,15 +7,15 @@ namespace WinSync.Forms
 {
     public partial class EditLinkForm : Form
     {
-        readonly string _oldName;
-        Link _link;
+        readonly Link _oldLink;
+        Link _newLink;
 
         public EditLinkForm(Link link)
         {
             InitializeComponent();
-            _link = link;
 
-            _oldName = link.Title;
+            _oldLink = link;
+            _newLink = link.Clone();
 
             comboBox_direction.DataSource = SyncDirection.NameList;
             comboBox_direction.SelectedIndex = link.Direction.Id;
@@ -95,15 +95,15 @@ namespace WinSync.Forms
 
             if (error) return;
 
-            _link.Title = title;
-            _link.Path1 = path1;
-            _link.Path2 = path2;
-            _link.Direction = direction;
-            _link.Remove = remove;
+            _newLink.Title = title;
+            _newLink.Path1 = path1;
+            _newLink.Path2 = path2;
+            _newLink.Direction = direction;
+            _newLink.Remove = remove;
 
             try
             {
-                DataManager.ChangeLink(_link, _oldName);
+                DataManager.ChangeLink(_newLink, _oldLink.Title);
                 Close();
             }
             catch(BadInputException me)

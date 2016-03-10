@@ -24,22 +24,56 @@ namespace WinSync.Service
             _si.SyncStarted();
             _service = new SyncService2(_si);
 
+            int result = await RunExecTaskAsync();
+            switch(result)
+            {
+                case 1:
+                    MessageBox.Show("The directories to sync do not exist on this System.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    break;
+                case 3:
+                    MessageBox.Show("Unexpected Error.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    break;
+            }
+
             _service.TasksRunning++;
-            try
-            {
-                await Task.Run(() => _service.ExecuteSync());
-                _si.SyncFinished();
-            }
-            catch (DirectoryNotFoundException dnfe)
-            {
-                _si.SyncCancelled();
-                MessageBox.Show(dnfe.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-            catch (OperationCanceledException)
-            {
-                _si.SyncCancelled();
-            }
             _service.TasksRunning--;
+        }
+
+        /// <summary>
+        /// run synchronisation task async
+        /// </summary>
+        /// <returns>
+        /// result:
+        /// 0 - success
+        /// 1 - directory not found
+        /// 2 - sync canceled
+        /// </returns>
+        private Task<int> RunExecTaskAsync()
+        {
+            return Task.Run(() =>
+            {
+                try
+                {
+                    _service.ExecuteSync();
+                    _si.SyncFinished();
+                }
+                catch (DirectoryNotFoundException)
+                {
+                    _si.SyncCancelled();
+                    return 1;
+                }
+                catch (OperationCanceledException)
+                {
+                    _si.SyncCancelled();
+                    return 2;
+                }
+                catch (Exception e)
+                {
+                    return 3;
+                }
+
+                return 0;
+            });
         }
 
         public override int TasksRunning()

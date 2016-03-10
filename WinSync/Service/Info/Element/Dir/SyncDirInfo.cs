@@ -11,7 +11,7 @@ namespace WinSync.Service
             set { SyncExecutionInfo = value; }
         }
 
-        public SyncDirInfo(SyncInfo syncInfo, MyDirInfo dirInfo) : base(syncInfo, dirInfo)
+        public SyncDirInfo(SyncInfo syncInfo, MyDirInfo dirInfo, bool initStatus) : base(syncInfo, dirInfo, initStatus)
         { }
     }
 }

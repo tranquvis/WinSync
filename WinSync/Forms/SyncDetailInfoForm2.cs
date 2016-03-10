@@ -245,7 +245,7 @@ namespace WinSync.Forms
 
             await Task.Run(async () =>
             {
-                while (_l.IsRunning)
+                while (_l.IsRunning || _statusChangedEvents.Count > 0)
                 {
                     //update tree
                     while (_statusChangedEventsAToken)
@@ -270,6 +270,8 @@ namespace WinSync.Forms
             _statusChangedEventsCheckingRunning = false;
             UpdateSyncInfo(true);
         }
+
+        //TODO tree is not updated completely after short sync
 
         public void ProcessStatusChangedEventAsync(StatusChangedEvent sce)
         {
@@ -303,13 +305,16 @@ namespace WinSync.Forms
                         case ConflictType.UA:
                             conflictType = "Access Denied";
                             break;
+                        case ConflictType.DirNotEmpty:
+                            conflictType = "Dir Not Empty";
+                            break;
                         case ConflictType.Unknown:
                             conflictType = "Unknown";
                             break;
                     }
 
                     Invoke(new Action(() => 
-                        AddLogLine($"Conflict ({conflictType}) at {elementType}: {sei.ConflictInfo.GetAbsolutePath()}")
+                        AddLogLine($"Conflict ({conflictType}) at {elementType} in {sei.ConflictInfo.Context}: {sei.ConflictInfo.GetAbsolutePath()}")
                     ));
                     
                     TreeNode tn3 = getTreeNode(sei.ElementInfo, true, true, true);
@@ -406,7 +411,7 @@ namespace WinSync.Forms
         {
             TreeNodeCollection tnc = treeView1.Nodes;
             TreeNode treeNode;
-            for (int i = 0; i < ei.TreePath.Count; i++)
+            for (int i = 1; i < ei.TreePath.Count; i++)
             {
                 treeNode = tnc[ei.TreePath[i].Info.Name];
                 if (treeNode == null)
@@ -503,8 +508,9 @@ namespace WinSync.Forms
                 _l.Sync();
                 listBox_log.Items.Clear();
                 treeView1.Nodes.Clear();
-                SI.SetListener(this);
                 StartUpdatingSyncInfo();
+                StartStatusChangedEventsCheckingAsync();
+                SI.SetListener(this);
                 _statusChangedEvents = new List<StatusChangedEvent>();
             }
             else

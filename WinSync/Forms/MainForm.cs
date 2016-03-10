@@ -83,7 +83,6 @@ namespace WinSync.Forms
             _updatingSyncInfoRunning = true;
 
             progressBar_total.Visible = true;
-            shadow_progressbar.Visible = true;
             
             while (DataManager.AnySyncRunning)
             {
@@ -95,7 +94,6 @@ namespace WinSync.Forms
             _updatingSyncInfoRunning = false;
 
             progressBar_total.Visible = false;
-            shadow_progressbar.Visible = false;
             label_p.Visible = false;
         }
 

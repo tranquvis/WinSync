@@ -29,13 +29,17 @@ namespace WinSync.Service
         /// <summary>
         /// create SyncElementInfo
         /// </summary>
-        public SyncElementInfo(SyncInfo syncInfo, MyElementInfo elementInfo)
+        /// <param name="syncInfo">synchronisation info</param>
+        /// <param name="elementInfo">element info</param>
+        /// <param name="initStatus">if true: SyncStatus is set to ElementFound</param>
+        public SyncElementInfo(SyncInfo syncInfo, MyElementInfo elementInfo, bool initStatus)
         {
             SyncInfo = syncInfo;
             ElementInfo = elementInfo;
             ElementInfo.SyncElementInfo = this;
 
-            SyncStatus = SyncElementStatus.ElementFound;
+            if(initStatus)
+                SyncStatus = SyncElementStatus.ElementFound;
         }
 
         /// <summary>

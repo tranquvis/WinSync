@@ -131,5 +131,18 @@ namespace WinSync.Data
         {
             return new Link(Title, Path1, Path2, Direction, Remove);
         }
+
+        /// <summary>
+        /// Copy link data to Link l
+        /// </summary>
+        /// <param name="l"></param>
+        public void CopyDataTo(Link l)
+        {
+            l.Title = Title;
+            l.Path1 = Path1;
+            l.Path2 = Path2;
+            l.Remove = Remove;
+            l.Direction = Direction;
+        }
     }
 }

@@ -18,7 +18,7 @@ namespace WinSync.Data
     /// <param name="l">Link</param>
     public delegate void LinkDataChangedEventHandler(int changeType, SyncLink l);
 
-    public class DataManager
+    public static class DataManager
     {
         private const string LinksDataFilePath = @"links.dat";
 
@@ -175,10 +175,9 @@ namespace WinSync.Data
             int pos = GetLinkPosByTitle(oldTitle);
             if (Links[pos].IsRunning)
                 throw new ApplicationException("Cannot change Link while its sync is running!");
-
-            SyncLink sl = new SyncLink(link);
-            Links[pos] = sl;
-            LinkChanged(1, sl);
+            
+            link.CopyDataTo(Links[pos]);
+            LinkChanged(1, Links[pos]);
 
             SaveLinksToFile();
         }
@@ -218,7 +217,7 @@ namespace WinSync.Data
             int pos = -1;
             for(int i = 0; i < Links.Count; i++)
             {
-                if(Links[0].Title == title)
+                if(Links[i].Title == title)
                 {
                     pos = i;
                     break;

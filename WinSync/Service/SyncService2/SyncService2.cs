@@ -28,7 +28,7 @@ namespace WinSync.Service
 
             if (!Delimon.Win32.IO.Directory.Exists(_si.Link.Path1) || !Delimon.Win32.IO.Directory.Exists(_si.Link.Path2))
             {
-                throw new DirectoryNotFoundException("The directories to sync do not exist on this System.");
+                throw new DirectoryNotFoundException();
             }
             
             _si.Status = SyncStatus.FetchingElements;
@@ -63,24 +63,23 @@ namespace WinSync.Service
             }
             else if (_si.Link.Direction == SyncDirection.TwoWay)
             {
-                Helper.FetchFilesInDirRecursively_TwoWay(new MyDirInfo("", ""), _si, 
+                Helper.FetchElementsInDirRecursively_TwoWay(new MyDirInfo("", ""), _si, 
                     (sfi) => { }, CheckInterrupt1);
 
                 _si.Status = SyncStatus.DetectingChanges;
 
-                foreach (MyFileInfo fi in DirTree.GetFiles(_si.DirTree))
-                    Helper.DoFileComparison_TwoWay(fi.SyncFileInfo, CheckInterrupt1);
+                Helper.FetchChangesInDirRecursively_TwoWay(_si.DirTree, CheckInterrupt1, null);
             }
 
 
             _si.Status = SyncStatus.CreatingFolders;
-            CreateFolders(_si.SyncDirExecutionInfos);
+            CreateFolders(_si.DirTree);
 
             _si.Status = SyncStatus.ApplyingFileChanges;
-            DoApplyFileChanges(_si.SyncFileExecutionInfos);
+            DoApplyFileChanges(_si.DirTree);
 
             _si.Status = SyncStatus.RemoveDirs;
-            RemoveFolders(_si.SyncDirExecutionInfos);
+            RemoveFolders(_si.DirTree);
         }
 
         public void Cancel()
@@ -91,38 +90,47 @@ namespace WinSync.Service
         /// <summary>
         /// create directories
         /// </summary>
-        /// <param name="syncDirs">directory informations</param>
+        /// <param name="dirTree">directory tree</param>
         /// <returns></returns>
-        private void CreateFolders(List<SyncDirExecutionInfo> exeInfos)
+        private void CreateFolders(DirTree dirTree)
         {
-            foreach (SyncDirExecutionInfo ei in exeInfos.Where(d => !d.Remove))
+            foreach (DirTree childDir in dirTree.Dirs)
             {
-                Helper.CreateFolder(ei, CheckInterrupt1);
+                CreateFolders(childDir);
+                if (childDir.Info.SyncDirInfo?.SyncDirExecutionInfo != null && !childDir.Info.SyncDirInfo.SyncDirExecutionInfo.Remove)
+                    Helper.CreateFolder(childDir.Info.SyncDirInfo.SyncDirExecutionInfo, CheckInterrupt1);
             }
         }
 
         /// <summary>
         /// delete directories
         /// </summary>
-        /// <param name="syncDirs">directory informations</param>
+        /// <param name="dirTree">directory tree</param>
         /// <returns></returns>
-        private void RemoveFolders(List<SyncDirExecutionInfo> syncDirs)
+        private void RemoveFolders(DirTree dirTree)
         {
-            foreach (SyncDirExecutionInfo sdei in syncDirs.Where(d => d.Remove).Reverse())
+            foreach(DirTree childDir in dirTree.Dirs)
             {
-                Helper.DeleteFolder(sdei, CheckInterrupt1);
+                RemoveFolders(childDir);
+                if(childDir.Info.SyncDirInfo?.SyncDirExecutionInfo != null && childDir.Info.SyncDirInfo.SyncDirExecutionInfo.Remove)
+                    Helper.DeleteFolder(childDir.Info.SyncDirInfo.SyncDirExecutionInfo, CheckInterrupt1);
             }
         }
 
         /// <summary>
-        /// apply file changes to all synchronisation files async
+        /// apply file changes to all synchronisation files
         /// </summary>
-        /// <returns>task</returns>
-        private void DoApplyFileChanges(List<SyncFileExecutionInfo> syncFiles)
+        /// <param name="dirTree">directory tree</param>
+        /// <returns></returns>
+        private void DoApplyFileChanges(DirTree dirTree)
         {
-            foreach (SyncFileExecutionInfo sfei in syncFiles)
+            foreach (DirTree childDir in dirTree.Dirs)
+                RemoveFolders(childDir);
+
+            foreach(MyFileInfo file in dirTree.Files)
             {
-                Helper.ApplyFileChange(sfei, CheckInterrupt1);
+                if (file.SyncFileInfo?.SyncFileExecutionInfo != null)
+                    Helper.ApplyFileChange(file.SyncFileInfo.SyncFileExecutionInfo, CheckInterrupt1);
             }
         }
 
