@@ -40,16 +40,18 @@
             this.flowLayoutPanel_statusProgress.Location = new System.Drawing.Point(0, 0);
             this.flowLayoutPanel_statusProgress.Name = "flowLayoutPanel_statusProgress";
             this.flowLayoutPanel_statusProgress.Padding = new System.Windows.Forms.Padding(3);
-            this.flowLayoutPanel_statusProgress.Size = new System.Drawing.Size(483, 28);
+            this.flowLayoutPanel_statusProgress.Size = new System.Drawing.Size(695, 68);
             this.flowLayoutPanel_statusProgress.TabIndex = 54;
             // 
             // StatusProgressBar
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.AutoSize = true;
+            this.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.Controls.Add(this.flowLayoutPanel_statusProgress);
             this.Name = "StatusProgressBar";
-            this.Size = new System.Drawing.Size(483, 28);
+            this.Size = new System.Drawing.Size(695, 68);
             this.ResumeLayout(false);
 
         }

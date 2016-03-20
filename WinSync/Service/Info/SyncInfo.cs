@@ -7,11 +7,12 @@ namespace WinSync.Service
 {
     public class SyncInfo
     {
-        private TimeSpan _timePaused = TimeSpan.Zero;
-        private double? _lastSizeApplied; // in Megabit
-        private DateTime? _lastTime;
+        TimeSpan _timePaused = TimeSpan.Zero;
+        double? _lastSizeApplied; // in Megabit
+        DateTime? _lastTime;
+        SyncStatus _status;
 
-        public Link Link { get; private set; }
+        public SyncLink Link { get; private set; }
 
         public bool Paused { get; private set; }
         public bool Running => !Finished;
@@ -20,7 +21,15 @@ namespace WinSync.Service
         /// <summary>
         /// synchronisation status
         /// </summary>
-        public SyncStatus Status { get; set; } = SyncStatus.DetectingChanges;
+        public SyncStatus Status
+        {
+            get { return _status; }
+            set
+            {
+                _status = value;
+                _listener?.OnSyncStatusChanged(_status);
+            }
+        }
 
         public List<SyncDirExecutionInfo> SyncDirExecutionInfos { get; private set; }
         public List<SyncFileExecutionInfo> SyncFileExecutionInfos { get; private set; }
@@ -36,9 +45,9 @@ namespace WinSync.Service
         /// create SyncInfo
         /// </summary>
         /// <param name="link">link data (will be copied not referenced)</param>
-        public SyncInfo(Link link)
+        public SyncInfo(SyncLink link)
         {
-            Link = link.Clone();
+            Link = link;
             
             Paused = false;
             TotalFileSizeToCopy = 0;
@@ -61,6 +70,8 @@ namespace WinSync.Service
             MyDirInfo rootDir = new MyDirInfo("\\", "");
             SyncDirInfo sdi = new SyncDirInfo(this, rootDir, false);
             DirTree = new DirTree(rootDir, null, null);
+
+            Status = SyncStatus.DetectingChanges;
         }
 
         /// <summary>

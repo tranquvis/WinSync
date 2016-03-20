@@ -36,7 +36,7 @@ namespace WinSync.Forms
             _l = l;
             _mainForm = mainForm;
             InitializeComponent();
-            SyncStatusHelper.Init(this);
+            SyncStatusFormHelper.Init(this);
 
             tabControl_left1.SelectedIndex = 1;
             label_title.Text = _l.Title;
@@ -70,7 +70,6 @@ namespace WinSync.Forms
                 }
             }
             StartUpdateRoutine();
-
         }
         
         public void StartUpdateRoutine()
@@ -109,7 +108,8 @@ namespace WinSync.Forms
 
             while (_l.IsRunning)
             {
-                UpdateSyncInfo(false);
+                if(tabControl_left1.SelectedTab == tabPage_syncInfo)
+                    UpdateSyncInfo(false);
                 await Task.Delay(250);
             }
             UpdateSyncInfo(true);
@@ -167,16 +167,17 @@ namespace WinSync.Forms
                 if (SI.Status != _oldStatus)
                 {
                     panel_header.BackColor = SI.Status.Color;
-                    statusProgressBar1.ActivatedStatus = SI.Status;
+                    statusProgressBar1.ActivatedStatus = SI.Status.Title;
+                    statusProgressBar1.ActivatedStatusColor = SI.Status.Color;
 
                     if (_oldStatus != null)
                     {
-                        SyncStatusHelper oldHelper = SyncStatusHelper.GetFromStatus(_oldStatus);
+                        SyncStatusFormHelper oldHelper = SyncStatusFormHelper.GetFromStatus(_oldStatus);
                         foreach (Control c in oldHelper.InfControls)
                             c.Visible = false;
                     }
 
-                    SyncStatusHelper newHelper = SyncStatusHelper.GetFromStatus(SI.Status);
+                    SyncStatusFormHelper newHelper = SyncStatusFormHelper.GetFromStatus(SI.Status);
                     foreach (Control c in newHelper.InfControls)
                         c.Visible = true;
 
@@ -235,6 +236,18 @@ namespace WinSync.Forms
             _statusChangedEventsAToken = false;
         }
 
+        public void OnSyncStatusChanged(SyncStatus status)
+        {
+            if (status == SyncStatus.DetectingChanges)
+            {
+                Invoke(new Action(() =>
+                {
+                    StartUpdatingSyncInfo();
+                    StartStatusChangedEventsCheckingAsync();
+                }));
+            }
+        }
+
         List<StatusChangedEvent> tempSCE;
         public async void StartStatusChangedEventsCheckingAsync()
         {
@@ -271,22 +284,21 @@ namespace WinSync.Forms
             UpdateSyncInfo(true);
         }
 
-        //TODO tree is not updated completely after short sync
-
         public void ProcessStatusChangedEventAsync(StatusChangedEvent sce)
         {
+            
             SyncElementInfo sei = sce.SyncElementInfo;
             bool isFile = typeof(SyncFileInfo) == sei.GetType();
 
             switch (sce.CreateStatus)
             {
                 case SyncElementStatus.ElementFound:
-                    //update treeview
                     getTreeNode(sei.ElementInfo, true, false, true);
                     break;
                 case SyncElementStatus.ChangeDetectingStarted:
                     break;
                 case SyncElementStatus.NoChangeFound:
+                    getTreeNode(sei.ElementInfo, true, false, true);
                     break;
                 case SyncElementStatus.ChangeFound:
                     TreeNode tn1 = getTreeNode(sei.ElementInfo, true, true, true);
@@ -368,37 +380,15 @@ namespace WinSync.Forms
         {
             foreach (MyFileInfo file in dirTree.Files)
             {
-                nodes.Add(GetTreeNodeFromElement(file));
+                nodes.Add(new SyncFileTreeViewNode(file));
             }
 
             foreach (DirTree dir in dirTree.Dirs)
             {
-                TreeNode tn = GetTreeNodeFromElement(dir.Info);
+                TreeNode tn = new SyncDirTreeViewNode(dir.Info);
                 nodes.Add(tn);
                 BuildTreeRecursively(tn.Nodes, dir);
             }
-        }
-
-        private TreeNode GetTreeNodeFromElement(MyElementInfo ei)
-        {
-            SyncElementStatusHelper helper = SyncElementStatusHelper.GetFromSES(ei.SyncElementInfo != null ? ei.SyncElementInfo.SyncStatus : 0);
-
-            TreeNode tn = new TreeNode(ei.Name);
-
-            if (ei.GetType() == typeof(MyFileInfo))
-            {
-                tn.ImageIndex = helper.FileImageIndex;
-                tn.SelectedImageIndex = helper.FileImageIndex;
-            }
-            else
-            {
-                tn.ImageIndex = helper.FolderImageIndex;
-                tn.SelectedImageIndex = helper.FolderImageIndex;
-            }
-
-            tn.Name = ei.Name;
-
-            return tn;
         }
 
         /// <summary>
@@ -407,35 +397,46 @@ namespace WinSync.Forms
         /// <param name="ei">ElementInfo</param>
         /// <param name="create">if the tree nodes should be created if they do not exist</param>
         /// <returns>null if the required tree nodes do not exist (only possible if create is disabled)</returns>
-        private TreeNode getTreeNode(MyElementInfo ei, bool create, bool update, bool invoke)
+        private SyncElementTreeViewNode getTreeNode(MyElementInfo ei, bool create, bool update, bool invoke)
         {
+            //TODO improve performance
+
             TreeNodeCollection tnc = treeView1.Nodes;
-            TreeNode treeNode;
+            SyncDirTreeViewNode treeNode = null;
             for (int i = 1; i < ei.TreePath.Count; i++)
             {
-                treeNode = tnc[ei.TreePath[i].Info.Name];
+                treeNode = (SyncDirTreeViewNode)tnc[ei.TreePath[i].Info.Name];
                 if (treeNode == null)
                 {
                     if (!create) return null;
-
+                    
                     //create tree node
-                    treeNode = GetTreeNodeFromElement(ei.TreePath[i].Info);
+                    treeNode = new SyncDirTreeViewNode(ei.TreePath[i].Info);
                     Action a = new Action(() => tnc.Add(treeNode));
                     if (invoke) treeView1.Invoke(a);
                     else a();
+                    
                 }
                 if (update)
                 {
-                    UpdateTreeNode(treeNode, ei.TreePath[i].Info, ei.SyncElementInfo.SyncStatus, invoke);
+                    //update tree node (according to the status of ei)
+                    treeNode.ChildStatus = ei.SyncElementInfo.SyncStatus;
+                    Action a = new Action(treeNode.Update);
+                    if (invoke) treeView1.Invoke(a);
+                    else a();
                 }
 
                 tnc = treeNode.Nodes;
             }
 
-            TreeNode resultNode = tnc[ei.Name];
+            SyncElementTreeViewNode resultNode = ei.ElementTreeViewNode;
             if (resultNode == null)
             {
-                resultNode = GetTreeNodeFromElement(ei);
+                //create result tree node
+                if (ei.GetType() == typeof(MyFileInfo))
+                    resultNode = new SyncFileTreeViewNode((MyFileInfo)ei);
+                else
+                    resultNode = new SyncDirTreeViewNode((MyDirInfo)ei);
 
                 Action a = new Action(() => tnc.Add(resultNode));
                 if (invoke) treeView1.Invoke(a);
@@ -443,50 +444,12 @@ namespace WinSync.Forms
             }
             if (update)
             {
-                UpdateTreeNode(resultNode, ei, null, invoke);
+                //update result tree node
+                Action a = new Action(resultNode.Update);
+                if (invoke) treeView1.Invoke(a);
+                else a();
             }
-
             return resultNode;
-        }
-
-        /// <summary>
-        /// update tree node in treeview1
-        /// </summary>
-        /// <param name="tn"></param>
-        /// <param name="ei"></param>
-        /// <param name="childStatus"></param>
-        private void UpdateTreeNode(TreeNode tn, MyElementInfo ei, SyncElementStatus? childStatus, bool invoke)
-        {
-            if (ei.SyncElementInfo != null)
-            {
-                SyncElementStatusHelper helper = SyncElementStatusHelper.GetFromSES(ei.SyncElementInfo.SyncStatus);
-                tn.ForeColor = helper.TextColor;
-            }
-            if (childStatus != null)
-            {
-                SyncElementStatusHelper childHelper = SyncElementStatusHelper.GetFromSES(childStatus.Value);
-                if (ei.GetType() == typeof(MyDirInfo))
-                {
-                    if (childHelper.FolderImageIndex > tn.ImageIndex)
-                    {
-                        Action action = new Action(() =>
-                        {
-                            tn.ImageIndex = childHelper.FolderImageIndex;
-                            tn.SelectedImageIndex = childHelper.FolderImageIndex;
-                        });
-
-                        if (invoke) treeView1.Invoke(action);
-                        else action();
-                    }
-                }
-            }
-        }
-
-        private IEnumerable<TreeNode> NextParentNode(TreeNode tn)
-        {
-            TreeNode node = tn;
-            while (node.Parent != null)
-                yield return node = node.Parent;
         }
         #endregion
 
@@ -505,12 +468,9 @@ namespace WinSync.Forms
         {
             if (!_l.IsRunning)
             {
-                _l.Sync();
+                _l.Sync(this);
                 listBox_log.Items.Clear();
                 treeView1.Nodes.Clear();
-                StartUpdatingSyncInfo();
-                StartStatusChangedEventsCheckingAsync();
-                SI.SetListener(this);
                 _statusChangedEvents = new List<StatusChangedEvent>();
             }
             else
@@ -570,9 +530,10 @@ namespace WinSync.Forms
         }
         #endregion
 
-        private class SyncStatusHelper
+        #region form helper 
+        private class SyncStatusFormHelper
         {
-            private static SyncStatusHelper[] helpers;
+            private static SyncStatusFormHelper[] helpers;
 
             public SyncStatus Status { get; }
             public List<Control> InfControls { get; }
@@ -582,7 +543,7 @@ namespace WinSync.Forms
             /// </summary>
             /// <param name="status"></param>
             /// <param name="infControls">controls that should be displayed when the associated Status is active</param>
-            private SyncStatusHelper(SyncStatus status, List<Control> infControls)
+            private SyncStatusFormHelper(SyncStatus status, List<Control> infControls)
             {
                 Status = status;
                 InfControls = infControls;
@@ -590,63 +551,93 @@ namespace WinSync.Forms
 
             public static void Init(SyncDetailInfoForm2 form)
             {
-                helpers = new SyncStatusHelper[7];
+                helpers = new SyncStatusFormHelper[7];
 
-                helpers[0] = new SyncStatusHelper(SyncStatus.FetchingElements, new List<Control>()
+                helpers[0] = new SyncStatusFormHelper(SyncStatus.FetchingElements, new List<Control>()
                     {form.panel_fetchFD});
-                helpers[1] = new SyncStatusHelper(SyncStatus.DetectingChanges, new List<Control>()
+                helpers[1] = new SyncStatusFormHelper(SyncStatus.DetectingChanges, new List<Control>()
                     {form.panel_detectCh, form.panel_detectCh_chTypes});
-                helpers[2] = new SyncStatusHelper(SyncStatus.CreatingFolders, new List<Control>()
+                helpers[2] = new SyncStatusFormHelper(SyncStatus.CreatingFolders, new List<Control>()
                     {form.panel_crDirs });
-                helpers[3] = new SyncStatusHelper(SyncStatus.ApplyingFileChanges, new List<Control>()
+                helpers[3] = new SyncStatusFormHelper(SyncStatus.ApplyingFileChanges, new List<Control>()
                     {form.panel_applyCh_speed, form.panel_applyCh_syncedFiles});
-                helpers[4] = new SyncStatusHelper(SyncStatus.RemoveDirs, new List<Control>()
+                helpers[4] = new SyncStatusFormHelper(SyncStatus.RemoveDirs, new List<Control>()
                     {form.panel_remDirs});
-                helpers[5] = new SyncStatusHelper(SyncStatus.Finished, new List<Control>()
+                helpers[5] = new SyncStatusFormHelper(SyncStatus.Finished, new List<Control>()
                 { });
-                helpers[6] = new SyncStatusHelper(SyncStatus.Aborted, new List<Control>()
+                helpers[6] = new SyncStatusFormHelper(SyncStatus.Aborted, new List<Control>()
                 { });
             }
 
-            public static SyncStatusHelper GetFromStatus(SyncStatus status)
+            public static SyncStatusFormHelper GetFromStatus(SyncStatus status)
             {
                 return helpers.First(x => x.Status == status);
             }
         }
-    }
+        #endregion
 
-    public class SyncElementStatusHelper
-    {
-        private static readonly SyncElementStatusHelper[] helpers;
-
-        static SyncElementStatusHelper()
+        private void treeView1_NodeMouseDoubleClick(object sender, TreeNodeMouseClickEventArgs e)
         {
-            helpers = new SyncElementStatusHelper[6];
-            helpers[(int)SyncElementStatus.ElementFound] = new SyncElementStatusHelper(Color.Black, 1, 0);
-            helpers[(int)SyncElementStatus.ChangeDetectingStarted] = new SyncElementStatusHelper(Color.Black, 1, 0);
-            helpers[(int)SyncElementStatus.NoChangeFound] = new SyncElementStatusHelper(Color.Black, 1, 0);
-            helpers[(int)SyncElementStatus.ChangeFound] = new SyncElementStatusHelper(Color.Blue, 2, 0);
-            helpers[(int)SyncElementStatus.ChangeApplied] = new SyncElementStatusHelper(Color.Green, 3, 0);
-            helpers[(int)SyncElementStatus.Conflicted] = new SyncElementStatusHelper(Color.Red, 4, 0);
+            tabControl_left1.SelectedTab = tabPage_syncElementInfo;
+            tableLayoutPanel_sei.Visible = true;
+
+            UpdateSyncElementInfo();
         }
 
-        /// <summary>
-        /// get SyncElementStatusHelper from SyncElementStatus
-        /// </summary>
-        public static SyncElementStatusHelper GetFromSES(SyncElementStatus ses)
+        private void UpdateSyncElementInfo()
         {
-            return helpers[(int)ses];
-        }
-        
-        public Color TextColor { get; }
-        public int FolderImageIndex { get; }
-        public int FileImageIndex { get; }
+            SyncElementTreeViewNode node = (SyncElementTreeViewNode)treeView1.SelectedNode;
+            MyElementInfo ei = node.ElementInfo;
 
-        private SyncElementStatusHelper(Color textColor, int folderImageIndex, int fileImageIndex)
+            label_sei_type.Text = ei.GetType() == typeof(MyFileInfo) ? "File" : "Dir";
+            label_sei_name.Text = ei.Name;
+
+            if (ei.SyncElementInfo != null)
+            {
+                label_sei_path1.Text = ei.SyncElementInfo.AbsolutePath1;
+                label_sei_path2.Text = ei.SyncElementInfo.AbsolutePath2;
+
+                SyncElementExecutionInfo seei = ei.SyncElementInfo.SyncExecutionInfo;
+                if (seei != null)
+                {
+                    label_sei_direction.Text = seei.Direction.ToString();
+                    label_sei_remove.Text = seei.Remove ? "Yes" : "No";
+
+                    label_sei_startTime.Text = seei.SyncStart != null ? seei.SyncStart.Value.ToString(@"hh\:mm\:ss") : "";
+                    label_sei_endTime.Text = seei.SyncEnd != null ? seei.SyncEnd.Value.ToString(@"hh\:mm\:ss") : "";
+                    label_sei_duration.Text = $"{seei.SyncDuration.TotalSeconds}s";
+                }
+                else
+                {
+                    label_sei_direction.Text = "";
+                    label_sei_remove.Text = "";
+                    label_sei_startTime.Text = "";
+                    label_sei_endTime.Text = "";
+                    label_sei_duration.Text = "";
+                }
+
+                label_sei_syncStatus.Text = Enum.GetName(typeof(SyncElementStatus), ei.SyncElementInfo.SyncStatus);
+
+                if(ei.SyncElementInfo.IsConflicted)
+                {
+                    textBox_sei_info.Text = $"{Enum.GetName(typeof(ConflictType), ei.SyncElementInfo.ConflictInfo.Type)}, {ei.SyncElementInfo.ConflictInfo.Message}";
+                }
+                else
+                {
+                    textBox_sei_info.Text = "";
+                }
+            }
+            else
+            {
+                label_sei_path1.Text = "";
+                label_sei_path2.Text = "";
+                label_sei_syncStatus.Text = "";
+            }
+        }
+
+        private void button_refresh_Click(object sender, EventArgs e)
         {
-            TextColor = textColor;
-            FolderImageIndex = folderImageIndex;
-            FileImageIndex = fileImageIndex;
+            UpdateSyncElementInfo();
         }
     }
 

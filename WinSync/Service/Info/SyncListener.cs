@@ -41,6 +41,12 @@ namespace WinSync.Service
         */
 
         /// <summary>
+        /// is called when the sync status of the synchronisation changed
+        /// </summary>
+        /// <param name="status">current sync status</param>
+        void OnSyncStatusChanged(SyncStatus status);
+
+        /// <summary>
         /// is called when the sync status of a directory or file changed
         /// </summary>
         /// <param name="sei">sync info of the element</param>

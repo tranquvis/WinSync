@@ -40,6 +40,8 @@ namespace WinSync.Service
 
         public SyncElementInfo SyncElementInfo { get; set; }
 
+        public SyncElementTreeViewNode ElementTreeViewNode { get; set; }
+
         public MyElementInfo(string path, string name)
         {
             Path = path;

@@ -48,7 +48,7 @@ namespace WinSync.Service
         /// <summary>
         /// synchronisation start time
         /// </summary>
-        public DateTime SyncStart { get; private set; }
+        public DateTime? SyncStart { get; private set; }
 
         /// <summary>
         /// synchronisation end time

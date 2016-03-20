@@ -125,10 +125,13 @@
     <Compile Include="Service\Helper.cs" />
     <Compile Include="Service\Info\DirTree.cs" />
     <Compile Include="Service\Info\Element\Dir\DirConflictInfo.cs" />
+    <Compile Include="Service\Info\Element\Dir\SyncDirTreeViewNode.cs" />
     <Compile Include="Service\Info\Element\File\FileConflictInfo.cs" />
+    <Compile Include="Service\Info\Element\File\SyncFileTreeViewNode.cs" />
     <Compile Include="Service\Info\Element\MyElementInfo.cs" />
     <Compile Include="Service\Info\Element\SyncElementInfo.cs" />
     <Compile Include="Service\Info\Element\SyncElementStatus.cs" />
+    <Compile Include="Service\Info\Element\SyncElementTreeViewNode.cs" />
     <Compile Include="Service\Info\LogMessage.cs" />
     <Compile Include="Service\Info\LogType.cs" />
     <Compile Include="Service\Info\Element\Dir\MyDirInfo.cs" />

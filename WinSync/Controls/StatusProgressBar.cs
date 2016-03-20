@@ -13,50 +13,108 @@ namespace WinSync.Controls
 {
     public partial class StatusProgressBar : UserControl
     {
-        private static Label HelperLabel => new Label()
-        {
-            Font = new Font("Microsoft Sans Serif", 8F),
-            Margin = new Padding(1, 3, 1, 3),
-            Height = 13,
-            TextAlign = ContentAlignment.MiddleCenter,
-            ForeColor = Color.FromArgb(150, 150, 150)
-        };
+        //general label design
+        private static Label GeneralLabel {
+            get {
+                return new Label()
+                {
+                    Font = new Font("Microsoft Sans Serif", 8F),
+                    Margin = new Padding(1, 3, 1, 3),
+                    Height = 13,
+                    TextAlign = ContentAlignment.MiddleCenter,
+                    ForeColor = Color.FromArgb(150, 150, 150)
+                };
+            }
+        }
 
+        //design for arrow-label
         private static Label ArrowLabel {
             get
             {
-                Label l = HelperLabel;
+                Label l = GeneralLabel;
                 l.Text = ">>";
                 l.AutoSize = true;
                 return l;
             }
         }
 
+        //design for or-label
         private static Label OrLabel
         {
             get
             {
-                Label l = HelperLabel;
+                Label l = GeneralLabel;
                 l.Text = "|";
                 l.AutoSize = true;
                 return l;
             }
         }
-
-        private List<SyncStatus>[] _statuses;
+        
         private List<Label>[] _statusLabels;
         private Label[] _arrowLabels;
         private List<Label>[] _orLabels;
 
-        public int ActivatedPos { get; private set; }
-        public int ActivatedPosInGroup { get; private set; }
+        private string[][] _statusTitles;
 
-        private SyncStatus _activatedStatus;
-
+        /// <summary>
+        /// status-titles in groups
+        /// </summary>
         [Browsable(true), EditorBrowsable(EditorBrowsableState.Always)]
-        public SyncStatus ActivatedStatus
+        public string[][] StatusTitles
         {
-            get { return _statuses[ActivatedPos][ActivatedPosInGroup]; }
+            get { return _statusTitles; }
+            set
+            {
+                _statusTitles = value;
+                _statusLabels = new List<Label>[_statusTitles.Length];
+                _arrowLabels = new Label[_statusTitles.Length - 1];
+                _orLabels = new List<Label>[_statusTitles.Length];
+
+                for (int i = 0; i < _statusTitles.Length; i++)
+                {
+                    _statusLabels[i] = new List<Label>();
+                    _orLabels[i] = new List<Label>();
+
+                    if (i > 0)
+                    {
+                        //add arrow
+                        flowLayoutPanel_statusProgress.Controls.Add(_arrowLabels[i - 1] = ArrowLabel);
+                    }
+
+                    for (int gi = 0; gi < _statusTitles[i].Length; gi++)
+                    {
+                        Label statusLabel = GeneralLabel;
+                        statusLabel.Text = _statusTitles[i][gi];
+                        statusLabel.AutoSize = true;
+
+                        if (gi > 0)
+                        {
+                            //add or
+                            Label orL = OrLabel;
+                            _orLabels[i].Add(orL);
+                            flowLayoutPanel_statusProgress.Controls.Add(orL);
+                        }
+
+                        _statusLabels[i].Add(statusLabel);
+                        flowLayoutPanel_statusProgress.Controls.Add(statusLabel);
+
+                        gi++;
+                    }
+                }
+            }
+        }
+
+        public int ActivatedPos { get; private set; } = 0;
+        public int ActivatedPosInGroup { get; private set; } = 0;
+
+        private string _activatedStatus;
+        
+        /// <summary>
+        /// activated status title
+        /// </summary>
+        public string ActivatedStatus
+        {
+            get { return _statusTitles[ActivatedPos][ActivatedPosInGroup]; }
             set
             {
                 if (_activatedStatus == value)
@@ -67,11 +125,11 @@ namespace WinSync.Controls
                 int i = 0, gi = 0;
                 bool doBreak = false;
 
-                for (; i < _statuses.Length; i++)
+                for (; i < _statusTitles.Length; i++)
                 {
-                    for (gi = 0; gi < _statuses[i].Count; gi++)
+                    for (gi = 0; gi < _statusTitles[i].Length; gi++)
                     {
-                        if (_statuses[i][gi] == value)
+                        if (_statusTitles[i][gi] == value)
                         {
                             doBreak = true;
                             break;
@@ -83,19 +141,27 @@ namespace WinSync.Controls
 
                 //reset old
                 Label oldStatusLabel = _statusLabels[ActivatedPos][ActivatedPosInGroup];
-                oldStatusLabel.ForeColor = HelperLabel.ForeColor;
-                oldStatusLabel.Font = HelperLabel.Font;
+                oldStatusLabel.ForeColor = GeneralLabel.ForeColor;
+                oldStatusLabel.Font = GeneralLabel.Font;
 
                 ActivatedPos = i;
                 ActivatedPosInGroup = gi;
 
                 //update new label
                 Label statusLabel = _statusLabels[i][gi];
-                statusLabel.ForeColor = value.Color;
-                Font fo = HelperLabel.Font;
+                Font fo = GeneralLabel.Font;
                 Font fn = new Font(fo.FontFamily, fo.Size, FontStyle.Bold);
                 statusLabel.Font = fn;
             }
+        }
+
+        /// <summary>
+        /// color of activated status title
+        /// </summary>
+        public Color ActivatedStatusColor
+        {
+            get { return _statusLabels[ActivatedPos][ActivatedPosInGroup].ForeColor; }
+            set { _statusLabels[ActivatedPos][ActivatedPosInGroup].ForeColor = value; }
         }
 
         public override Color BackColor
@@ -107,45 +173,6 @@ namespace WinSync.Controls
         public StatusProgressBar()
         {
             InitializeComponent();
-
-            _statuses = SyncStatus.GetAllGrouped();
-
-            _statusLabels = new List<Label>[_statuses.Length];
-            _arrowLabels = new Label[_statuses.Length-1];
-            _orLabels = new List<Label>[_statuses.Length];
-
-            for (int i = 0; i < _statuses.Length; i++)
-            {
-                _statusLabels[i] = new List<Label>();
-                _orLabels[i] = new List<Label>();
-
-                if (i > 0)
-                {
-                    //add arrow
-                    flowLayoutPanel_statusProgress.Controls.Add(_arrowLabels[i-1] = ArrowLabel);
-                }
-
-                int gi = 0;
-                foreach(SyncStatus status in _statuses[i])
-                {
-                    Label statusLabel = HelperLabel;
-                    statusLabel.Text = status.Title;
-                    statusLabel.AutoSize = true;
-
-                    if (gi > 0)
-                    {
-                        //add or
-                        Label orL = OrLabel;
-                        _orLabels[i].Add(orL);
-                        flowLayoutPanel_statusProgress.Controls.Add(orL);
-                    }
-
-                    _statusLabels[i].Add(statusLabel);
-                    flowLayoutPanel_statusProgress.Controls.Add(statusLabel);
-
-                    gi++;
-                }
-            }
         }
     }
 }

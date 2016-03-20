@@ -56,7 +56,7 @@ namespace WinSync.Forms
             progressBar_total.Visible = true;
             progressBar_total.Value = 0;
             
-            l.Sync();
+            l.Sync(null);
             
             StartUpdatingSyncInfo();
             if (_selectedLink == l)
@@ -178,7 +178,7 @@ namespace WinSync.Forms
         /// <summary>
         /// open SyncDetailInfoForm of selected link
         /// </summary>
-        void OpenSyncDetailInfoFormInBackground()
+        void OpenSyncDetailInfoForm()
         {
             if (_selectedLink == null) return;
 
@@ -322,7 +322,7 @@ namespace WinSync.Forms
         /// <param name="e"></param>
         private void button_openDetailForm_Click(object sender, EventArgs e)
         {
-            Thread t = new Thread(OpenSyncDetailInfoFormInBackground);
+            Thread t = new Thread(OpenSyncDetailInfoForm);
             t.SetApartmentState(ApartmentState.STA);
             t.Start();
         }

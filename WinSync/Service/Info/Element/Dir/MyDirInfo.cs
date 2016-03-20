@@ -16,6 +16,12 @@ namespace WinSync.Service
 
         public DirTree DirTreeInfo { get; set; }
 
+        public SyncDirTreeViewNode DirTreeViewNode
+        {
+            get { return (SyncDirTreeViewNode)ElementTreeViewNode; }
+            set { ElementTreeViewNode = value; }
+        }
+
         public MyDirInfo(string path, string name) : base(path, name) {}
     }
 }

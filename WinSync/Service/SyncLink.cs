@@ -38,11 +38,14 @@ namespace WinSync.Service
         }
 
         /// <summary>
-        /// execute the synchronisation
+        /// execute synchronisation, set listener before
         /// </summary>
-        public void Sync()
+        /// <param name="syncListener">listener or null if no listener should be set</param>
+        public void Sync(ISyncListener syncListener)
         {
             SyncInfo = new SyncInfo(this);
+            if(syncListener != null)
+                SyncInfo.SetListener(syncListener);
 
             SyncTask = new SyncTask2(SyncInfo);
             SyncTask.Execute();

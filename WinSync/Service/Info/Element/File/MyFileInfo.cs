@@ -19,6 +19,12 @@ namespace WinSync.Service
         /// </summary>
         public long Size { get; set; }
 
+        public SyncFileTreeViewNode FileTreeViewNode
+        {
+            get { return (SyncFileTreeViewNode)ElementTreeViewNode; }
+            set { ElementTreeViewNode = value; }
+        }
+
         public MyFileInfo(string path, string name) : base(path, name) { }
     }
 }

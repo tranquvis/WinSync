@@ -125,7 +125,7 @@ namespace WinSync.Service
         private void DoApplyFileChanges(DirTree dirTree)
         {
             foreach (DirTree childDir in dirTree.Dirs)
-                RemoveFolders(childDir);
+                DoApplyFileChanges(childDir);
 
             foreach(MyFileInfo file in dirTree.Files)
             {

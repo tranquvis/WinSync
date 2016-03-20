@@ -151,7 +151,7 @@ namespace WinSync.Service
 
                 if(file.FileInfo.Parent.SyncDirInfo.SyncDirExecutionInfo == null)
                 {
-                    if (parent1.LastWriteTime >= parent2.LastWriteTime)
+                    if (parent1.LastWriteTime <= parent2.LastWriteTime)
                         return new TwoWayCompareResult(SyncDirection.To1, false);
                     else if (remove)
                         return new TwoWayCompareResult(SyncDirection.To2, true);
@@ -171,7 +171,7 @@ namespace WinSync.Service
 
                 if (file.FileInfo.Parent.SyncDirInfo.SyncDirExecutionInfo == null)
                 {
-                    if (parent2.LastWriteTime >= parent1.LastWriteTime)
+                    if (parent2.LastWriteTime <= parent1.LastWriteTime)
                         return new TwoWayCompareResult(SyncDirection.To2, false);
                     else if (remove)
                         return new TwoWayCompareResult(SyncDirection.To1, true);
@@ -445,7 +445,7 @@ namespace WinSync.Service
                     result = DetectDirChange_TwoWay(childDir.Info);
                 
                 if(result != null)
-                    new SyncDirExecutionInfo(dirTree.Info.SyncDirInfo, result.Direction, result.Remove);
+                    new SyncDirExecutionInfo(childDir.Info.SyncDirInfo, result.Direction, result.Remove);
 
                 FetchChangesInDirRecursively_TwoWay(childDir, interruptChecker, result);
             }
