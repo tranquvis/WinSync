@@ -10,7 +10,7 @@ using System.Linq;
 
 namespace WinSync.Forms
 {
-    public partial class SyncDetailInfoForm2 : Form, ISyncListener
+    public partial class SyncDetailInfoForm2 : WinSyncForm, ISyncListener
     {
         readonly SyncLink _l;
         bool _updateStatsAsyncRunning;
@@ -35,7 +35,9 @@ namespace WinSync.Forms
         {
             _l = l;
             _mainForm = mainForm;
+
             InitializeComponent();
+
             SyncStatusFormHelper.Init(this);
 
             tabControl_left1.SelectedIndex = 1;

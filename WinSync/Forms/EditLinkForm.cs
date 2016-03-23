@@ -5,7 +5,7 @@ using WinSync.Service;
 
 namespace WinSync.Forms
 {
-    public partial class EditLinkForm : Form
+    public partial class EditLinkForm : WinSyncForm
     {
         readonly Link _oldLink;
         Link _newLink;

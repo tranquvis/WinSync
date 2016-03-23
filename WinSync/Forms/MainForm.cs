@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Drawing.Imaging;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -11,7 +12,7 @@ using WinSync.Service;
 
 namespace WinSync.Forms
 {
-    public partial class MainForm : Form
+    public partial class MainForm : WinSyncForm
     {
         SyncLink _selectedLink;
         readonly List<LinkRow> _linkRows = new List<LinkRow>();
@@ -22,7 +23,7 @@ namespace WinSync.Forms
         public MainForm()
         {
             InitializeComponent();
-            
+
             DataManager.LinkChanged += OnLinkDataChanged;
             DataManager.LoadLinks();
 
@@ -55,9 +56,9 @@ namespace WinSync.Forms
             label_p.Text = @"0";
             progressBar_total.Visible = true;
             progressBar_total.Value = 0;
-            
+
             l.Sync(null);
-            
+
             StartUpdatingSyncInfo();
             if (_selectedLink == l)
                 StartUpdatingSelectedSyncLinkInfo();
@@ -83,7 +84,7 @@ namespace WinSync.Forms
             _updatingSyncInfoRunning = true;
 
             progressBar_total.Visible = true;
-            
+
             while (DataManager.AnySyncRunning)
             {
                 UpdateSyncInfo();
@@ -345,61 +346,16 @@ namespace WinSync.Forms
                 catch (InvalidOperationException) { }
             }
         }
-
-        /// <summary>
-        /// on form close button click
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void button_close_Click(object sender, EventArgs e)
-        {
-            Close();
-        }
-        
-        /// <summary>
-        /// on form minimize button click
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void button_minimize_Click(object sender, EventArgs e)
-        {
-            WindowState = FormWindowState.Minimized;
-        }
         
         private void checkBox_availableSyncsOnly_CheckedChanged(object sender, EventArgs e)
         {
-            foreach(LinkRow lr in _linkRows)
+            foreach (LinkRow lr in _linkRows)
             {
                 lr.Visible = checkBox_availableSyncsOnly.Checked ? lr.Link.IsExecutable() : true;
             }
         }
         #endregion
 
-        #region window management
-        /// <summary>
-        /// Caption bar height
-        /// </summary>
-        private const int CaptionHeight = 40;
-
-        /// <summary>
-        /// make window moveable
-        /// </summary>
-        /// <param name="m"></param>
-        protected override void WndProc(ref Message m)
-        {
-            if (m.Msg == 0x84)
-            {  // Trap WM_NCHITTEST
-                Point pos = new Point(m.LParam.ToInt32() & 0xffff, m.LParam.ToInt32() >> 16);
-                pos = PointToClient(pos);
-                if (pos.Y < CaptionHeight)
-                {
-                    m.Result = (IntPtr)2;  // HTCAPTION
-                    return;
-                }
-            }
-            base.WndProc(ref m);
-        }
-        #endregion
     }
 }
  

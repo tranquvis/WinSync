@@ -59,7 +59,6 @@ namespace WinSync.Controls
         /// <summary>
         /// status-titles in groups
         /// </summary>
-        [Browsable(true), EditorBrowsable(EditorBrowsableState.Always)]
         public string[][] StatusTitles
         {
             get { return _statusTitles; }
@@ -114,7 +113,7 @@ namespace WinSync.Controls
         /// </summary>
         public string ActivatedStatus
         {
-            get { return _statusTitles[ActivatedPos][ActivatedPosInGroup]; }
+            get { return _activatedStatus == null ? "" : _activatedStatus; }
             set
             {
                 if (_activatedStatus == value)

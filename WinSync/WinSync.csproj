@@ -122,6 +122,9 @@
     <Compile Include="Forms\SyncDetailInfoForm2.Designer.cs">
       <DependentUpon>SyncDetailInfoForm2.cs</DependentUpon>
     </Compile>
+    <Compile Include="Forms\WinSyncForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="Service\Helper.cs" />
     <Compile Include="Service\Info\DirTree.cs" />
     <Compile Include="Service\Info\Element\Dir\DirConflictInfo.cs" />
@@ -288,7 +291,12 @@
   <ItemGroup>
     <Content Include="icon.ico" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Utils\WinFormDesign\WinFormDesign\WinFormDesign.csproj">
+      <Project>{3e83d01f-9df2-4c32-b764-7f21c0d4a4e8}</Project>
+      <Name>WinFormDesign</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

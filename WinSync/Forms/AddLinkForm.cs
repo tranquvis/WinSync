@@ -6,7 +6,7 @@ using WinSync.Service;
 
 namespace WinSync.Forms
 {
-    public partial class AddLinkForm : Form
+    public partial class AddLinkForm : WinSyncForm
     {
         public AddLinkForm()
         {

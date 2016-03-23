@@ -11,14 +11,5 @@ namespace WinSync.Controls
         {
             InitializeComponent();
         }
-
-        /// <summary>
-        /// create Shadow for bottom
-        /// </summary>
-        /// <param name="width">shadow width</param>
-        public Shadow(int width) : this()
-        {
-            Width = width;
-        }
     }
 }
