@@ -30,7 +30,6 @@ namespace WinSync.Forms
         /// </summary>
         private void InitializeComponent()
         {
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
             this.flowLayoutPanel1 = new System.Windows.Forms.FlowLayoutPanel();
             this.label_p = new System.Windows.Forms.Label();
             this.panel2 = new System.Windows.Forms.Panel();
@@ -51,18 +50,30 @@ namespace WinSync.Forms
             this.panel_syncDetail = new System.Windows.Forms.Panel();
             this.button_addLink = new WinSync.Controls.MyButton();
             this.progressBar_total = new WinSync.Controls.MyProgressBar();
-            this.shadow1 = new WinSync.Controls.Shadow();
+            this._contentPanel.SuspendLayout();
             this.panel2.SuspendLayout();
             this.panel_selSL_info.SuspendLayout();
             this.panel_detail_header.SuspendLayout();
             this.panel_syncDetail.SuspendLayout();
             this.SuspendLayout();
             // 
+            // _contentPanel
+            // 
+            this._contentPanel.Controls.Add(this.panel_syncDetail);
+            this._contentPanel.Controls.Add(this.checkBox_availableSyncsOnly);
+            this._contentPanel.Controls.Add(this.label_p);
+            this._contentPanel.Controls.Add(this.progressBar_total);
+            this._contentPanel.Controls.Add(this.flowLayoutPanel1);
+            this._contentPanel.Controls.Add(this.button_addLink);
+            this._contentPanel.Controls.Add(this.dataTable);
+            this._contentPanel.Location = new System.Drawing.Point(5, 30);
+            this._contentPanel.Size = new System.Drawing.Size(1051, 655);
+            // 
             // flowLayoutPanel1
             // 
             this.flowLayoutPanel1.AutoSize = true;
             this.flowLayoutPanel1.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.flowLayoutPanel1.Location = new System.Drawing.Point(27, 101);
+            this.flowLayoutPanel1.Location = new System.Drawing.Point(14, 66);
             this.flowLayoutPanel1.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.flowLayoutPanel1.Name = "flowLayoutPanel1";
             this.flowLayoutPanel1.Size = new System.Drawing.Size(0, 0);
@@ -73,7 +84,7 @@ namespace WinSync.Forms
             this.label_p.AutoSize = true;
             this.label_p.BackColor = System.Drawing.Color.Transparent;
             this.label_p.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.label_p.Location = new System.Drawing.Point(264, 46);
+            this.label_p.Location = new System.Drawing.Point(251, 11);
             this.label_p.Name = "label_p";
             this.label_p.Size = new System.Drawing.Size(34, 13);
             this.label_p.TabIndex = 7;
@@ -92,7 +103,7 @@ namespace WinSync.Forms
             this.panel2.Location = new System.Drawing.Point(0, 0);
             this.panel2.Margin = new System.Windows.Forms.Padding(3, 4, 3, 0);
             this.panel2.Name = "panel2";
-            this.panel2.Size = new System.Drawing.Size(408, 142);
+            this.panel2.Size = new System.Drawing.Size(406, 133);
             this.panel2.TabIndex = 9;
             // 
             // panel_selSL_info
@@ -193,7 +204,7 @@ namespace WinSync.Forms
             this.panel_detail_header.Location = new System.Drawing.Point(0, 0);
             this.panel_detail_header.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.panel_detail_header.Name = "panel_detail_header";
-            this.panel_detail_header.Size = new System.Drawing.Size(408, 30);
+            this.panel_detail_header.Size = new System.Drawing.Size(406, 30);
             this.panel_detail_header.TabIndex = 13;
             // 
             // button_pr
@@ -249,7 +260,7 @@ namespace WinSync.Forms
             // 
             this.checkBox_availableSyncsOnly.AutoSize = true;
             this.checkBox_availableSyncsOnly.BackColor = System.Drawing.Color.Transparent;
-            this.checkBox_availableSyncsOnly.Location = new System.Drawing.Point(21, 78);
+            this.checkBox_availableSyncsOnly.Location = new System.Drawing.Point(8, 43);
             this.checkBox_availableSyncsOnly.Name = "checkBox_availableSyncsOnly";
             this.checkBox_availableSyncsOnly.Size = new System.Drawing.Size(130, 17);
             this.checkBox_availableSyncsOnly.TabIndex = 33;
@@ -264,7 +275,7 @@ namespace WinSync.Forms
             this.dataTable.BackColor = System.Drawing.Color.White;
             this.dataTable.ColumnCount = 1;
             this.dataTable.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
-            this.dataTable.Location = new System.Drawing.Point(21, 101);
+            this.dataTable.Location = new System.Drawing.Point(3, 61);
             this.dataTable.Name = "dataTable";
             this.dataTable.RowCount = 1;
             this.dataTable.RowStyles.Add(new System.Windows.Forms.RowStyle());
@@ -275,11 +286,11 @@ namespace WinSync.Forms
             // 
             this.panel_syncDetail.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.panel_syncDetail.BackColor = System.Drawing.Color.Transparent;
-            this.panel_syncDetail.Controls.Add(this.shadow1);
+            this.panel_syncDetail.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.panel_syncDetail.Controls.Add(this.panel2);
-            this.panel_syncDetail.Location = new System.Drawing.Point(638, 101);
+            this.panel_syncDetail.Location = new System.Drawing.Point(625, 66);
             this.panel_syncDetail.Name = "panel_syncDetail";
-            this.panel_syncDetail.Size = new System.Drawing.Size(408, 158);
+            this.panel_syncDetail.Size = new System.Drawing.Size(408, 135);
             this.panel_syncDetail.TabIndex = 29;
             this.panel_syncDetail.Visible = false;
             // 
@@ -290,7 +301,7 @@ namespace WinSync.Forms
             this.button_addLink.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.button_addLink.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.999999F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.button_addLink.ForeColor = System.Drawing.Color.White;
-            this.button_addLink.Location = new System.Drawing.Point(21, 43);
+            this.button_addLink.Location = new System.Drawing.Point(8, 8);
             this.button_addLink.Name = "button_addLink";
             this.button_addLink.Size = new System.Drawing.Size(75, 28);
             this.button_addLink.TabIndex = 8;
@@ -304,7 +315,7 @@ namespace WinSync.Forms
             | System.Windows.Forms.AnchorStyles.Right)));
             this.progressBar_total.BackColor = System.Drawing.Color.Gainsboro;
             this.progressBar_total.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(145)))), ((int)(((byte)(0)))), ((int)(((byte)(17)))));
-            this.progressBar_total.Location = new System.Drawing.Point(307, 46);
+            this.progressBar_total.Location = new System.Drawing.Point(294, 11);
             this.progressBar_total.Margin = new System.Windows.Forms.Padding(5, 6, 5, 6);
             this.progressBar_total.Maximum = 1000;
             this.progressBar_total.Name = "progressBar_total";
@@ -313,19 +324,6 @@ namespace WinSync.Forms
             this.progressBar_total.TabIndex = 5;
             this.progressBar_total.Visible = false;
             // 
-            // shadow1
-            // 
-            this.shadow1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.shadow1.BackColor = System.Drawing.Color.Transparent;
-            this.shadow1.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("shadow1.BackgroundImage")));
-            this.shadow1.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
-            this.shadow1.Location = new System.Drawing.Point(0, 142);
-            this.shadow1.Margin = new System.Windows.Forms.Padding(0);
-            this.shadow1.Name = "shadow1";
-            this.shadow1.Size = new System.Drawing.Size(408, 10);
-            this.shadow1.TabIndex = 10;
-            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -333,19 +331,14 @@ namespace WinSync.Forms
             this.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
             this.ClientSize = new System.Drawing.Size(1061, 690);
             this.ControlBox = false;
-            this.Controls.Add(this.panel_syncDetail);
-            this.Controls.Add(this.checkBox_availableSyncsOnly);
-            this.Controls.Add(this.label_p);
-            this.Controls.Add(this.progressBar_total);
-            this.Controls.Add(this.dataTable);
-            this.Controls.Add(this.flowLayoutPanel1);
-            this.Controls.Add(this.button_addLink);
             this.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.Name = "MainForm";
-            this.Padding = new System.Windows.Forms.Padding(18, 40, 10, 10);
+            this.Padding = new System.Windows.Forms.Padding(5, 30, 5, 5);
             this.Text = "Sync";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainForm_FormClosing);
+            this.Controls.SetChildIndex(this._contentPanel, 0);
+            this._contentPanel.ResumeLayout(false);
+            this._contentPanel.PerformLayout();
             this.panel2.ResumeLayout(false);
             this.panel_selSL_info.ResumeLayout(false);
             this.panel_selSL_info.PerformLayout();
@@ -353,7 +346,6 @@ namespace WinSync.Forms
             this.panel_detail_header.PerformLayout();
             this.panel_syncDetail.ResumeLayout(false);
             this.ResumeLayout(false);
-            this.PerformLayout();
 
         }
 
@@ -379,7 +371,6 @@ namespace WinSync.Forms
         private System.Windows.Forms.TableLayoutPanel dataTable;
         private System.Windows.Forms.CheckBox checkBox_availableSyncsOnly;
         private System.Windows.Forms.Panel panel_selSL_info;
-        private Shadow shadow1;
     }
 }
 

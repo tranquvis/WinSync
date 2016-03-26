@@ -38,6 +38,9 @@ namespace WinSync.Forms
 
             InitializeComponent();
 
+            this.statusProgressBar1.StatusTitles = SyncStatus.GetGroupedTitles();
+            this.statusProgressBar1.ActivateStatus("fetching files/dirs");
+
             SyncStatusFormHelper.Init(this);
 
             tabControl_left1.SelectedIndex = 1;
@@ -169,7 +172,7 @@ namespace WinSync.Forms
                 if (SI.Status != _oldStatus)
                 {
                     panel_header.BackColor = SI.Status.Color;
-                    statusProgressBar1.ActivatedStatus = SI.Status.Title;
+                    statusProgressBar1.ActivateStatus(SI.Status.Title);
                     statusProgressBar1.ActivatedStatusColor = SI.Status.Color;
 
                     if (_oldStatus != null)

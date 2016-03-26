@@ -117,18 +117,6 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
-  <data name="shadow1.BackgroundImage" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
-    <value>
-        iVBORw0KGgoAAAANSUhEUgAAAAEAAAAyCAYAAACd+7GKAAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAAL
-        EwAACxMBAJqcGAAAABl0RVh0U29mdHdhcmUAQWRvYmUgSW1hZ2VSZWFkeXHJZTwAAAEFSURBVBhXAfoA
-        Bf8AGhcbMwAeHB8yACMgJDEAJyUoMAAsKS0vADAuMS4ANjM3LQA6ODssAD88QCsAQ0FEKgBIRUkpAExK
-        TSgAUU5SJwBVU1YmAFpYWiUAXlxfJABkYmQjAGhmaSIAbWttIQBxb3IgAHZ0dh8Aenh7HgB/fX8dAIOB
-        hBwAiIaIGwCMi40aAJGQkhgAlpWWFwCamZsWAJ+enxUAo6KkFACop6gTAKyrrRIAsbCxEQC1tLYQALq5
-        ug8Av77ADgDEw8QNAMjIyAwAzczNCwDR0dEKANbV1gkA2traCADf3t8HAOPj4wYA6OfoBQDt7e0EAPLx
-        8gMA9vb2AgD7+vsB6ldV2DDEZkEAAAAASUVORK5CYII=
-</value>
-  </data>
   <metadata name="$this.TrayHeight" type="System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
     <value>25</value>
   </metadata>

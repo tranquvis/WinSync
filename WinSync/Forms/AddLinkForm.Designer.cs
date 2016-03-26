@@ -47,13 +47,35 @@ namespace WinSync.Forms
             this.button_cancel = new WinSync.Controls.MyButton();
             this.button_create = new WinSync.Controls.MyButton();
             this.checkBox_remove = new System.Windows.Forms.CheckBox();
+            this._contentPanel.SuspendLayout();
             this.SuspendLayout();
+            // 
+            // _contentPanel
+            // 
+            this._contentPanel.Controls.Add(this.label1);
+            this._contentPanel.Controls.Add(this.button_cancel);
+            this._contentPanel.Controls.Add(this.textBox_title);
+            this._contentPanel.Controls.Add(this.label_errorTitle);
+            this._contentPanel.Controls.Add(this.checkBox_remove);
+            this._contentPanel.Controls.Add(this.button_create);
+            this._contentPanel.Controls.Add(this.label2);
+            this._contentPanel.Controls.Add(this.label_errorFolder2);
+            this._contentPanel.Controls.Add(this.textBox_folder1);
+            this._contentPanel.Controls.Add(this.label_errorFolder1);
+            this._contentPanel.Controls.Add(this.label3);
+            this._contentPanel.Controls.Add(this.textBox_folder2);
+            this._contentPanel.Controls.Add(this.button_folder2);
+            this._contentPanel.Controls.Add(this.label4);
+            this._contentPanel.Controls.Add(this.button_folder1);
+            this._contentPanel.Controls.Add(this.comboBox_direction);
+            this._contentPanel.Location = new System.Drawing.Point(5, 30);
+            this._contentPanel.Size = new System.Drawing.Size(429, 279);
             // 
             // label1
             // 
             this.label1.AutoSize = true;
             this.label1.BackColor = System.Drawing.Color.Transparent;
-            this.label1.Location = new System.Drawing.Point(13, 52);
+            this.label1.Location = new System.Drawing.Point(8, 37);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(27, 13);
             this.label1.TabIndex = 2;
@@ -63,7 +85,7 @@ namespace WinSync.Forms
             // 
             this.label2.AutoSize = true;
             this.label2.BackColor = System.Drawing.Color.Transparent;
-            this.label2.Location = new System.Drawing.Point(13, 92);
+            this.label2.Location = new System.Drawing.Point(8, 77);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(45, 13);
             this.label2.TabIndex = 4;
@@ -73,7 +95,7 @@ namespace WinSync.Forms
             // 
             this.label3.AutoSize = true;
             this.label3.BackColor = System.Drawing.Color.Transparent;
-            this.label3.Location = new System.Drawing.Point(13, 134);
+            this.label3.Location = new System.Drawing.Point(8, 119);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(45, 13);
             this.label3.TabIndex = 6;
@@ -83,7 +105,7 @@ namespace WinSync.Forms
             // 
             this.label4.AutoSize = true;
             this.label4.BackColor = System.Drawing.Color.Transparent;
-            this.label4.Location = new System.Drawing.Point(13, 170);
+            this.label4.Location = new System.Drawing.Point(8, 155);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(49, 13);
             this.label4.TabIndex = 8;
@@ -93,7 +115,7 @@ namespace WinSync.Forms
             // 
             this.comboBox_direction.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comboBox_direction.FormattingEnabled = true;
-            this.comboBox_direction.Location = new System.Drawing.Point(91, 167);
+            this.comboBox_direction.Location = new System.Drawing.Point(86, 152);
             this.comboBox_direction.Name = "comboBox_direction";
             this.comboBox_direction.Size = new System.Drawing.Size(121, 21);
             this.comboBox_direction.TabIndex = 10;
@@ -102,7 +124,7 @@ namespace WinSync.Forms
             // 
             this.label_errorTitle.AutoSize = true;
             this.label_errorTitle.ForeColor = System.Drawing.Color.Firebrick;
-            this.label_errorTitle.Location = new System.Drawing.Point(87, 6);
+            this.label_errorTitle.Location = new System.Drawing.Point(86, 12);
             this.label_errorTitle.Name = "label_errorTitle";
             this.label_errorTitle.Size = new System.Drawing.Size(0, 13);
             this.label_errorTitle.TabIndex = 19;
@@ -111,7 +133,7 @@ namespace WinSync.Forms
             // 
             this.label_errorFolder1.AutoSize = true;
             this.label_errorFolder1.ForeColor = System.Drawing.Color.Firebrick;
-            this.label_errorFolder1.Location = new System.Drawing.Point(88, 70);
+            this.label_errorFolder1.Location = new System.Drawing.Point(83, 55);
             this.label_errorFolder1.Name = "label_errorFolder1";
             this.label_errorFolder1.Size = new System.Drawing.Size(0, 13);
             this.label_errorFolder1.TabIndex = 20;
@@ -120,7 +142,7 @@ namespace WinSync.Forms
             // 
             this.label_errorFolder2.AutoSize = true;
             this.label_errorFolder2.ForeColor = System.Drawing.Color.Firebrick;
-            this.label_errorFolder2.Location = new System.Drawing.Point(88, 112);
+            this.label_errorFolder2.Location = new System.Drawing.Point(83, 97);
             this.label_errorFolder2.Name = "label_errorFolder2";
             this.label_errorFolder2.Size = new System.Drawing.Size(0, 13);
             this.label_errorFolder2.TabIndex = 21;
@@ -134,7 +156,7 @@ namespace WinSync.Forms
             this.button_folder2.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.button_folder2.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F);
             this.button_folder2.ForeColor = System.Drawing.Color.White;
-            this.button_folder2.Location = new System.Drawing.Point(376, 128);
+            this.button_folder2.Location = new System.Drawing.Point(371, 113);
             this.button_folder2.Name = "button_folder2";
             this.button_folder2.Size = new System.Drawing.Size(27, 22);
             this.button_folder2.TabIndex = 12;
@@ -151,7 +173,7 @@ namespace WinSync.Forms
             this.button_folder1.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.button_folder1.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F);
             this.button_folder1.ForeColor = System.Drawing.Color.White;
-            this.button_folder1.Location = new System.Drawing.Point(376, 86);
+            this.button_folder1.Location = new System.Drawing.Point(371, 71);
             this.button_folder1.Name = "button_folder1";
             this.button_folder1.Size = new System.Drawing.Size(27, 22);
             this.button_folder1.TabIndex = 11;
@@ -163,7 +185,7 @@ namespace WinSync.Forms
             // 
             this.textBox_folder2.BorderColor = System.Drawing.SystemColors.ActiveBorder;
             this.textBox_folder2.FocusBorderColor = System.Drawing.SystemColors.Highlight;
-            this.textBox_folder2.Location = new System.Drawing.Point(91, 128);
+            this.textBox_folder2.Location = new System.Drawing.Point(86, 113);
             this.textBox_folder2.Name = "textBox_folder2";
             this.textBox_folder2.Padding = new System.Windows.Forms.Padding(3);
             this.textBox_folder2.Size = new System.Drawing.Size(279, 22);
@@ -173,7 +195,7 @@ namespace WinSync.Forms
             // 
             this.textBox_folder1.BorderColor = System.Drawing.SystemColors.ActiveBorder;
             this.textBox_folder1.FocusBorderColor = System.Drawing.SystemColors.Highlight;
-            this.textBox_folder1.Location = new System.Drawing.Point(91, 86);
+            this.textBox_folder1.Location = new System.Drawing.Point(86, 71);
             this.textBox_folder1.Name = "textBox_folder1";
             this.textBox_folder1.Padding = new System.Windows.Forms.Padding(3);
             this.textBox_folder1.Size = new System.Drawing.Size(279, 22);
@@ -183,7 +205,7 @@ namespace WinSync.Forms
             // 
             this.textBox_title.BorderColor = System.Drawing.SystemColors.ActiveBorder;
             this.textBox_title.FocusBorderColor = System.Drawing.SystemColors.Highlight;
-            this.textBox_title.Location = new System.Drawing.Point(91, 43);
+            this.textBox_title.Location = new System.Drawing.Point(86, 28);
             this.textBox_title.Name = "textBox_title";
             this.textBox_title.Padding = new System.Windows.Forms.Padding(3);
             this.textBox_title.Size = new System.Drawing.Size(150, 22);
@@ -198,7 +220,7 @@ namespace WinSync.Forms
             this.button_cancel.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.button_cancel.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F);
             this.button_cancel.ForeColor = System.Drawing.Color.White;
-            this.button_cancel.Location = new System.Drawing.Point(12, 252);
+            this.button_cancel.Location = new System.Drawing.Point(8, 238);
             this.button_cancel.Name = "button_cancel";
             this.button_cancel.Size = new System.Drawing.Size(75, 27);
             this.button_cancel.TabIndex = 1;
@@ -214,7 +236,7 @@ namespace WinSync.Forms
             this.button_create.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.button_create.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F);
             this.button_create.ForeColor = System.Drawing.Color.White;
-            this.button_create.Location = new System.Drawing.Point(359, 252);
+            this.button_create.Location = new System.Drawing.Point(340, 238);
             this.button_create.Name = "button_create";
             this.button_create.Size = new System.Drawing.Size(75, 27);
             this.button_create.TabIndex = 0;
@@ -226,7 +248,7 @@ namespace WinSync.Forms
             // 
             this.checkBox_remove.AutoSize = true;
             this.checkBox_remove.BackColor = System.Drawing.Color.Transparent;
-            this.checkBox_remove.Location = new System.Drawing.Point(16, 205);
+            this.checkBox_remove.Location = new System.Drawing.Point(11, 190);
             this.checkBox_remove.Name = "checkBox_remove";
             this.checkBox_remove.Size = new System.Drawing.Size(241, 17);
             this.checkBox_remove.TabIndex = 23;
@@ -237,30 +259,17 @@ namespace WinSync.Forms
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(446, 287);
-            this.Controls.Add(this.checkBox_remove);
-            this.Controls.Add(this.label_errorFolder2);
-            this.Controls.Add(this.label_errorFolder1);
-            this.Controls.Add(this.label_errorTitle);
-            this.Controls.Add(this.button_folder2);
-            this.Controls.Add(this.button_folder1);
-            this.Controls.Add(this.comboBox_direction);
-            this.Controls.Add(this.label4);
-            this.Controls.Add(this.textBox_folder2);
-            this.Controls.Add(this.label3);
-            this.Controls.Add(this.textBox_folder1);
-            this.Controls.Add(this.label2);
-            this.Controls.Add(this.textBox_title);
-            this.Controls.Add(this.label1);
-            this.Controls.Add(this.button_cancel);
-            this.Controls.Add(this.button_create);
+            this.ClientSize = new System.Drawing.Size(439, 314);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.Name = "AddLinkForm";
+            this.Padding = new System.Windows.Forms.Padding(5, 30, 5, 5);
             this.Text = "Add Link";
+            this.Controls.SetChildIndex(this._contentPanel, 0);
+            this._contentPanel.ResumeLayout(false);
+            this._contentPanel.PerformLayout();
             this.ResumeLayout(false);
-            this.PerformLayout();
 
         }
 

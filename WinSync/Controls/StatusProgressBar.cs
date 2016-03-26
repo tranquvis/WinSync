@@ -65,6 +65,9 @@ namespace WinSync.Controls
             set
             {
                 _statusTitles = value;
+                if (_statusTitles == null)
+                    return;
+
                 _statusLabels = new List<Label>[_statusTitles.Length];
                 _arrowLabels = new Label[_statusTitles.Length - 1];
                 _orLabels = new List<Label>[_statusTitles.Length];
@@ -114,54 +117,52 @@ namespace WinSync.Controls
         public string ActivatedStatus
         {
             get { return _activatedStatus == null ? "" : _activatedStatus; }
-            set
-            {
-                if (_activatedStatus == value)
-                    return;
-
-                _activatedStatus = value;
-
-                int i = 0, gi = 0;
-                bool doBreak = false;
-
-                for (; i < _statusTitles.Length; i++)
-                {
-                    for (gi = 0; gi < _statusTitles[i].Length; gi++)
-                    {
-                        if (_statusTitles[i][gi] == value)
-                        {
-                            doBreak = true;
-                            break;
-                        }
-                    }
-                    if (doBreak)
-                        break;
-                }
-
-                //reset old
-                Label oldStatusLabel = _statusLabels[ActivatedPos][ActivatedPosInGroup];
-                oldStatusLabel.ForeColor = GeneralLabel.ForeColor;
-                oldStatusLabel.Font = GeneralLabel.Font;
-
-                ActivatedPos = i;
-                ActivatedPosInGroup = gi;
-
-                //update new label
-                Label statusLabel = _statusLabels[i][gi];
-                Font fo = GeneralLabel.Font;
-                Font fn = new Font(fo.FontFamily, fo.Size, FontStyle.Bold);
-                statusLabel.Font = fn;
-            }
         }
 
+        public void ActivateStatus(string title)
+        {
+            if (_activatedStatus == title)
+                return;
+
+            _activatedStatus = title;
+
+            int i = 0, gi = 0;
+            bool doBreak = false;
+
+            for (; i < _statusTitles.Length; i++)
+            {
+                for (gi = 0; gi < _statusTitles[i].Length; gi++)
+                {
+                    if (_statusTitles[i][gi] == title)
+                    {
+                        doBreak = true;
+                        break;
+                    }
+                }
+                if (doBreak)
+                    break;
+            }
+
+            //reset old
+            Label oldStatusLabel = _statusLabels[ActivatedPos][ActivatedPosInGroup];
+            oldStatusLabel.ForeColor = GeneralLabel.ForeColor;
+            oldStatusLabel.Font = GeneralLabel.Font;
+
+            ActivatedPos = i;
+            ActivatedPosInGroup = gi;
+
+            //update new label
+            Label statusLabel = _statusLabels[i][gi];
+            statusLabel.ForeColor = ActivatedStatusColor;
+            Font fo = GeneralLabel.Font;
+            Font fn = new Font(fo.FontFamily, fo.Size, FontStyle.Bold);
+            statusLabel.Font = fn;
+        }
+        
         /// <summary>
         /// color of activated status title
         /// </summary>
-        public Color ActivatedStatusColor
-        {
-            get { return _statusLabels[ActivatedPos][ActivatedPosInGroup].ForeColor; }
-            set { _statusLabels[ActivatedPos][ActivatedPosInGroup].ForeColor = value; }
-        }
+        public Color ActivatedStatusColor { get; set; }
 
         public override Color BackColor
         {
