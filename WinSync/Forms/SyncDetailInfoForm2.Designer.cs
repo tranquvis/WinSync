@@ -37,8 +37,6 @@ namespace WinSync.Forms
             this.button_pr = new WinSync.Controls.MyButton();
             this.button_sync = new WinSync.Controls.MyButton();
             this.label_title = new System.Windows.Forms.Label();
-            this.panel3 = new System.Windows.Forms.Panel();
-            this.panelLeft = new System.Windows.Forms.Panel();
             this.splitContainer_left = new System.Windows.Forms.SplitContainer();
             this.tabControl_left1 = new System.Windows.Forms.TabControl();
             this.tabPage_linkInfo = new System.Windows.Forms.TabPage();
@@ -147,10 +145,10 @@ namespace WinSync.Forms
             this.progressBar = new WinSync.Controls.MyProgressBar();
             this.imageList1 = new System.Windows.Forms.ImageList(this.components);
             this.splitContainer_main = new System.Windows.Forms.SplitContainer();
+            this.tableLayoutPanel_left = new System.Windows.Forms.TableLayoutPanel();
             this.treeView1 = new System.Windows.Forms.TreeView();
             this._contentPanel.SuspendLayout();
             this.panel_header.SuspendLayout();
-            this.panelLeft.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer_left)).BeginInit();
             this.splitContainer_left.Panel1.SuspendLayout();
             this.splitContainer_left.Panel2.SuspendLayout();
@@ -190,13 +188,15 @@ namespace WinSync.Forms
             this.splitContainer_main.Panel1.SuspendLayout();
             this.splitContainer_main.Panel2.SuspendLayout();
             this.splitContainer_main.SuspendLayout();
+            this.tableLayoutPanel_left.SuspendLayout();
             this.SuspendLayout();
             // 
             // _contentPanel
             // 
+            this._contentPanel.BackColor = System.Drawing.Color.LightGray;
             this._contentPanel.Controls.Add(this.splitContainer_main);
             this._contentPanel.Location = new System.Drawing.Point(5, 30);
-            this._contentPanel.Size = new System.Drawing.Size(795, 557);
+            this._contentPanel.Size = new System.Drawing.Size(795, 550);
             // 
             // panel_header
             // 
@@ -207,7 +207,7 @@ namespace WinSync.Forms
             this.panel_header.Controls.Add(this.button_sync);
             this.panel_header.Controls.Add(this.label_title);
             this.panel_header.Location = new System.Drawing.Point(0, 0);
-            this.panel_header.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            this.panel_header.Margin = new System.Windows.Forms.Padding(0);
             this.panel_header.Name = "panel_header";
             this.panel_header.Size = new System.Drawing.Size(492, 34);
             this.panel_header.TabIndex = 13;
@@ -230,6 +230,7 @@ namespace WinSync.Forms
             this.button_pr.Size = new System.Drawing.Size(38, 34);
             this.button_pr.TabIndex = 21;
             this.button_pr.UseVisualStyleBackColor = false;
+            this.button_pr.Visible = false;
             this.button_pr.Click += new System.EventHandler(this.button_pr_Click);
             // 
             // button_sync
@@ -263,39 +264,13 @@ namespace WinSync.Forms
             this.label_title.TabIndex = 0;
             this.label_title.Text = "label2";
             // 
-            // panel3
-            // 
-            this.panel3.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.panel3.BackgroundImage = global::WinSync.Properties.Resources.shadow_bottom_d50;
-            this.panel3.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
-            this.panel3.Location = new System.Drawing.Point(0, 44);
-            this.panel3.Margin = new System.Windows.Forms.Padding(0);
-            this.panel3.Name = "panel3";
-            this.panel3.Size = new System.Drawing.Size(492, 5);
-            this.panel3.TabIndex = 28;
-            // 
-            // panelLeft
-            // 
-            this.panelLeft.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.panelLeft.BackColor = System.Drawing.Color.LightGray;
-            this.panelLeft.Controls.Add(this.splitContainer_left);
-            this.panelLeft.Controls.Add(this.panel3);
-            this.panelLeft.Controls.Add(this.progressBar);
-            this.panelLeft.Controls.Add(this.panel_header);
-            this.panelLeft.Location = new System.Drawing.Point(0, 0);
-            this.panelLeft.Name = "panelLeft";
-            this.panelLeft.Size = new System.Drawing.Size(492, 557);
-            this.panelLeft.TabIndex = 23;
-            // 
             // splitContainer_left
             // 
             this.splitContainer_left.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.splitContainer_left.Location = new System.Drawing.Point(0, 52);
+            this.splitContainer_left.FixedPanel = System.Windows.Forms.FixedPanel.Panel1;
+            this.splitContainer_left.Location = new System.Drawing.Point(0, 54);
             this.splitContainer_left.Margin = new System.Windows.Forms.Padding(0);
             this.splitContainer_left.Name = "splitContainer_left";
             this.splitContainer_left.Orientation = System.Windows.Forms.Orientation.Horizontal;
@@ -309,8 +284,8 @@ namespace WinSync.Forms
             // 
             this.splitContainer_left.Panel2.Controls.Add(this.panel6);
             this.splitContainer_left.Panel2MinSize = 23;
-            this.splitContainer_left.Size = new System.Drawing.Size(492, 505);
-            this.splitContainer_left.SplitterDistance = 340;
+            this.splitContainer_left.Size = new System.Drawing.Size(492, 494);
+            this.splitContainer_left.SplitterDistance = 272;
             this.splitContainer_left.TabIndex = 31;
             // 
             // tabControl_left1
@@ -325,7 +300,7 @@ namespace WinSync.Forms
             this.tabControl_left1.Margin = new System.Windows.Forms.Padding(0);
             this.tabControl_left1.Name = "tabControl_left1";
             this.tabControl_left1.SelectedIndex = 0;
-            this.tabControl_left1.Size = new System.Drawing.Size(495, 340);
+            this.tabControl_left1.Size = new System.Drawing.Size(495, 272);
             this.tabControl_left1.TabIndex = 30;
             // 
             // tabPage_linkInfo
@@ -334,7 +309,7 @@ namespace WinSync.Forms
             this.tabPage_linkInfo.Location = new System.Drawing.Point(4, 22);
             this.tabPage_linkInfo.Name = "tabPage_linkInfo";
             this.tabPage_linkInfo.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage_linkInfo.Size = new System.Drawing.Size(487, 314);
+            this.tabPage_linkInfo.Size = new System.Drawing.Size(487, 246);
             this.tabPage_linkInfo.TabIndex = 0;
             this.tabPage_linkInfo.Text = "Link Info";
             this.tabPage_linkInfo.UseVisualStyleBackColor = true;
@@ -348,17 +323,20 @@ namespace WinSync.Forms
             this.panel_linkInfo.Location = new System.Drawing.Point(8, 8);
             this.panel_linkInfo.Margin = new System.Windows.Forms.Padding(5);
             this.panel_linkInfo.Name = "panel_linkInfo";
-            this.panel_linkInfo.Size = new System.Drawing.Size(473, 298);
+            this.panel_linkInfo.Size = new System.Drawing.Size(473, 230);
             this.panel_linkInfo.TabIndex = 0;
             // 
             // flowLayoutPanel2
             // 
+            this.flowLayoutPanel2.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.flowLayoutPanel2.Controls.Add(this.panel4);
             this.flowLayoutPanel2.Controls.Add(this.panel5);
             this.flowLayoutPanel2.Location = new System.Drawing.Point(0, 0);
             this.flowLayoutPanel2.Margin = new System.Windows.Forms.Padding(0);
             this.flowLayoutPanel2.Name = "flowLayoutPanel2";
-            this.flowLayoutPanel2.Size = new System.Drawing.Size(473, 310);
+            this.flowLayoutPanel2.Size = new System.Drawing.Size(473, 230);
             this.flowLayoutPanel2.TabIndex = 23;
             // 
             // panel4
@@ -444,7 +422,7 @@ namespace WinSync.Forms
             this.tabPage_syncInfo.Location = new System.Drawing.Point(4, 22);
             this.tabPage_syncInfo.Name = "tabPage_syncInfo";
             this.tabPage_syncInfo.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage_syncInfo.Size = new System.Drawing.Size(487, 314);
+            this.tabPage_syncInfo.Size = new System.Drawing.Size(487, 246);
             this.tabPage_syncInfo.TabIndex = 1;
             this.tabPage_syncInfo.Text = "Sync Info";
             this.tabPage_syncInfo.UseVisualStyleBackColor = true;
@@ -466,7 +444,7 @@ namespace WinSync.Forms
             this.tableLayoutPanel5.RowStyles.Add(new System.Windows.Forms.RowStyle());
             this.tableLayoutPanel5.RowStyles.Add(new System.Windows.Forms.RowStyle());
             this.tableLayoutPanel5.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
-            this.tableLayoutPanel5.Size = new System.Drawing.Size(473, 302);
+            this.tableLayoutPanel5.Size = new System.Drawing.Size(473, 234);
             this.tableLayoutPanel5.TabIndex = 57;
             // 
             // statusProgressBar1
@@ -1143,7 +1121,7 @@ namespace WinSync.Forms
             this.tabPage_syncElementInfo.Location = new System.Drawing.Point(4, 22);
             this.tabPage_syncElementInfo.Name = "tabPage_syncElementInfo";
             this.tabPage_syncElementInfo.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage_syncElementInfo.Size = new System.Drawing.Size(487, 314);
+            this.tabPage_syncElementInfo.Size = new System.Drawing.Size(487, 246);
             this.tabPage_syncElementInfo.TabIndex = 2;
             this.tabPage_syncElementInfo.Text = "Sync Element Info";
             this.tabPage_syncElementInfo.UseVisualStyleBackColor = true;
@@ -1168,7 +1146,7 @@ namespace WinSync.Forms
             this.tableLayoutPanel_sei.RowStyles.Add(new System.Windows.Forms.RowStyle());
             this.tableLayoutPanel_sei.RowStyles.Add(new System.Windows.Forms.RowStyle());
             this.tableLayoutPanel_sei.RowStyles.Add(new System.Windows.Forms.RowStyle());
-            this.tableLayoutPanel_sei.Size = new System.Drawing.Size(581, 302);
+            this.tableLayoutPanel_sei.Size = new System.Drawing.Size(581, 234);
             this.tableLayoutPanel_sei.TabIndex = 61;
             this.tableLayoutPanel_sei.Visible = false;
             // 
@@ -1660,7 +1638,7 @@ namespace WinSync.Forms
             this.panel6.Location = new System.Drawing.Point(0, 0);
             this.panel6.Margin = new System.Windows.Forms.Padding(0);
             this.panel6.Name = "panel6";
-            this.panel6.Size = new System.Drawing.Size(492, 161);
+            this.panel6.Size = new System.Drawing.Size(492, 218);
             this.panel6.TabIndex = 0;
             // 
             // label32
@@ -1681,19 +1659,20 @@ namespace WinSync.Forms
             this.listBox_log.BackColor = System.Drawing.SystemColors.Window;
             this.listBox_log.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.listBox_log.FormattingEnabled = true;
+            this.listBox_log.HorizontalScrollbar = true;
             this.listBox_log.Location = new System.Drawing.Point(3, 29);
             this.listBox_log.Name = "listBox_log";
-            this.listBox_log.Size = new System.Drawing.Size(486, 119);
+            this.listBox_log.Size = new System.Drawing.Size(486, 184);
             this.listBox_log.TabIndex = 19;
             // 
             // progressBar
             // 
             this.progressBar.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.progressBar.BackColor = System.Drawing.Color.Gainsboro;
+            this.progressBar.BackColor = System.Drawing.Color.White;
             this.progressBar.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(28)))), ((int)(((byte)(67)))), ((int)(((byte)(102)))));
             this.progressBar.Location = new System.Drawing.Point(0, 34);
-            this.progressBar.Margin = new System.Windows.Forms.Padding(5);
+            this.progressBar.Margin = new System.Windows.Forms.Padding(0, 0, 0, 10);
             this.progressBar.Maximum = 1000;
             this.progressBar.Name = "progressBar";
             this.progressBar.Size = new System.Drawing.Size(492, 10);
@@ -1714,19 +1693,41 @@ namespace WinSync.Forms
             this.splitContainer_main.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.splitContainer_main.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.splitContainer_main.FixedPanel = System.Windows.Forms.FixedPanel.Panel1;
             this.splitContainer_main.Location = new System.Drawing.Point(0, 0);
             this.splitContainer_main.Name = "splitContainer_main";
             // 
             // splitContainer_main.Panel1
             // 
-            this.splitContainer_main.Panel1.Controls.Add(this.panelLeft);
+            this.splitContainer_main.Panel1.Controls.Add(this.tableLayoutPanel_left);
             // 
             // splitContainer_main.Panel2
             // 
             this.splitContainer_main.Panel2.Controls.Add(this.treeView1);
-            this.splitContainer_main.Size = new System.Drawing.Size(795, 557);
+            this.splitContainer_main.Size = new System.Drawing.Size(795, 550);
             this.splitContainer_main.SplitterDistance = 494;
             this.splitContainer_main.TabIndex = 25;
+            // 
+            // tableLayoutPanel_left
+            // 
+            this.tableLayoutPanel_left.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.tableLayoutPanel_left.BackColor = System.Drawing.Color.Transparent;
+            this.tableLayoutPanel_left.ColumnCount = 1;
+            this.tableLayoutPanel_left.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.tableLayoutPanel_left.Controls.Add(this.panel_header, 0, 0);
+            this.tableLayoutPanel_left.Controls.Add(this.progressBar, 0, 1);
+            this.tableLayoutPanel_left.Controls.Add(this.splitContainer_left, 0, 2);
+            this.tableLayoutPanel_left.Location = new System.Drawing.Point(0, 0);
+            this.tableLayoutPanel_left.Name = "tableLayoutPanel_left";
+            this.tableLayoutPanel_left.RowCount = 3;
+            this.tableLayoutPanel_left.RowStyles.Add(new System.Windows.Forms.RowStyle());
+            this.tableLayoutPanel_left.RowStyles.Add(new System.Windows.Forms.RowStyle());
+            this.tableLayoutPanel_left.RowStyles.Add(new System.Windows.Forms.RowStyle());
+            this.tableLayoutPanel_left.Size = new System.Drawing.Size(492, 548);
+            this.tableLayoutPanel_left.TabIndex = 22;
             // 
             // treeView1
             // 
@@ -1740,7 +1741,7 @@ namespace WinSync.Forms
             this.treeView1.Location = new System.Drawing.Point(0, 0);
             this.treeView1.Name = "treeView1";
             this.treeView1.SelectedImageIndex = 0;
-            this.treeView1.Size = new System.Drawing.Size(297, 557);
+            this.treeView1.Size = new System.Drawing.Size(295, 548);
             this.treeView1.TabIndex = 24;
             this.treeView1.NodeMouseDoubleClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.treeView1_NodeMouseDoubleClick);
             // 
@@ -1748,7 +1749,7 @@ namespace WinSync.Forms
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(805, 592);
+            this.ClientSize = new System.Drawing.Size(805, 585);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "SyncDetailInfoForm2";
             this.Padding = new System.Windows.Forms.Padding(5, 30, 5, 5);
@@ -1759,7 +1760,6 @@ namespace WinSync.Forms
             this._contentPanel.ResumeLayout(false);
             this.panel_header.ResumeLayout(false);
             this.panel_header.PerformLayout();
-            this.panelLeft.ResumeLayout(false);
             this.splitContainer_left.Panel1.ResumeLayout(false);
             this.splitContainer_left.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer_left)).EndInit();
@@ -1825,6 +1825,7 @@ namespace WinSync.Forms
             this.splitContainer_main.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer_main)).EndInit();
             this.splitContainer_main.ResumeLayout(false);
+            this.tableLayoutPanel_left.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }
@@ -1835,8 +1836,6 @@ namespace WinSync.Forms
         private MyButton button_sync;
         private MyButton button_pr;
         private MyProgressBar progressBar;
-        private System.Windows.Forms.Panel panel3;
-        private System.Windows.Forms.Panel panelLeft;
         private System.Windows.Forms.ImageList imageList1;
         private System.Windows.Forms.SplitContainer splitContainer_main;
         private System.Windows.Forms.SplitContainer splitContainer_left;
@@ -1945,5 +1944,6 @@ namespace WinSync.Forms
         private System.Windows.Forms.FlowLayoutPanel flowLayoutPanel1;
         private MyButton button_refresh;
         private System.Windows.Forms.TextBox textBox_sei_info;
+        private System.Windows.Forms.TableLayoutPanel tableLayoutPanel_left;
     }
 }

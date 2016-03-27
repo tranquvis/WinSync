@@ -212,6 +212,9 @@ namespace WinSync.Forms
             ll.SyncStartRequested += delegate { StartSync(link); };
             ll.SyncCancellationRequested += delegate { CancelSync(link); };
 
+            ll.Anchor = AnchorStyles.Left | AnchorStyles.Top | AnchorStyles.Right;
+            ll.Width = dataTable.Width;
+
             _linkRows.Add(ll);
             dataTable.Controls.Add(ll, 0, _linkRows.Count);
         }

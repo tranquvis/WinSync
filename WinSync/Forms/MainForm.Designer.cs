@@ -32,7 +32,6 @@ namespace WinSync.Forms
         {
             this.flowLayoutPanel1 = new System.Windows.Forms.FlowLayoutPanel();
             this.label_p = new System.Windows.Forms.Label();
-            this.panel2 = new System.Windows.Forms.Panel();
             this.panel_selSL_info = new System.Windows.Forms.Panel();
             this.label1 = new System.Windows.Forms.Label();
             this.label_timeLeft = new System.Windows.Forms.Label();
@@ -51,7 +50,6 @@ namespace WinSync.Forms
             this.button_addLink = new WinSync.Controls.MyButton();
             this.progressBar_total = new WinSync.Controls.MyProgressBar();
             this._contentPanel.SuspendLayout();
-            this.panel2.SuspendLayout();
             this.panel_selSL_info.SuspendLayout();
             this.panel_detail_header.SuspendLayout();
             this.panel_syncDetail.SuspendLayout();
@@ -91,32 +89,20 @@ namespace WinSync.Forms
             this.label_p.Text = "100,0";
             this.label_p.Visible = false;
             // 
-            // panel2
-            // 
-            this.panel2.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.panel2.BackColor = System.Drawing.Color.White;
-            this.panel2.Controls.Add(this.panel_selSL_info);
-            this.panel2.Controls.Add(this.button_openDetailForm);
-            this.panel2.Controls.Add(this.panel_detail_header);
-            this.panel2.Location = new System.Drawing.Point(0, 0);
-            this.panel2.Margin = new System.Windows.Forms.Padding(3, 4, 3, 0);
-            this.panel2.Name = "panel2";
-            this.panel2.Size = new System.Drawing.Size(406, 133);
-            this.panel2.TabIndex = 9;
-            // 
             // panel_selSL_info
             // 
+            this.panel_selSL_info.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.panel_selSL_info.Controls.Add(this.label1);
             this.panel_selSL_info.Controls.Add(this.label_timeLeft);
             this.panel_selSL_info.Controls.Add(this.label_detail_progress);
             this.panel_selSL_info.Controls.Add(this.label4);
             this.panel_selSL_info.Controls.Add(this.label3);
             this.panel_selSL_info.Controls.Add(this.label_detail_status);
-            this.panel_selSL_info.Location = new System.Drawing.Point(7, 37);
+            this.panel_selSL_info.Location = new System.Drawing.Point(3, 32);
             this.panel_selSL_info.Name = "panel_selSL_info";
-            this.panel_selSL_info.Size = new System.Drawing.Size(398, 58);
+            this.panel_selSL_info.Size = new System.Drawing.Size(400, 58);
             this.panel_selSL_info.TabIndex = 19;
             this.panel_selSL_info.Visible = false;
             // 
@@ -185,7 +171,7 @@ namespace WinSync.Forms
             this.button_openDetailForm.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.button_openDetailForm.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.999999F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.button_openDetailForm.ForeColor = System.Drawing.Color.White;
-            this.button_openDetailForm.Location = new System.Drawing.Point(8, 101);
+            this.button_openDetailForm.Location = new System.Drawing.Point(3, 96);
             this.button_openDetailForm.Name = "button_openDetailForm";
             this.button_openDetailForm.Size = new System.Drawing.Size(74, 23);
             this.button_openDetailForm.TabIndex = 16;
@@ -201,14 +187,15 @@ namespace WinSync.Forms
             this.panel_detail_header.Controls.Add(this.button_pr);
             this.panel_detail_header.Controls.Add(this.button_sync);
             this.panel_detail_header.Controls.Add(this.label_detail_title);
-            this.panel_detail_header.Location = new System.Drawing.Point(0, 0);
+            this.panel_detail_header.Location = new System.Drawing.Point(-1, -1);
             this.panel_detail_header.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.panel_detail_header.Name = "panel_detail_header";
-            this.panel_detail_header.Size = new System.Drawing.Size(406, 30);
+            this.panel_detail_header.Size = new System.Drawing.Size(408, 30);
             this.panel_detail_header.TabIndex = 13;
             // 
             // button_pr
             // 
+            this.button_pr.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.button_pr.BackColor = System.Drawing.Color.Transparent;
             this.button_pr.BackgroundImage = global::WinSync.Properties.Resources.ic_pause_white;
             this.button_pr.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
@@ -228,6 +215,7 @@ namespace WinSync.Forms
             // 
             // button_sync
             // 
+            this.button_sync.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.button_sync.BackColor = System.Drawing.Color.Transparent;
             this.button_sync.BackgroundImage = global::WinSync.Properties.Resources.ic_sync_white;
             this.button_sync.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
@@ -270,16 +258,19 @@ namespace WinSync.Forms
             // 
             // dataTable
             // 
-            this.dataTable.AutoSize = true;
+            this.dataTable.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.dataTable.AutoScroll = true;
             this.dataTable.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.dataTable.BackColor = System.Drawing.Color.White;
             this.dataTable.ColumnCount = 1;
-            this.dataTable.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
-            this.dataTable.Location = new System.Drawing.Point(3, 61);
+            this.dataTable.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.dataTable.Location = new System.Drawing.Point(3, 66);
             this.dataTable.Name = "dataTable";
             this.dataTable.RowCount = 1;
             this.dataTable.RowStyles.Add(new System.Windows.Forms.RowStyle());
-            this.dataTable.Size = new System.Drawing.Size(0, 0);
+            this.dataTable.Size = new System.Drawing.Size(616, 586);
             this.dataTable.TabIndex = 32;
             // 
             // panel_syncDetail
@@ -287,10 +278,12 @@ namespace WinSync.Forms
             this.panel_syncDetail.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.panel_syncDetail.BackColor = System.Drawing.Color.Transparent;
             this.panel_syncDetail.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.panel_syncDetail.Controls.Add(this.panel2);
-            this.panel_syncDetail.Location = new System.Drawing.Point(625, 66);
+            this.panel_syncDetail.Controls.Add(this.panel_selSL_info);
+            this.panel_syncDetail.Controls.Add(this.button_openDetailForm);
+            this.panel_syncDetail.Controls.Add(this.panel_detail_header);
+            this.panel_syncDetail.Location = new System.Drawing.Point(635, 66);
             this.panel_syncDetail.Name = "panel_syncDetail";
-            this.panel_syncDetail.Size = new System.Drawing.Size(408, 135);
+            this.panel_syncDetail.Size = new System.Drawing.Size(408, 128);
             this.panel_syncDetail.TabIndex = 29;
             this.panel_syncDetail.Visible = false;
             // 
@@ -339,7 +332,6 @@ namespace WinSync.Forms
             this.Controls.SetChildIndex(this._contentPanel, 0);
             this._contentPanel.ResumeLayout(false);
             this._contentPanel.PerformLayout();
-            this.panel2.ResumeLayout(false);
             this.panel_selSL_info.ResumeLayout(false);
             this.panel_selSL_info.PerformLayout();
             this.panel_detail_header.ResumeLayout(false);
@@ -355,7 +347,6 @@ namespace WinSync.Forms
         private MyProgressBar progressBar_total;
         private System.Windows.Forms.Label label_p;
         private MyButton button_addLink;
-        private System.Windows.Forms.Panel panel2;
         private System.Windows.Forms.Label label_detail_progress;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Panel panel_detail_header;
