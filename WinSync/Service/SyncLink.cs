@@ -23,7 +23,7 @@ namespace WinSync.Service
         /// <param name="link">Link Data</param>
         /// </summary>
         public SyncLink(Data.Link link)
-            : base(link.Title, link.Path1, link.Path2, link.Direction, link.Remove) {}
+            : base(link.Title, link.Path1, link.Path2, link.Direction, link.Remove, link.Drive1Label, link.Drive2Label) {}
 
         /// <summary>
         /// check if synchronisation is running

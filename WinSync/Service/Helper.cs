@@ -637,6 +637,31 @@ namespace WinSync.Service
 
             return false;
         }
+        
+        /// <summary>
+        /// get drive label from drive letter
+        /// </summary>
+        /// <param name="letter"></param>
+        /// <returns>drive label</returns>
+        public static string GetDriveLabelFromLetter(char letter)
+        {
+            return new DriveInfo(letter.ToString()).VolumeLabel;
+        }
+
+        /// <summary>
+        /// get drive letter from the drive label
+        /// </summary>
+        /// <param name="label"></param>
+        /// <returns>drive letter</returns>
+        public static char? GetDriveLetterFromLabel(string label)
+        {
+            foreach (DriveInfo di in DriveInfo.GetDrives())
+            {
+                if (di.IsReady && di.VolumeLabel == label)
+                    return di.Name[0];
+            }
+            return null;
+        }
 
         /// <summary> 
         /// fast file move with big buffers

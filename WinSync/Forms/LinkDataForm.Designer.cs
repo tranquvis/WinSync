@@ -47,11 +47,19 @@ namespace WinSync.Forms
             this.button_folder1 = new WinSync.Controls.MyButton();
             this.label4 = new System.Windows.Forms.Label();
             this.comboBox_direction = new System.Windows.Forms.ComboBox();
+            this.checkBox_identifyDrive1ByLabel = new System.Windows.Forms.CheckBox();
+            this.label_driveLabel1 = new System.Windows.Forms.Label();
+            this.label_driveLabel2 = new System.Windows.Forms.Label();
+            this.checkBox_identifyDrive2ByLabel = new System.Windows.Forms.CheckBox();
             this._contentPanel.SuspendLayout();
             this.SuspendLayout();
             // 
             // _contentPanel
             // 
+            this._contentPanel.Controls.Add(this.label_driveLabel2);
+            this._contentPanel.Controls.Add(this.checkBox_identifyDrive2ByLabel);
+            this._contentPanel.Controls.Add(this.label_driveLabel1);
+            this._contentPanel.Controls.Add(this.checkBox_identifyDrive1ByLabel);
             this._contentPanel.Controls.Add(this.textBox_title);
             this._contentPanel.Controls.Add(this.checkBox_remove);
             this._contentPanel.Controls.Add(this.button_save);
@@ -69,7 +77,7 @@ namespace WinSync.Forms
             this._contentPanel.Controls.Add(this.comboBox_direction);
             this._contentPanel.Controls.Add(this.label_errorTitle);
             this._contentPanel.Location = new System.Drawing.Point(5, 30);
-            this._contentPanel.Size = new System.Drawing.Size(415, 274);
+            this._contentPanel.Size = new System.Drawing.Size(420, 308);
             // 
             // label_errorTitle
             // 
@@ -94,7 +102,7 @@ namespace WinSync.Forms
             // 
             this.checkBox_remove.AutoSize = true;
             this.checkBox_remove.BackColor = System.Drawing.Color.Transparent;
-            this.checkBox_remove.Location = new System.Drawing.Point(10, 197);
+            this.checkBox_remove.Location = new System.Drawing.Point(11, 226);
             this.checkBox_remove.Name = "checkBox_remove";
             this.checkBox_remove.Size = new System.Drawing.Size(241, 17);
             this.checkBox_remove.TabIndex = 44;
@@ -109,7 +117,7 @@ namespace WinSync.Forms
             this.button_save.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.button_save.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.button_save.ForeColor = System.Drawing.Color.White;
-            this.button_save.Location = new System.Drawing.Point(332, 234);
+            this.button_save.Location = new System.Drawing.Point(337, 268);
             this.button_save.Name = "button_save";
             this.button_save.Size = new System.Drawing.Size(75, 27);
             this.button_save.TabIndex = 30;
@@ -126,7 +134,7 @@ namespace WinSync.Forms
             this.button_cancel.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.button_cancel.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.button_cancel.ForeColor = System.Drawing.Color.White;
-            this.button_cancel.Location = new System.Drawing.Point(8, 234);
+            this.button_cancel.Location = new System.Drawing.Point(8, 268);
             this.button_cancel.Name = "button_cancel";
             this.button_cancel.Size = new System.Drawing.Size(75, 27);
             this.button_cancel.TabIndex = 31;
@@ -138,7 +146,7 @@ namespace WinSync.Forms
             // 
             this.label1.AutoSize = true;
             this.label1.BackColor = System.Drawing.Color.Transparent;
-            this.label1.Location = new System.Drawing.Point(7, 31);
+            this.label1.Location = new System.Drawing.Point(8, 23);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(27, 13);
             this.label1.TabIndex = 32;
@@ -148,7 +156,7 @@ namespace WinSync.Forms
             // 
             this.label2.AutoSize = true;
             this.label2.BackColor = System.Drawing.Color.Transparent;
-            this.label2.Location = new System.Drawing.Point(7, 78);
+            this.label2.Location = new System.Drawing.Point(8, 73);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(45, 13);
             this.label2.TabIndex = 34;
@@ -158,7 +166,7 @@ namespace WinSync.Forms
             // 
             this.label_errorFolder2.AutoSize = true;
             this.label_errorFolder2.ForeColor = System.Drawing.Color.Firebrick;
-            this.label_errorFolder2.Location = new System.Drawing.Point(82, 100);
+            this.label_errorFolder2.Location = new System.Drawing.Point(84, 112);
             this.label_errorFolder2.Name = "label_errorFolder2";
             this.label_errorFolder2.Size = new System.Drawing.Size(0, 13);
             this.label_errorFolder2.TabIndex = 43;
@@ -186,7 +194,7 @@ namespace WinSync.Forms
             // 
             this.label3.AutoSize = true;
             this.label3.BackColor = System.Drawing.Color.Transparent;
-            this.label3.Location = new System.Drawing.Point(7, 122);
+            this.label3.Location = new System.Drawing.Point(9, 129);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(45, 13);
             this.label3.TabIndex = 36;
@@ -201,7 +209,7 @@ namespace WinSync.Forms
             this.button_folder2.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.button_folder2.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F);
             this.button_folder2.ForeColor = System.Drawing.Color.White;
-            this.button_folder2.Location = new System.Drawing.Point(365, 111);
+            this.button_folder2.Location = new System.Drawing.Point(367, 123);
             this.button_folder2.Name = "button_folder2";
             this.button_folder2.Size = new System.Drawing.Size(27, 22);
             this.button_folder2.TabIndex = 41;
@@ -213,7 +221,7 @@ namespace WinSync.Forms
             // 
             this.textBox_folder2.BorderColor = System.Drawing.SystemColors.ActiveBorder;
             this.textBox_folder2.FocusBorderColor = System.Drawing.SystemColors.Highlight;
-            this.textBox_folder2.Location = new System.Drawing.Point(80, 111);
+            this.textBox_folder2.Location = new System.Drawing.Point(82, 123);
             this.textBox_folder2.Name = "textBox_folder2";
             this.textBox_folder2.Padding = new System.Windows.Forms.Padding(3);
             this.textBox_folder2.Size = new System.Drawing.Size(279, 22);
@@ -240,7 +248,7 @@ namespace WinSync.Forms
             // 
             this.label4.AutoSize = true;
             this.label4.BackColor = System.Drawing.Color.Transparent;
-            this.label4.Location = new System.Drawing.Point(7, 160);
+            this.label4.Location = new System.Drawing.Point(9, 184);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(49, 13);
             this.label4.TabIndex = 38;
@@ -250,20 +258,62 @@ namespace WinSync.Forms
             // 
             this.comboBox_direction.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comboBox_direction.FormattingEnabled = true;
-            this.comboBox_direction.Location = new System.Drawing.Point(80, 152);
+            this.comboBox_direction.Location = new System.Drawing.Point(81, 181);
             this.comboBox_direction.Name = "comboBox_direction";
             this.comboBox_direction.Size = new System.Drawing.Size(121, 21);
             this.comboBox_direction.TabIndex = 39;
             // 
-            // EditLinkForm
+            // checkBox_identifyDrive1ByLabel
+            // 
+            this.checkBox_identifyDrive1ByLabel.AutoSize = true;
+            this.checkBox_identifyDrive1ByLabel.BackColor = System.Drawing.Color.Transparent;
+            this.checkBox_identifyDrive1ByLabel.Location = new System.Drawing.Point(100, 95);
+            this.checkBox_identifyDrive1ByLabel.Name = "checkBox_identifyDrive1ByLabel";
+            this.checkBox_identifyDrive1ByLabel.Size = new System.Drawing.Size(140, 17);
+            this.checkBox_identifyDrive1ByLabel.TabIndex = 45;
+            this.checkBox_identifyDrive1ByLabel.Text = "Identify Drive by its label";
+            this.checkBox_identifyDrive1ByLabel.UseVisualStyleBackColor = false;
+            // 
+            // label_driveLabel1
+            // 
+            this.label_driveLabel1.AutoSize = true;
+            this.label_driveLabel1.ForeColor = System.Drawing.Color.DimGray;
+            this.label_driveLabel1.Location = new System.Drawing.Point(247, 96);
+            this.label_driveLabel1.Name = "label_driveLabel1";
+            this.label_driveLabel1.Size = new System.Drawing.Size(41, 13);
+            this.label_driveLabel1.TabIndex = 46;
+            this.label_driveLabel1.Text = "(label: )";
+            // 
+            // label_driveLabel2
+            // 
+            this.label_driveLabel2.AutoSize = true;
+            this.label_driveLabel2.ForeColor = System.Drawing.Color.DimGray;
+            this.label_driveLabel2.Location = new System.Drawing.Point(247, 152);
+            this.label_driveLabel2.Name = "label_driveLabel2";
+            this.label_driveLabel2.Size = new System.Drawing.Size(41, 13);
+            this.label_driveLabel2.TabIndex = 48;
+            this.label_driveLabel2.Text = "(label: )";
+            // 
+            // checkBox_identifyDrive2ByLabel
+            // 
+            this.checkBox_identifyDrive2ByLabel.AutoSize = true;
+            this.checkBox_identifyDrive2ByLabel.BackColor = System.Drawing.Color.Transparent;
+            this.checkBox_identifyDrive2ByLabel.Location = new System.Drawing.Point(100, 151);
+            this.checkBox_identifyDrive2ByLabel.Name = "checkBox_identifyDrive2ByLabel";
+            this.checkBox_identifyDrive2ByLabel.Size = new System.Drawing.Size(140, 17);
+            this.checkBox_identifyDrive2ByLabel.TabIndex = 47;
+            this.checkBox_identifyDrive2ByLabel.Text = "Identify Drive by its label";
+            this.checkBox_identifyDrive2ByLabel.UseVisualStyleBackColor = false;
+            // 
+            // LinkDataForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(425, 309);
+            this.ClientSize = new System.Drawing.Size(430, 343);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximizeBox = false;
             this.MinimizeBox = false;
-            this.Name = "EditLinkForm";
+            this.Name = "LinkDataForm";
             this.Padding = new System.Windows.Forms.Padding(5, 30, 5, 5);
             this.Text = "Edit Link";
             this.Controls.SetChildIndex(this._contentPanel, 0);
@@ -290,5 +340,9 @@ namespace WinSync.Forms
         private MyButton button_folder1;
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.ComboBox comboBox_direction;
+        private System.Windows.Forms.CheckBox checkBox_identifyDrive1ByLabel;
+        private System.Windows.Forms.Label label_driveLabel1;
+        private System.Windows.Forms.Label label_driveLabel2;
+        private System.Windows.Forms.CheckBox checkBox_identifyDrive2ByLabel;
     }
 }

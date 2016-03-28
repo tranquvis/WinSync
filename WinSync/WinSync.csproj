@@ -211,10 +211,6 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\shadow_top_d70.png" />
-    <None Include="Resources\shadow_top_d50.png" />
-    <None Include="Resources\shadow_bottom_d50.png" />
-    <None Include="Resources\shadow_bottom_d20.png" />
     <None Include="Resources\ic_cancel_white_36dp.png" />
     <None Include="Resources\ic_sync_white_24dp.png" />
     <None Include="Resources\ic_play_circle_fill_white_24dp.png" />
@@ -266,9 +262,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\two_way.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\ic_warning.png" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="icon.ico" />
