@@ -5,25 +5,35 @@ using WinSync.Service;
 
 namespace WinSync.Forms
 {
-    public partial class EditLinkForm : WinSyncForm
+    public partial class LinkDataForm : WinSyncForm
     {
         readonly Link _oldLink;
         Link _newLink;
 
-        public EditLinkForm(Link link)
+        /// <summary>
+        /// create LinkDataForm for creating or editing a link
+        /// </summary>
+        /// <param name="link">if null a new link will be created</param>
+        public LinkDataForm(Link link)
         {
             InitializeComponent();
 
-            _oldLink = link;
-            _newLink = link.Clone();
+            if (link != null)
+            {
+                _oldLink = link;
+                _newLink = link.Clone();
+            }
 
             comboBox_direction.DataSource = SyncDirection.NameList;
-            comboBox_direction.SelectedIndex = link.Direction.Id;
 
-            textBox_title.Text = link.Title;
-            textBox_folder1.Text = link.Path1;
-            textBox_folder2.Text = link.Path2;
-            checkBox_remove.Checked = link.Remove;
+            if(link != null)
+            {
+                textBox_title.Text = link.Title;
+                textBox_folder1.Text = link.Path1;
+                textBox_folder2.Text = link.Path2;
+                comboBox_direction.SelectedIndex = link.Direction.Id;
+                checkBox_remove.Checked = link.Remove;
+            }
         }
 
         private void button_folder1_Click(object sender, EventArgs e)
@@ -49,6 +59,7 @@ namespace WinSync.Forms
 
         private void button_save_Click(object sender, EventArgs e)
         {
+            #region check input
             bool error = false;
             string title = textBox_title.Text;
             if (title.Length == 0)
@@ -92,18 +103,29 @@ namespace WinSync.Forms
             SyncDirection direction = SyncDirection.FromValue(comboBox_direction.SelectedIndex);
 
             bool remove = checkBox_remove.Checked;
+            #endregion
 
             if (error) return;
 
-            _newLink.Title = title;
-            _newLink.Path1 = path1;
-            _newLink.Path2 = path2;
-            _newLink.Direction = direction;
-            _newLink.Remove = remove;
 
             try
             {
-                DataManager.ChangeLink(_newLink, _oldLink.Title);
+                if (_oldLink != null)
+                {
+                    //edit link
+                    _newLink.Title = title;
+                    _newLink.Path1 = path1;
+                    _newLink.Path2 = path2;
+                    _newLink.Direction = direction;
+                    _newLink.Remove = remove;
+                    DataManager.ChangeLink(_newLink, _oldLink.Title);
+                }
+                else
+                {
+                    //create new link
+                    _newLink = new Link(title, path1, path2, direction, remove);
+                    DataManager.AddLink(_newLink);
+                }
                 Close();
             }
             catch(BadInputException me)

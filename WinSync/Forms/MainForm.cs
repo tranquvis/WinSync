@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -23,6 +24,30 @@ namespace WinSync.Forms
         public MainForm()
         {
             InitializeComponent();
+
+            DriveInfo[] allDrives = DriveInfo.GetDrives();
+
+            foreach (DriveInfo d in allDrives)
+            {
+                Console.WriteLine("Drive {0}", d.Name);
+                Console.WriteLine("  Drive type: {0}", d.DriveType);
+                if (d.IsReady == true)
+                {
+                    Console.WriteLine("  Volume label: {0}", d.VolumeLabel);
+                    Console.WriteLine("  File system: {0}", d.DriveFormat);
+                    Console.WriteLine(
+                        "  Available space to current user:{0, 15} bytes",
+                        d.AvailableFreeSpace);
+
+                    Console.WriteLine(
+                        "  Total available space:          {0, 15} bytes",
+                        d.TotalFreeSpace);
+
+                    Console.WriteLine(
+                        "  Total size of drive:            {0, 15} bytes ",
+                        d.TotalSize);
+                }
+            }
 
             DataManager.LinkChanged += OnLinkDataChanged;
             DataManager.LoadLinks();
@@ -207,7 +232,7 @@ namespace WinSync.Forms
         {
             LinkRow ll = new LinkRow(link);
             ll.LinkDeletionRequested += delegate { DataManager.RemoveLink(link.Title); };
-            ll.EditLinkRequested += delegate { new EditLinkForm(link).ShowDialog(); };
+            ll.EditLinkRequested += delegate { new LinkDataForm(link).ShowDialog(); };
             ll.LinkRowSelected += delegate { SelectLinkRow(link); };
             ll.SyncStartRequested += delegate { StartSync(link); };
             ll.SyncCancellationRequested += delegate { CancelSync(link); };
@@ -277,7 +302,7 @@ namespace WinSync.Forms
         /// <param name="e"></param>
         private void button_addLink_Click(object sender, EventArgs e)
         {
-            AddLinkForm form = new AddLinkForm();
+            LinkDataForm form = new LinkDataForm(null);
             form.Show();
         }
 

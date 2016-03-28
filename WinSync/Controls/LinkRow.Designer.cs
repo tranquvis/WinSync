@@ -47,10 +47,10 @@
             this.label_path1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.label_path1.Font = new System.Drawing.Font("Microsoft Sans Serif", 7F);
-            this.label_path1.Location = new System.Drawing.Point(147, 5);
+            this.label_path1.Location = new System.Drawing.Point(170, 5);
             this.label_path1.Margin = new System.Windows.Forms.Padding(3);
             this.label_path1.Name = "label_path1";
-            this.label_path1.Size = new System.Drawing.Size(299, 13);
+            this.label_path1.Size = new System.Drawing.Size(276, 13);
             this.label_path1.TabIndex = 4;
             this.label_path1.Text = "path1";
             // 
@@ -62,7 +62,7 @@
             this.label_title.Location = new System.Drawing.Point(41, 5);
             this.label_title.Margin = new System.Windows.Forms.Padding(3);
             this.label_title.Name = "label_title";
-            this.label_title.Size = new System.Drawing.Size(100, 30);
+            this.label_title.Size = new System.Drawing.Size(123, 30);
             this.label_title.TabIndex = 3;
             this.label_title.Text = "title";
             this.label_title.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -72,10 +72,10 @@
             this.label_path2.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.label_path2.Font = new System.Drawing.Font("Microsoft Sans Serif", 7F);
-            this.label_path2.Location = new System.Drawing.Point(147, 21);
+            this.label_path2.Location = new System.Drawing.Point(170, 21);
             this.label_path2.Margin = new System.Windows.Forms.Padding(3, 0, 3, 3);
             this.label_path2.Name = "label_path2";
-            this.label_path2.Size = new System.Drawing.Size(299, 13);
+            this.label_path2.Size = new System.Drawing.Size(276, 13);
             this.label_path2.TabIndex = 1;
             this.label_path2.Text = "path2";
             // 

@@ -100,12 +100,6 @@
     <Compile Include="Controls\MyTextBox.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="Controls\Shadow.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="Controls\Shadow.Designer.cs">
-      <DependentUpon>Shadow.cs</DependentUpon>
-    </Compile>
     <Compile Include="Controls\StatusProgressBar.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -149,17 +143,11 @@
     <Compile Include="Service\Info\Element\Dir\SyncDirInfo.cs" />
     <Compile Include="Service\Info\Element\File\SyncFileInfo.cs" />
     <Compile Include="Service\Info\SyncStatus.cs" />
-    <Compile Include="Forms\EditLinkForm.cs">
+    <Compile Include="Forms\LinkDataForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Forms\EditLinkForm.Designer.cs">
-      <DependentUpon>EditLinkForm.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Forms\AddLinkForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Forms\AddLinkForm.Designer.cs">
-      <DependentUpon>AddLinkForm.cs</DependentUpon>
+    <Compile Include="Forms\LinkDataForm.Designer.cs">
+      <DependentUpon>LinkDataForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Service\Info\SyncDirection.cs" />
     <Compile Include="Forms\MainForm.cs">
@@ -183,20 +171,14 @@
     <EmbeddedResource Include="Controls\LinkRow.resx">
       <DependentUpon>LinkRow.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Controls\Shadow.resx">
-      <DependentUpon>Shadow.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="Controls\StatusProgressBar.resx">
       <DependentUpon>StatusProgressBar.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Controls\SyncButton.resx">
       <DependentUpon>SyncButton.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Forms\EditLinkForm.resx">
-      <DependentUpon>EditLinkForm.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Forms\AddLinkForm.resx">
-      <DependentUpon>AddLinkForm.cs</DependentUpon>
+    <EmbeddedResource Include="Forms\LinkDataForm.resx">
+      <DependentUpon>LinkDataForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\SyncDetailInfoForm2.resx">
       <DependentUpon>SyncDetailInfoForm2.cs</DependentUpon>

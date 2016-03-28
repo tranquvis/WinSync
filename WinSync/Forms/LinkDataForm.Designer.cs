@@ -2,7 +2,7 @@
 
 namespace WinSync.Forms
 {
-    partial class EditLinkForm
+    partial class LinkDataForm
     {
         /// <summary>
         /// Required designer variable.
@@ -30,7 +30,7 @@ namespace WinSync.Forms
         /// </summary>
         private void InitializeComponent()
         {
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(EditLinkForm));
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(LinkDataForm));
             this.label_errorTitle = new System.Windows.Forms.Label();
             this.textBox_title = new WinSync.Controls.MyTextBox();
             this.checkBox_remove = new System.Windows.Forms.CheckBox();
@@ -115,6 +115,7 @@ namespace WinSync.Forms
             this.button_save.TabIndex = 30;
             this.button_save.Text = "Save";
             this.button_save.UseVisualStyleBackColor = true;
+            this.button_save.Click += new System.EventHandler(this.button_save_Click);
             // 
             // button_cancel
             // 
@@ -131,6 +132,7 @@ namespace WinSync.Forms
             this.button_cancel.TabIndex = 31;
             this.button_cancel.Text = "Cancel";
             this.button_cancel.UseVisualStyleBackColor = false;
+            this.button_cancel.Click += new System.EventHandler(this.button_cancel_Click);
             // 
             // label1
             // 
@@ -205,6 +207,7 @@ namespace WinSync.Forms
             this.button_folder2.TabIndex = 41;
             this.button_folder2.Text = "...";
             this.button_folder2.UseVisualStyleBackColor = false;
+            this.button_folder2.Click += new System.EventHandler(this.button_folder2_Click);
             // 
             // textBox_folder2
             // 
@@ -231,6 +234,7 @@ namespace WinSync.Forms
             this.button_folder1.TabIndex = 40;
             this.button_folder1.Text = "...";
             this.button_folder1.UseVisualStyleBackColor = false;
+            this.button_folder1.Click += new System.EventHandler(this.button_folder1_Click);
             // 
             // label4
             // 

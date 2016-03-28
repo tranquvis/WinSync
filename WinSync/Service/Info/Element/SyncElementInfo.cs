@@ -8,11 +8,28 @@ namespace WinSync.Service
 {
     public abstract class SyncElementInfo
     {
+        private SyncElementStatus _syncStatus;
+
+        /// <summary>
+        /// create SyncElementInfo
+        /// </summary>
+        /// <param name="syncInfo">synchronisation info</param>
+        /// <param name="elementInfo">element info</param>
+        /// <param name="initStatus">if true: SyncStatus is set to ElementFound</param>
+        public SyncElementInfo(SyncInfo syncInfo, MyElementInfo elementInfo, bool initStatus)
+        {
+            SyncInfo = syncInfo;
+            ElementInfo = elementInfo;
+            ElementInfo.SyncElementInfo = this;
+
+            if (initStatus)
+                SyncStatus = SyncElementStatus.ElementFound;
+        }
+
         public SyncInfo SyncInfo { get; protected set; }
 
         public MyElementInfo ElementInfo { get; protected set; }
 
-        private SyncElementStatus _syncStatus;
         public SyncElementStatus SyncStatus {
             get { return _syncStatus; }
             set
@@ -27,20 +44,24 @@ namespace WinSync.Service
         public SyncElementExecutionInfo SyncExecutionInfo { get; set; }
 
         /// <summary>
-        /// create SyncElementInfo
+        /// conflict info: null if no conflict
         /// </summary>
-        /// <param name="syncInfo">synchronisation info</param>
-        /// <param name="elementInfo">element info</param>
-        /// <param name="initStatus">if true: SyncStatus is set to ElementFound</param>
-        public SyncElementInfo(SyncInfo syncInfo, MyElementInfo elementInfo, bool initStatus)
-        {
-            SyncInfo = syncInfo;
-            ElementInfo = elementInfo;
-            ElementInfo.SyncElementInfo = this;
+        public ElementConflictInfo ConflictInfo { get; protected set; }
 
-            if(initStatus)
-                SyncStatus = SyncElementStatus.ElementFound;
-        }
+        /// <summary>
+        /// check if conflict appeared while synchronisation
+        /// </summary>
+        public bool IsConflicted => ConflictInfo != null;
+
+        /// <summary>
+        /// absolute element path 1 with name
+        /// </summary>
+        public string AbsolutePath1 => SyncInfo.Link.Path1 + ElementInfo.FullPath;
+
+        /// <summary>
+        /// absolute element path 1 with name
+        /// </summary>
+        public string AbsolutePath2 => SyncInfo.Link.Path2 + ElementInfo.FullPath;
 
         /// <summary>
         /// call when conflicted
@@ -51,18 +72,5 @@ namespace WinSync.Service
             ConflictInfo = ci;
             SyncStatus = SyncElementStatus.Conflicted;
         }
-
-        /// <summary>
-        /// conflict info: null if no conflict
-        /// </summary>
-        public ElementConflictInfo ConflictInfo { get; protected set; }
-
-        /// <summary>
-        /// check if conflict appeared while synchronisation
-        /// </summary>
-        public bool IsConflicted => ConflictInfo != null;
-
-        public string AbsolutePath1 => SyncInfo.Link.Path1 + ElementInfo.FullPath;
-        public string AbsolutePath2 => SyncInfo.Link.Path2 + ElementInfo.FullPath;
     }
 }

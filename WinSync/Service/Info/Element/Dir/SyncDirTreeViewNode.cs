@@ -8,18 +8,37 @@ namespace WinSync.Service
 {
     public class SyncDirTreeViewNode : SyncElementTreeViewNode
     {
-        public MyDirInfo DirInfo => (MyDirInfo)ElementInfo;
+        public MyDirInfo DirInfo
+        {
+            get { return (MyDirInfo)ElementInfo; }
+            set { ElementInfo = value; }
+        }
 
+        /// <summary>
+        /// highest SyncElementStatus of child elements
+        /// </summary>
         public SyncElementStatus? ChildStatus { get; set; }
 
-        public SyncDirTreeViewNode(MyDirInfo dirInfo) : base(dirInfo)
-        {}
-        
+        /// <summary>
+        /// reate TreeNode representing a SyncDir 
+        /// and update its visual representation
+        /// </summary>
+        /// <param name="dirInfo">directory info</param>
+        public SyncDirTreeViewNode(MyDirInfo dirInfo) : base(dirInfo) {}
+
+        /// <summary>
+        /// get child node by name (only the next layer is examined)
+        /// </summary>
+        /// <param name="name">child node name</param>
+        /// <returns>SyncElementTreeViewNode</returns>
         public SyncElementTreeViewNode GetChildNode(string name)
         {
             return (SyncElementTreeViewNode)Nodes[name];
         }
 
+        /// <summary>
+        /// update visual representation
+        /// </summary>
         public override void Update()
         {
             if(DirInfo.SyncDirInfo != null)
