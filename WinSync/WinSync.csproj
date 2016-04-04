@@ -110,6 +110,10 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="Data\DataManager.cs" />
+    <Compile Include="Forms\CustomDesignForm.cs">
+      <CustomToolNamespace>tranquvis.Utils.WinFormDesign</CustomToolNamespace>
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="Forms\SyncDetailInfoForm2.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -129,6 +133,7 @@
     <Compile Include="Service\Info\Element\SyncElementInfo.cs" />
     <Compile Include="Service\Info\Element\SyncElementStatus.cs" />
     <Compile Include="Service\Info\Element\SyncElementTreeViewNode.cs" />
+    <Compile Include="Service\Info\Element\TreeNodeProperties.cs" />
     <Compile Include="Service\Info\LogMessage.cs" />
     <Compile Include="Service\Info\LogType.cs" />
     <Compile Include="Service\Info\Element\Dir\MyDirInfo.cs" />

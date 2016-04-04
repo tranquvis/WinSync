@@ -1128,8 +1128,9 @@ namespace WinSync.Forms
             // 
             // tableLayoutPanel_sei
             // 
-            this.tableLayoutPanel_sei.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left)));
+            this.tableLayoutPanel_sei.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.tableLayoutPanel_sei.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.tableLayoutPanel_sei.ColumnCount = 1;
             this.tableLayoutPanel_sei.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
@@ -1146,7 +1147,7 @@ namespace WinSync.Forms
             this.tableLayoutPanel_sei.RowStyles.Add(new System.Windows.Forms.RowStyle());
             this.tableLayoutPanel_sei.RowStyles.Add(new System.Windows.Forms.RowStyle());
             this.tableLayoutPanel_sei.RowStyles.Add(new System.Windows.Forms.RowStyle());
-            this.tableLayoutPanel_sei.Size = new System.Drawing.Size(581, 234);
+            this.tableLayoutPanel_sei.Size = new System.Drawing.Size(475, 234);
             this.tableLayoutPanel_sei.TabIndex = 61;
             this.tableLayoutPanel_sei.Visible = false;
             // 
@@ -1259,7 +1260,7 @@ namespace WinSync.Forms
             this.flowLayoutPanel9.Controls.Add(this.tableLayoutPanel9);
             this.flowLayoutPanel9.Location = new System.Drawing.Point(3, 97);
             this.flowLayoutPanel9.Name = "flowLayoutPanel9";
-            this.flowLayoutPanel9.Size = new System.Drawing.Size(575, 98);
+            this.flowLayoutPanel9.Size = new System.Drawing.Size(469, 98);
             this.flowLayoutPanel9.TabIndex = 60;
             // 
             // tableLayoutPanel7

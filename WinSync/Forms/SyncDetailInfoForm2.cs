@@ -13,6 +13,7 @@ namespace WinSync.Forms
     public partial class SyncDetailInfoForm2 : WinSyncForm, ISyncListener
     {
         readonly SyncLink _l;
+        bool _updateRoutineRunning;
         bool _updateStatsAsyncRunning;
         bool _statusChangedEventsCheckingRunning;
         MainForm _mainForm;
@@ -38,8 +39,8 @@ namespace WinSync.Forms
 
             InitializeComponent();
 
-            this.statusProgressBar1.StatusTitles = SyncStatus.GetGroupedTitles();
-            this.statusProgressBar1.ActivateStatus("fetching files/dirs");
+            statusProgressBar1.StatusTitles = SyncStatus.GetGroupedTitles();
+            statusProgressBar1.ActivateStatus("fetching files/dirs");
 
             SyncStatusFormHelper.Init(this);
 
@@ -74,13 +75,18 @@ namespace WinSync.Forms
                     if (running) _l.ResumeSync();
                 }
             }
-            StartUpdateRoutine();
+
+            Load += delegate { StartUpdateRoutine(); };
         }
         
         public void StartUpdateRoutine()
         {
+            if (_updateRoutineRunning)
+                return;
+
             Task.Run(async () =>
             {
+                _updateRoutineRunning = true;
                 while (!IsDisposed)
                 {
                     if (_l.IsRunning)
@@ -99,6 +105,7 @@ namespace WinSync.Forms
 
                     await Task.Delay(500);
                 }
+                _updateRoutineRunning = false;
             });
         }
 
@@ -473,6 +480,7 @@ namespace WinSync.Forms
         {
             if (!_l.IsRunning)
             {
+                StartUpdateRoutine();
                 _l.Sync(this);
                 listBox_log.Items.Clear();
                 treeView1.Nodes.Clear();
@@ -592,6 +600,8 @@ namespace WinSync.Forms
         private void UpdateSyncElementInfo()
         {
             SyncElementTreeViewNode node = (SyncElementTreeViewNode)treeView1.SelectedNode;
+            if (node == null)
+                return;
             MyElementInfo ei = node.ElementInfo;
 
             label_sei_type.Text = ei.GetType() == typeof(MyFileInfo) ? "File" : "Dir";
