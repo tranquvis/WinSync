@@ -22,7 +22,7 @@ namespace WinSync.Service
             statusPropertiesList[(int)SyncElementStatus.ChangeDetectingStarted] = new StatusProperties(Color.Black, 1, 0);
             statusPropertiesList[(int)SyncElementStatus.NoChangeFound] = new StatusProperties(Color.Black, 1, 0);
             statusPropertiesList[(int)SyncElementStatus.ChangeFound] = new StatusProperties(Color.Blue, 2, 0);
-            statusPropertiesList[(int)SyncElementStatus.ChangeApplied] = new StatusProperties(Color.Green, 3, 0);
+            statusPropertiesList[(int)SyncElementStatus.ChangeApplied] = new StatusProperties(Color.GreenYellow, 3, 0);
             statusPropertiesList[(int)SyncElementStatus.Conflicted] = new StatusProperties(Color.Red, 4, 0);
         }
 

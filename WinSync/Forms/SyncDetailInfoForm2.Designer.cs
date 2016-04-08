@@ -285,7 +285,7 @@ namespace WinSync.Forms
             this.splitContainer_left.Panel2.Controls.Add(this.panel6);
             this.splitContainer_left.Panel2MinSize = 23;
             this.splitContainer_left.Size = new System.Drawing.Size(492, 494);
-            this.splitContainer_left.SplitterDistance = 272;
+            this.splitContainer_left.SplitterDistance = 305;
             this.splitContainer_left.TabIndex = 31;
             // 
             // tabControl_left1
@@ -300,7 +300,7 @@ namespace WinSync.Forms
             this.tabControl_left1.Margin = new System.Windows.Forms.Padding(0);
             this.tabControl_left1.Name = "tabControl_left1";
             this.tabControl_left1.SelectedIndex = 0;
-            this.tabControl_left1.Size = new System.Drawing.Size(495, 272);
+            this.tabControl_left1.Size = new System.Drawing.Size(495, 305);
             this.tabControl_left1.TabIndex = 30;
             // 
             // tabPage_linkInfo
@@ -1121,7 +1121,7 @@ namespace WinSync.Forms
             this.tabPage_syncElementInfo.Location = new System.Drawing.Point(4, 22);
             this.tabPage_syncElementInfo.Name = "tabPage_syncElementInfo";
             this.tabPage_syncElementInfo.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage_syncElementInfo.Size = new System.Drawing.Size(487, 246);
+            this.tabPage_syncElementInfo.Size = new System.Drawing.Size(487, 279);
             this.tabPage_syncElementInfo.TabIndex = 2;
             this.tabPage_syncElementInfo.Text = "Sync Element Info";
             this.tabPage_syncElementInfo.UseVisualStyleBackColor = true;
@@ -1147,7 +1147,7 @@ namespace WinSync.Forms
             this.tableLayoutPanel_sei.RowStyles.Add(new System.Windows.Forms.RowStyle());
             this.tableLayoutPanel_sei.RowStyles.Add(new System.Windows.Forms.RowStyle());
             this.tableLayoutPanel_sei.RowStyles.Add(new System.Windows.Forms.RowStyle());
-            this.tableLayoutPanel_sei.Size = new System.Drawing.Size(475, 234);
+            this.tableLayoutPanel_sei.Size = new System.Drawing.Size(475, 267);
             this.tableLayoutPanel_sei.TabIndex = 61;
             this.tableLayoutPanel_sei.Visible = false;
             // 
@@ -1260,7 +1260,7 @@ namespace WinSync.Forms
             this.flowLayoutPanel9.Controls.Add(this.tableLayoutPanel9);
             this.flowLayoutPanel9.Location = new System.Drawing.Point(3, 97);
             this.flowLayoutPanel9.Name = "flowLayoutPanel9";
-            this.flowLayoutPanel9.Size = new System.Drawing.Size(469, 98);
+            this.flowLayoutPanel9.Size = new System.Drawing.Size(469, 125);
             this.flowLayoutPanel9.TabIndex = 60;
             // 
             // tableLayoutPanel7
@@ -1384,7 +1384,7 @@ namespace WinSync.Forms
             this.tableLayoutPanel9.RowStyles.Add(new System.Windows.Forms.RowStyle());
             this.tableLayoutPanel9.RowStyles.Add(new System.Windows.Forms.RowStyle());
             this.tableLayoutPanel9.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
-            this.tableLayoutPanel9.Size = new System.Drawing.Size(566, 41);
+            this.tableLayoutPanel9.Size = new System.Drawing.Size(469, 68);
             this.tableLayoutPanel9.TabIndex = 61;
             // 
             // label_sei_syncStatusTitle
@@ -1422,7 +1422,7 @@ namespace WinSync.Forms
             this.label_sei_infoTitle.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label_sei_infoTitle.Location = new System.Drawing.Point(3, 15);
             this.label_sei_infoTitle.Name = "label_sei_infoTitle";
-            this.label_sei_infoTitle.Size = new System.Drawing.Size(30, 26);
+            this.label_sei_infoTitle.Size = new System.Drawing.Size(30, 53);
             this.label_sei_infoTitle.TabIndex = 35;
             this.label_sei_infoTitle.Text = "Info:";
             this.label_sei_infoTitle.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -1439,7 +1439,7 @@ namespace WinSync.Forms
             this.textBox_sei_info.Name = "textBox_sei_info";
             this.textBox_sei_info.ReadOnly = true;
             this.textBox_sei_info.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.textBox_sei_info.Size = new System.Drawing.Size(510, 20);
+            this.textBox_sei_info.Size = new System.Drawing.Size(413, 47);
             this.textBox_sei_info.TabIndex = 36;
             this.textBox_sei_info.Text = " ";
             // 
@@ -1620,7 +1620,7 @@ namespace WinSync.Forms
             this.button_refresh.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.button_refresh.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.button_refresh.ForeColor = System.Drawing.Color.White;
-            this.button_refresh.Location = new System.Drawing.Point(3, 201);
+            this.button_refresh.Location = new System.Drawing.Point(3, 228);
             this.button_refresh.Name = "button_refresh";
             this.button_refresh.Size = new System.Drawing.Size(88, 24);
             this.button_refresh.TabIndex = 63;
@@ -1639,7 +1639,7 @@ namespace WinSync.Forms
             this.panel6.Location = new System.Drawing.Point(0, 0);
             this.panel6.Margin = new System.Windows.Forms.Padding(0);
             this.panel6.Name = "panel6";
-            this.panel6.Size = new System.Drawing.Size(492, 218);
+            this.panel6.Size = new System.Drawing.Size(492, 185);
             this.panel6.TabIndex = 0;
             // 
             // label32
@@ -1663,7 +1663,7 @@ namespace WinSync.Forms
             this.listBox_log.HorizontalScrollbar = true;
             this.listBox_log.Location = new System.Drawing.Point(3, 29);
             this.listBox_log.Name = "listBox_log";
-            this.listBox_log.Size = new System.Drawing.Size(486, 184);
+            this.listBox_log.Size = new System.Drawing.Size(486, 145);
             this.listBox_log.TabIndex = 19;
             // 
             // progressBar

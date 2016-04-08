@@ -272,7 +272,7 @@
     <Content Include="icon.ico" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\Utils\WinFormDesign\WinFormDesign\WinFormDesign.csproj">
+    <ProjectReference Include="..\..\..\Daten\OneDrive\Projekte\SoftwareDevelopment\Utils\WinFormDesign\WinFormDesign\WinFormDesign.csproj">
       <Project>{3e83d01f-9df2-4c32-b764-7f21c0d4a4e8}</Project>
       <Name>WinFormDesign</Name>
     </ProjectReference>

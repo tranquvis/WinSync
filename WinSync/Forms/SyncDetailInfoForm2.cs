@@ -386,8 +386,10 @@ namespace WinSync.Forms
                 //window handle wasn't created
             }
         }
-        
+
         #region tree management
+        //TODO create treenodes only when expanding node
+
         private void BuildTreeRecursively(TreeNodeCollection nodes, DirTree dirTree)
         {
             foreach (MyFileInfo file in dirTree.Files)
