@@ -143,7 +143,7 @@ namespace WinSync.Forms
             this.label32 = new System.Windows.Forms.Label();
             this.listBox_log = new System.Windows.Forms.ListBox();
             this.progressBar = new WinSync.Controls.MyProgressBar();
-            this.imageList1 = new System.Windows.Forms.ImageList(this.components);
+            this.imageList_nodeElements = new System.Windows.Forms.ImageList(this.components);
             this.splitContainer_main = new System.Windows.Forms.SplitContainer();
             this.tableLayoutPanel_left = new System.Windows.Forms.TableLayoutPanel();
             this.treeView1 = new System.Windows.Forms.TreeView();
@@ -309,7 +309,7 @@ namespace WinSync.Forms
             this.tabPage_linkInfo.Location = new System.Drawing.Point(4, 22);
             this.tabPage_linkInfo.Name = "tabPage_linkInfo";
             this.tabPage_linkInfo.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage_linkInfo.Size = new System.Drawing.Size(487, 246);
+            this.tabPage_linkInfo.Size = new System.Drawing.Size(487, 279);
             this.tabPage_linkInfo.TabIndex = 0;
             this.tabPage_linkInfo.Text = "Link Info";
             this.tabPage_linkInfo.UseVisualStyleBackColor = true;
@@ -323,7 +323,7 @@ namespace WinSync.Forms
             this.panel_linkInfo.Location = new System.Drawing.Point(8, 8);
             this.panel_linkInfo.Margin = new System.Windows.Forms.Padding(5);
             this.panel_linkInfo.Name = "panel_linkInfo";
-            this.panel_linkInfo.Size = new System.Drawing.Size(473, 230);
+            this.panel_linkInfo.Size = new System.Drawing.Size(473, 263);
             this.panel_linkInfo.TabIndex = 0;
             // 
             // flowLayoutPanel2
@@ -336,7 +336,7 @@ namespace WinSync.Forms
             this.flowLayoutPanel2.Location = new System.Drawing.Point(0, 0);
             this.flowLayoutPanel2.Margin = new System.Windows.Forms.Padding(0);
             this.flowLayoutPanel2.Name = "flowLayoutPanel2";
-            this.flowLayoutPanel2.Size = new System.Drawing.Size(473, 230);
+            this.flowLayoutPanel2.Size = new System.Drawing.Size(473, 263);
             this.flowLayoutPanel2.TabIndex = 23;
             // 
             // panel4
@@ -422,7 +422,7 @@ namespace WinSync.Forms
             this.tabPage_syncInfo.Location = new System.Drawing.Point(4, 22);
             this.tabPage_syncInfo.Name = "tabPage_syncInfo";
             this.tabPage_syncInfo.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage_syncInfo.Size = new System.Drawing.Size(487, 246);
+            this.tabPage_syncInfo.Size = new System.Drawing.Size(487, 279);
             this.tabPage_syncInfo.TabIndex = 1;
             this.tabPage_syncInfo.Text = "Sync Info";
             this.tabPage_syncInfo.UseVisualStyleBackColor = true;
@@ -444,7 +444,7 @@ namespace WinSync.Forms
             this.tableLayoutPanel5.RowStyles.Add(new System.Windows.Forms.RowStyle());
             this.tableLayoutPanel5.RowStyles.Add(new System.Windows.Forms.RowStyle());
             this.tableLayoutPanel5.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
-            this.tableLayoutPanel5.Size = new System.Drawing.Size(473, 234);
+            this.tableLayoutPanel5.Size = new System.Drawing.Size(473, 267);
             this.tableLayoutPanel5.TabIndex = 57;
             // 
             // statusProgressBar1
@@ -1679,15 +1679,19 @@ namespace WinSync.Forms
             this.progressBar.Size = new System.Drawing.Size(492, 10);
             this.progressBar.TabIndex = 22;
             // 
-            // imageList1
+            // imageList_nodeElements
             // 
-            this.imageList1.ImageStream = ((System.Windows.Forms.ImageListStreamer)(resources.GetObject("imageList1.ImageStream")));
-            this.imageList1.TransparentColor = System.Drawing.Color.Transparent;
-            this.imageList1.Images.SetKeyName(0, "ic_file_black_24px-01.png");
-            this.imageList1.Images.SetKeyName(1, "ic_folder_black_24px-01.png");
-            this.imageList1.Images.SetKeyName(2, "ic_folder_blue_24px-01.png");
-            this.imageList1.Images.SetKeyName(3, "ic_folder_green_24px-01.png");
-            this.imageList1.Images.SetKeyName(4, "ic_folder_red_24px-01.png");
+            this.imageList_nodeElements.ImageStream = ((System.Windows.Forms.ImageListStreamer)(resources.GetObject("imageList_nodeElements.ImageStream")));
+            this.imageList_nodeElements.TransparentColor = System.Drawing.Color.Transparent;
+            this.imageList_nodeElements.Images.SetKeyName(0, "ic_file_black_24px-01.png");
+            this.imageList_nodeElements.Images.SetKeyName(1, "ic_folder_black_24px-01.png");
+            this.imageList_nodeElements.Images.SetKeyName(2, "ic_folder_blue_24px-01.png");
+            this.imageList_nodeElements.Images.SetKeyName(3, "ic_folder_green_24px-01.png");
+            this.imageList_nodeElements.Images.SetKeyName(4, "ic_folder_red_24px-01.png");
+            this.imageList_nodeElements.Images.SetKeyName(5, "ic_folder_outline_black_24px-01.png");
+            this.imageList_nodeElements.Images.SetKeyName(6, "ic_folder_outline_blue_24px-01.png");
+            this.imageList_nodeElements.Images.SetKeyName(7, "ic_folder_outline_green_24px-01.png");
+            this.imageList_nodeElements.Images.SetKeyName(8, "ic_folder_outline_red_24px-01.png");
             // 
             // splitContainer_main
             // 
@@ -1738,12 +1742,15 @@ namespace WinSync.Forms
             this.treeView1.BackColor = System.Drawing.Color.LightGray;
             this.treeView1.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.treeView1.ImageIndex = 0;
-            this.treeView1.ImageList = this.imageList1;
+            this.treeView1.ImageList = this.imageList_nodeElements;
             this.treeView1.Location = new System.Drawing.Point(0, 0);
             this.treeView1.Name = "treeView1";
             this.treeView1.SelectedImageIndex = 0;
+            this.treeView1.ShowPlusMinus = false;
+            this.treeView1.ShowRootLines = false;
             this.treeView1.Size = new System.Drawing.Size(295, 548);
             this.treeView1.TabIndex = 24;
+            this.treeView1.NodeMouseClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.treeView1_NodeMouseClick);
             this.treeView1.NodeMouseDoubleClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.treeView1_NodeMouseDoubleClick);
             // 
             // SyncDetailInfoForm2
@@ -1837,7 +1844,7 @@ namespace WinSync.Forms
         private MyButton button_sync;
         private MyButton button_pr;
         private MyProgressBar progressBar;
-        private System.Windows.Forms.ImageList imageList1;
+        private System.Windows.Forms.ImageList imageList_nodeElements;
         private System.Windows.Forms.SplitContainer splitContainer_main;
         private System.Windows.Forms.SplitContainer splitContainer_left;
         private System.Windows.Forms.Panel panel_linkInfo;

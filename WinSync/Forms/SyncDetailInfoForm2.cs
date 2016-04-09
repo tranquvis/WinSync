@@ -70,7 +70,7 @@ namespace WinSync.Forms
                 }
                 if (_l.SyncTask != null)
                 {
-                    BuildTreeRecursively(treeView1.Nodes, SI.DirTree);
+                    BuildTreeBase(_l.SyncInfo.DirTree);
                     SI.SetListener(this);
                     if (running) _l.ResumeSync();
                 }
@@ -305,18 +305,18 @@ namespace WinSync.Forms
             switch (sce.CreateStatus)
             {
                 case SyncElementStatus.ElementFound:
-                    getTreeNode(sei.ElementInfo, true, false, true);
+                    UpdateTreeNodeIfVisible(sei.ElementInfo, true);
                     break;
                 case SyncElementStatus.ChangeDetectingStarted:
                     break;
                 case SyncElementStatus.NoChangeFound:
-                    getTreeNode(sei.ElementInfo, true, false, true);
+                    UpdateTreeNodeIfVisible(sei.ElementInfo, true);
                     break;
                 case SyncElementStatus.ChangeFound:
-                    TreeNode tn1 = getTreeNode(sei.ElementInfo, true, true, true);
+                    UpdateTreeNodeIfVisible(sei.ElementInfo, true);
                     break;
                 case SyncElementStatus.ChangeApplied:
-                    TreeNode tn2 = getTreeNode(sei.ElementInfo, true, true, true);
+                    UpdateTreeNodeIfVisible(sei.ElementInfo, true);
                     break;
                 case SyncElementStatus.Conflicted:
                     string elementType = isFile ? "file" : "dir";
@@ -340,8 +340,8 @@ namespace WinSync.Forms
                     Invoke(new Action(() => 
                         AddLogLine($"Conflict ({conflictType}) at {elementType} in {sei.ConflictInfo.Context}: {sei.ConflictInfo.GetAbsolutePath()}")
                     ));
-                    
-                    TreeNode tn3 = getTreeNode(sei.ElementInfo, true, true, true);
+
+                    UpdateTreeNodeIfVisible(sei.ElementInfo, true);
 
                     break;
             }
@@ -388,82 +388,83 @@ namespace WinSync.Forms
         }
 
         #region tree management
-        //TODO create treenodes only when expanding node
-
-        private void BuildTreeRecursively(TreeNodeCollection nodes, DirTree dirTree)
-        {
-            foreach (MyFileInfo file in dirTree.Files)
-            {
-                nodes.Add(new SyncFileTreeViewNode(file));
-            }
-
-            foreach (DirTree dir in dirTree.Dirs)
-            {
-                TreeNode tn = new SyncDirTreeViewNode(dir.Info);
-                nodes.Add(tn);
-                BuildTreeRecursively(tn.Nodes, dir);
-            }
-        }
-
         /// <summary>
-        /// get TreeNode of treeView1 from ElementInfo
+        /// update or create treenode if it is visible
         /// </summary>
-        /// <param name="ei">ElementInfo</param>
-        /// <param name="create">if the tree nodes should be created if they do not exist</param>
-        /// <returns>null if the required tree nodes do not exist (only possible if create is disabled)</returns>
-        private SyncElementTreeViewNode getTreeNode(MyElementInfo ei, bool create, bool update, bool invoke)
+        /// <param name="ei">element info</param>
+        /// <param name="invoke">if the operations on treeview should be invoked</param>
+        private void UpdateTreeNodeIfVisible(MyElementInfo ei, bool invoke)
         {
-            //TODO improve performance
-
             TreeNodeCollection tnc = treeView1.Nodes;
             SyncDirTreeViewNode treeNode = null;
+
             for (int i = 1; i < ei.TreePath.Count; i++)
             {
                 treeNode = (SyncDirTreeViewNode)tnc[ei.TreePath[i].Info.Name];
-                if (treeNode == null)
-                {
-                    if (!create) return null;
-                    
-                    //create tree node
-                    treeNode = new SyncDirTreeViewNode(ei.TreePath[i].Info);
-                    Action a = new Action(() => tnc.Add(treeNode));
-                    if (invoke) treeView1.Invoke(a);
-                    else a();
-                    
-                }
-                if (update)
-                {
-                    //update tree node (according to the status of ei)
-                    treeNode.ChildStatus = ei.SyncElementInfo.SyncStatus;
-                    Action a = new Action(treeNode.Update);
-                    if (invoke) treeView1.Invoke(a);
-                    else a();
-                }
+                if (treeNode == null) return;
+
+                //check if treenode is visible
+                bool expanded = false;
+                Action ae = new Action(() => expanded = treeNode.IsExpanded);
+                if (invoke) treeView1.Invoke(ae);
+                else ae();
+                if (!expanded) return;
+
+                //update tree node (according to the status of ei)
+                treeNode.ChildStatus = ei.SyncElementInfo.SyncStatus;
+                Action a = new Action(treeNode.Update);
+                if (invoke) treeView1.Invoke(a);
+                else a();
 
                 tnc = treeNode.Nodes;
             }
 
-            SyncElementTreeViewNode resultNode = ei.ElementTreeViewNode;
-            if (resultNode == null)
+            if (ei.ElementTreeViewNode == null)
             {
-                //create result tree node
+                //create treenode
                 if (ei.GetType() == typeof(MyFileInfo))
-                    resultNode = new SyncFileTreeViewNode((MyFileInfo)ei);
+                    ei.ElementTreeViewNode = new SyncFileTreeViewNode((MyFileInfo)ei);
                 else
-                    resultNode = new SyncDirTreeViewNode((MyDirInfo)ei);
+                    ei.ElementTreeViewNode = new SyncDirTreeViewNode((MyDirInfo)ei);
 
-                Action a = new Action(() => tnc.Add(resultNode));
-                if (invoke) treeView1.Invoke(a);
-                else a();
+                Action aa = new Action(() => tnc.Add(ei.ElementTreeViewNode));
+                if (invoke) treeView1.Invoke(aa);
+                else aa();
             }
-            if (update)
+
+            //update result tree node
+            Action au = new Action(ei.ElementTreeViewNode.Update);
+            if (invoke) treeView1.Invoke(au);
+            else au();
+        }
+        
+        private void treeView1_NodeMouseClick(object sender, TreeNodeMouseClickEventArgs e)
+        {
+            //toggle tree node on click
+            if (e.Node.GetType() == typeof(SyncFileTreeViewNode))
+                return;
+
+            SyncDirTreeViewNode dirNode = (SyncDirTreeViewNode)e.Node;
+            dirNode.Toggle();
+        }
+
+        /// <summary>
+        /// build base treenodes in treeView
+        /// </summary>
+        /// <param name="dirTree"></param>
+        private void BuildTreeBase(DirTree dirTree)
+        {
+            foreach (DirTree dir in dirTree.Dirs)
             {
-                //update result tree node
-                Action a = new Action(resultNode.Update);
-                if (invoke) treeView1.Invoke(a);
-                else a();
+                dir.Info.DirTreeViewNode = new SyncDirTreeViewNode(dir.Info);
+                treeView1.Nodes.Add(dir.Info.DirTreeViewNode);
             }
-            return resultNode;
+
+            foreach (MyFileInfo file in dirTree.Files)
+            {
+                file.FileTreeViewNode = new SyncFileTreeViewNode(file);
+                treeView1.Nodes.Add(file.FileTreeViewNode);
+            }
         }
         #endregion
 

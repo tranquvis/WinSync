@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,6 +9,8 @@ namespace WinSync.Service
 {
     public class SyncDirTreeViewNode : SyncElementTreeViewNode
     {
+        private bool _isExpanded;
+
         public MyDirInfo DirInfo
         {
             get { return (MyDirInfo)ElementInfo; }
@@ -24,7 +27,7 @@ namespace WinSync.Service
         /// and update its visual representation
         /// </summary>
         /// <param name="dirInfo">directory info</param>
-        public SyncDirTreeViewNode(MyDirInfo dirInfo) : base(dirInfo) {}
+        public SyncDirTreeViewNode(MyDirInfo dirInfo) : base(dirInfo) { }
 
         /// <summary>
         /// get child node by name (only the next layer is examined)
@@ -37,28 +40,95 @@ namespace WinSync.Service
         }
 
         /// <summary>
+        /// get child-dir-nodes (not recursively)
+        /// </summary>
+        public IEnumerable<SyncDirTreeViewNode> ChildDirNodes
+        {
+            get
+            {
+                foreach (SyncElementTreeViewNode node in Nodes)
+                    if (node.GetType() == typeof(SyncDirTreeViewNode))
+                        yield return (SyncDirTreeViewNode)node;
+            }
+        }
+
+        /// <summary>
+        /// load all child nodes (not recursively)
+        /// </summary>
+        public void LoadChildNodes()
+        {
+            Nodes.Clear();
+            foreach (DirTree dir in DirInfo.DirTreeInfo.Dirs)
+            {
+                dir.Info.DirTreeViewNode = new SyncDirTreeViewNode(dir.Info);
+                Nodes.Add(dir.Info.DirTreeViewNode);
+            }
+
+            foreach (MyFileInfo file in DirInfo.DirTreeInfo.Files)
+            {
+                file.FileTreeViewNode = new SyncFileTreeViewNode(file);
+                Nodes.Add(file.FileTreeViewNode);
+            }
+        }
+
+        /// <summary>
         /// update visual representation
         /// </summary>
         public override void Update()
         {
-            if(DirInfo.SyncDirInfo != null)
-            {
-                var tnp = TNStatusProp;
-                ForeColor = tnp.TextColor;
-                ImageIndex = tnp.FolderImageIndex;
-                SelectedImageIndex = tnp.FolderImageIndex;
-            }
-            
+            var tnp = TNStatusProp;
+            ForeColor = tnp.TextColor;
+            ImageIndex = IsExpanded ? tnp.ExpandedFolderImageIndex : tnp.FolderImageIndex;
+            SelectedImageIndex = ImageIndex;
+
             if (ChildStatus != null)
             {
                 var tnpc = TreeNodeProperties.GetStatusProperties(ChildStatus.Value);
 
-                if(tnpc.FolderImageIndex > ImageIndex)
+                if (tnpc.FolderImageIndex > ImageIndex)
                 {
-                    ImageIndex = tnpc.FolderImageIndex;
-                    SelectedImageIndex = tnpc.FolderImageIndex;
+                    ImageIndex = IsExpanded ? tnpc.ExpandedFolderImageIndex : tnpc.FolderImageIndex;
+                    SelectedImageIndex = ImageIndex;
                 }
             }
+        }
+
+        /// <summary>
+        /// toggle between expanded and collapsed state
+        /// </summary>
+        public new void Toggle()
+        {
+            if (IsExpanded) Collapse();
+            else Expand();
+        }
+
+        /// <summary>
+        /// expand treenode and load child elements
+        /// </summary>
+        public new void Expand()
+        {
+            _isExpanded = true;
+            LoadChildNodes();
+            base.Expand();
+            Update();
+        }
+
+        /// <summary>
+        /// collapse treenode
+        /// </summary>
+        public new void Collapse()
+        {
+            _isExpanded = false;
+            base.Collapse();
+            Update();
+        }
+
+        /// <summary>
+        /// if the treenode is expanded
+        /// </summary>
+        public new bool IsExpanded
+        {
+            get { return _isExpanded; }
         }
     }
 }

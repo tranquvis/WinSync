@@ -18,12 +18,24 @@ namespace WinSync.Service
         static TreeNodeProperties()
         {
             statusPropertiesList = new StatusProperties[6];
-            statusPropertiesList[(int)SyncElementStatus.ElementFound] = new StatusProperties(Color.Black, 1, 0);
-            statusPropertiesList[(int)SyncElementStatus.ChangeDetectingStarted] = new StatusProperties(Color.Black, 1, 0);
-            statusPropertiesList[(int)SyncElementStatus.NoChangeFound] = new StatusProperties(Color.Black, 1, 0);
-            statusPropertiesList[(int)SyncElementStatus.ChangeFound] = new StatusProperties(Color.Blue, 2, 0);
-            statusPropertiesList[(int)SyncElementStatus.ChangeApplied] = new StatusProperties(Color.GreenYellow, 3, 0);
-            statusPropertiesList[(int)SyncElementStatus.Conflicted] = new StatusProperties(Color.Red, 4, 0);
+
+            statusPropertiesList[(int)SyncElementStatus.ElementFound] = new StatusProperties(
+                Color.Black, 1, 5, 0);
+
+            statusPropertiesList[(int)SyncElementStatus.ChangeDetectingStarted] = new StatusProperties(
+                Color.Black, 1, 5, 0);
+
+            statusPropertiesList[(int)SyncElementStatus.NoChangeFound] = new StatusProperties(
+                Color.Black, 1, 5, 0);
+
+            statusPropertiesList[(int)SyncElementStatus.ChangeFound] = new StatusProperties(
+                Color.FromArgb(48, 109, 176), 2, 6, 0);
+
+            statusPropertiesList[(int)SyncElementStatus.ChangeApplied] = new StatusProperties(
+                Color.FromArgb(8, 127, 46), 3, 7, 0);
+
+            statusPropertiesList[(int)SyncElementStatus.Conflicted] = new StatusProperties(
+                Color.FromArgb(169, 36, 28), 4, 8, 0);
         }
 
         /// <summary>
@@ -42,15 +54,15 @@ namespace WinSync.Service
         public class StatusProperties
         {
             public Color TextColor { get; }
-
             public int FolderImageIndex { get; }
-
+            public int ExpandedFolderImageIndex { get; }
             public int FileImageIndex { get; }
 
-            public StatusProperties(Color textColor, int folderImageIndex, int fileImageIndex)
+            public StatusProperties(Color textColor, int folderImageIndex, int expandedFolderImageIndex, int fileImageIndex)
             {
                 TextColor = textColor;
                 FolderImageIndex = folderImageIndex;
+                ExpandedFolderImageIndex = expandedFolderImageIndex;
                 FileImageIndex = fileImageIndex;
             }
         }
