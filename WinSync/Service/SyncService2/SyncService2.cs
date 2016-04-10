@@ -14,13 +14,23 @@ namespace WinSync.Service
         private CancellationTokenSource _ts;
         private CancellationToken _ct;
 
+        /// <summary>
+        /// create SyncService2 (call ExecuteSync to execute synchronisation)
+        /// </summary>
+        /// <param name="si">sync-info</param>
         public SyncService2(SyncInfo si)
         {
             _si = si;
         }
         
+        /// <summary>
+        /// count of running parallel tasks
+        /// </summary>
         public int TasksRunning { get; set; }
 
+        /// <summary>
+        /// execute synchronisation
+        /// </summary>
         public void ExecuteSync()
         {
             _ts = new CancellationTokenSource();
@@ -82,6 +92,9 @@ namespace WinSync.Service
             RemoveFolders(_si.DirTree);
         }
 
+        /// <summary>
+        /// cancel sync-execution
+        /// </summary>
         public void Cancel()
         {
             _ts.Cancel();

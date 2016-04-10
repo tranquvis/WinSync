@@ -7,16 +7,75 @@ namespace WinSync.Service
 {
     public class SyncInfo
     {
-        TimeSpan _timePaused = TimeSpan.Zero;
         double? _lastSizeApplied; // in Megabit
         DateTime? _lastTime;
         SyncStatus _status;
+        ISyncListener _listener;
 
-        public SyncLink Link { get; private set; }
+        #region time measurement
+        TimeSpan _pausedTime = TimeSpan.Zero;
+        DateTime _startTime;
+        DateTime _endTime;
+        DateTime _lastPauseStartTime;
+        #endregion
 
-        public bool Paused { get; private set; }
-        public bool Running => !Finished;
-        public bool Finished => Status == SyncStatus.Finished || Status == SyncStatus.Conflicted || Status == SyncStatus.Aborted;
+        #region files info
+        long _filesTotalSizeToCopy = 0;
+        long _filesTotalSizeToRemove = 0;
+        long _fileSizeCopied = 0;
+        long _fileSizeRemoved = 0;
+        long _filesFoundCount = 0;
+        long _filesDetectedCount = 0;
+        long _filesCopiedCount = 0;
+        long _filesRemovedCount = 0;
+        long _filesToCopyCount = 0;
+        long _filesToRemoveCount = 0;
+        #endregion
+
+        #region dirs info
+        long _dirsFoundCount = 0;
+        long _dirsDetectedCount = 0;
+        long _dirsToCreateCount = 0;
+        long _dirsToRemoveCount = 0;
+        long _dirsCreatedCount = 0;
+        long _dirsRemovedCount = 0;
+        #endregion
+
+        /// <summary>
+        /// create SyncInfo
+        /// </summary>
+        /// <param name="link">link data (will be copied not referenced)</param>
+        public SyncInfo(SyncLink link)
+        {
+            Link = link;
+            Time = new TimeMeasurement(this);
+            Files = new FilesInfo(this);
+            Dirs = new DirsInfo(this);
+
+            Paused = false;
+            SyncDirExecutionInfos = new List<SyncDirExecutionInfo>();
+            SyncFileExecutionInfos = new List<SyncFileExecutionInfo>();
+            ConflictInfos = new List<ElementConflictInfo>();
+            LogStack = new Stack<LogMessage>();
+
+            MyDirInfo rootDir = new MyDirInfo("\\", "");
+            SyncDirInfo sdi = new SyncDirInfo(this, rootDir, false);
+            DirTree = new DirTree(rootDir, null, null);
+
+            Status = SyncStatus.DetectingChanges;
+        }
+
+        public bool Running
+        {
+            get { return !Finished; }
+        }
+        public bool Finished
+        {
+            get
+            {
+                return Status == SyncStatus.Finished || Status == SyncStatus.Conflicted || Status == SyncStatus.Aborted;
+            }
+        }
 
         /// <summary>
         /// synchronisation status
@@ -31,49 +90,19 @@ namespace WinSync.Service
             }
         }
 
+        public TimeMeasurement Time { get; }
+        public FilesInfo Files { get; }
+        public DirsInfo Dirs { get; }
+
+        public SyncLink Link { get; private set; }
+        public bool Paused { get; private set; }
         public List<SyncDirExecutionInfo> SyncDirExecutionInfos { get; private set; }
         public List<SyncFileExecutionInfo> SyncFileExecutionInfos { get; private set; }
-
         public List<ElementConflictInfo> ConflictInfos { get; private set; }
         public Stack<LogMessage> LogStack { get; private set; }
-
         public DirTree DirTree { get; private set; }
 
-        private ISyncListener _listener;
-
-        /// <summary>
-        /// create SyncInfo
-        /// </summary>
-        /// <param name="link">link data (will be copied not referenced)</param>
-        public SyncInfo(SyncLink link)
-        {
-            Link = link;
-            
-            Paused = false;
-            TotalFileSizeToCopy = 0;
-            TotalFileSizeToRemove = 0;
-            FileSizeCopied = 0;
-            FileSizeRemoved = 0;
-            CreatedDirs = 0;
-            RemovedDirs = 0;
-            CopiedFiles = 0;
-            RemovedFiles = 0;
-            FilesFound = 0;
-            DirsFound = 0;
-            DetectedFilesCount = 0;
-            DetectedDirsCount = 0;
-            SyncDirExecutionInfos = new List<SyncDirExecutionInfo>();
-            SyncFileExecutionInfos = new List<SyncFileExecutionInfo>();
-            ConflictInfos = new List<ElementConflictInfo>();
-            LogStack = new Stack<LogMessage>();
-
-            MyDirInfo rootDir = new MyDirInfo("\\", "");
-            SyncDirInfo sdi = new SyncDirInfo(this, rootDir, false);
-            DirTree = new DirTree(rootDir, null, null);
-
-            Status = SyncStatus.DetectingChanges;
-        }
-
+        #region listener
         /// <summary>
         /// set listener if it is not already set
         /// </summary>
@@ -93,84 +122,15 @@ namespace WinSync.Service
             if (_listener == listener)
                 _listener = null;
         }
+        #endregion
 
-        /// <summary>
-        /// synchronisation start time
-        /// </summary>
-        public DateTime StartTime { get; private set; }
-
-        /// <summary>
-        /// synchronisation end time
-        /// </summary>
-        public DateTime EndTime { get; private set; }
-
-        /// <summary>
-        /// the time, when the last pause started
-        /// </summary>
-        public DateTime LastPauseStart { get; private set; }
-
-        /// <summary>
-        /// the sum of time, that the synchronisation paused
-        /// </summary>
-        public TimeSpan TimePaused => Paused ? _timePaused + (DateTime.Now - LastPauseStart) : _timePaused;
-
-        /// <summary>
-        /// the total time, that the synchronisation was running minus the pused time
-        /// </summary>
-        public TimeSpan TotalTime => Running ? DateTime.Now - StartTime - TimePaused : EndTime - StartTime - TimePaused;
-        
         /// <summary>
         /// if conflicts appeared while synchronizing
         /// </summary>
-        public bool Conflicted => ConflictInfos.Count > 0;
-
-        /// <summary>
-        /// sum of all file sizes
-        /// in byte
-        /// </summary>
-        public long TotalFileSize => TotalFileSizeToCopy + TotalFileSizeToRemove;
-
-        /// <summary>
-        /// sum of all file sizes, which should be copied
-        /// in byte
-        /// </summary>
-        public long TotalFileSizeToCopy { get; private set; }
-
-        /// <summary>
-        /// sum of all file sizes, which should be removed
-        /// in byte
-        /// </summary>
-        public long TotalFileSizeToRemove { get; private set; }
-
-        /// <summary>
-        /// sum of the copied and removed files sizes
-        /// in byte
-        /// </summary>
-        public long SizeApplied => FileSizeCopied + FileSizeRemoved;
-
-        /// <summary>
-        /// sum of the copied files sizes
-        /// in byte
-        /// </summary>
-        public long FileSizeCopied { get; private set; }
-
-        /// <summary>
-        /// sum of the removed files sizes
-        /// in byte
-        /// </summary>
-        public long FileSizeRemoved { get; private set; }
-
-        /// <summary>
-        /// the calculated average speed
-        /// in byte/ms
-        /// </summary>
-        public double TotalSpeed => SizeApplied / (DateTime.Now - StartTime).TotalMilliseconds;
-
-        /// <summary>
-        /// the sum of remaining file sizes to copy
-        /// in byte
-        /// </summary>
-        public long SizeRemaining => TotalFileSize - SizeApplied;
+        public bool Conflicted
+        {
+            get { return ConflictInfos.Count > 0; }
+        }
 
         /// <summary>
         /// synchronisation progress percentage
@@ -183,111 +143,21 @@ namespace WinSync.Service
                     return 0;
                 if (Status == SyncStatus.Finished)
                     return 100;
-                if(TotalFileSize == 0 || SizeApplied == 0)
+                if (Files.TotalSize == 0 || Files.AppliedSize == 0)
                     return 0;
-                return 100f / TotalFileSize * SizeApplied;
+                return 100f / Files.TotalSize * Files.AppliedSize;
             }
         }
 
+        #region sync-speed
         /// <summary>
-        /// count of remaining files to synchronise
+        /// the calculated average speed
+        /// in byte/ms
         /// </summary>
-        public long FilesRemaining => ChangedFilesFound - FileChangesApplied;
-
-        public float DetectProgress => DetectedFilesCount * 100f / FilesFound;
-
-        /// <summary>
-        /// estimated time until the synchronisation finishs
-        /// calculated all synchronised files
-        /// </summary>
-        public TimeSpan TimeRemainingEst
+        public double TotalSpeed
         {
-            get
-            {
-                double s = TotalSpeed;
-                return TimeSpan.FromMilliseconds(s > 0 ? SizeRemaining / s : 0);
-            }
+            get { return Files.AppliedSize / (DateTime.Now - Time.Start).TotalMilliseconds; }
         }
-
-        /// <summary>
-        /// count of files that has been found in the sync dir
-        /// </summary>
-        public long FilesFound { get; private set; }
-
-        /// <summary>
-        /// count of subdirs that has been found in the sync dir
-        /// </summary>
-        public long DirsFound { get; private set; }
-
-        /// <summary>
-        /// count of files, on which the detect changes process has been applied
-        /// </summary>
-        public long DetectedFilesCount { get; private set; }
-
-        /// <summary>
-        /// count of subdirs, on which the detect changes process has been applied
-        /// </summary>
-        public long DetectedDirsCount { get; private set; }
-
-        /// <summary>
-        /// count of detected files, which schould be synchronised
-        /// </summary>
-        public long ChangedFilesFound => SyncFileExecutionInfos.Count;
-
-        /// <summary>
-        /// count of detected directories, which schould be synchronised
-        /// </summary>
-        public long ChangedDirsFound => SyncDirExecutionInfos.Count;
-
-        /// <summary>
-        /// count of detected files, which schould be copied
-        /// </summary>
-        public long ChangedFilesToCopyFound { get; private set; }
-
-        /// <summary>
-        /// count of detected files, which schould be removed
-        /// </summary>
-        public long ChangedFilesToRemoveFound { get; private set; }
-
-        /// <summary>
-        /// count of detected directories, which schould be copied
-        /// </summary>
-        public long ChangedDirsToCreateFound { get; private set; }
-
-        /// <summary>
-        /// count of detected directories, which schould be removed
-        /// </summary>
-        public long ChangedDirsToRemoveFound { get; private set; }
-
-        /// <summary>
-        /// count of synchronised files
-        /// </summary>
-        public long FileChangesApplied => CopiedFiles + RemovedFiles;
-
-        /// <summary>
-        /// count of synchronised directories
-        /// </summary>
-        public long DirChangesApplied => CreatedDirs + RemovedDirs;
-
-        /// <summary>
-        /// count of copied files
-        /// </summary>
-        public long CopiedFiles { get; private set; }
-
-        /// <summary>
-        /// count of removed files
-        /// </summary>
-        public long RemovedFiles { get; private set; }
-
-        /// <summary>
-        /// count of created directories
-        /// </summary>
-        public long CreatedDirs { get; private set; }
-
-        /// <summary>
-        /// count of removed directories
-        /// </summary>
-        public long RemovedDirs { get; private set; }
 
         /// <summary>
         /// actual synchronisation speed
@@ -305,14 +175,37 @@ namespace WinSync.Service
         /// <summary>
         /// in Megabits / second
         /// </summary>
-        public double AverageSpeed => SizeApplied / 131072.0 / TotalTime.TotalSeconds;
+        public double AverageSpeed
+        {
+            get { return Files.AppliedSize / 131072.0 / Time.Total.TotalSeconds; }
+        }
 
+        /// <summary>
+        /// calculate the actual speed ActSpeed with delta time and size applied difference since the last recalculation
+        /// </summary>
+        public void RecalculateActSpeed()
+        {
+            if (_lastTime != null && _lastSizeApplied != null)
+            {
+                double timeDif = (DateTime.Now - _lastTime.Value).TotalSeconds;
+                double sizeAppliedDif = Files.AppliedSize / 131072.0 - _lastSizeApplied.Value;
+                ActSpeed = sizeAppliedDif / timeDif;
+            }
+            else
+            {
+                _lastTime = DateTime.Now;
+                _lastSizeApplied = 0;
+            }
+        }
+        #endregion
+
+        #region events
         /// <summary>
         /// call when synchronisation started
         /// </summary>
         public void SyncStarted()
         {
-            StartTime = DateTime.Now;
+            _startTime = DateTime.Now;
         }
 
         /// <summary>
@@ -321,7 +214,7 @@ namespace WinSync.Service
         public void SyncFinished()
         {
             Status = SyncStatus.Finished;
-            EndTime = DateTime.Now;
+            _endTime = DateTime.Now;
         }
 
         /// <summary>
@@ -330,7 +223,7 @@ namespace WinSync.Service
         public void SyncCancelled()
         {
             Status = SyncStatus.Aborted;
-            EndTime = DateTime.Now;
+            _endTime = DateTime.Now;
         }
 
         /// <summary>
@@ -339,7 +232,7 @@ namespace WinSync.Service
         public void SyncPaused()
         {
             Paused = true;
-            LastPauseStart = DateTime.Now;
+            _lastPauseStartTime = DateTime.Now;
         }
 
         /// <summary>
@@ -348,7 +241,7 @@ namespace WinSync.Service
         public void SyncContinued()
         {
             Paused = false;
-            _timePaused += DateTime.Now - LastPauseStart;
+            _pausedTime += DateTime.Now - _lastPauseStartTime;
         }
 
         public void SyncElementStatusChanged(SyncElementInfo sei)
@@ -360,12 +253,12 @@ namespace WinSync.Service
                 case SyncElementStatus.ElementFound:
                     if (isFile)
                     {
-                        FilesFound++;
+                        _filesFoundCount++;
                         DirTree.AddFile((MyFileInfo)sei.ElementInfo);
                     }
                     else
                     {
-                        DirsFound++;
+                        _dirsFoundCount++;
                         DirTree.AddDir((MyDirInfo)sei.ElementInfo);
                     }
                     break;
@@ -382,13 +275,13 @@ namespace WinSync.Service
 
                         if (sei.SyncExecutionInfo.Remove)
                         {
-                            ChangedFilesToRemoveFound++;
-                            TotalFileSizeToRemove += ((MyFileInfo)sei.ElementInfo).Size;
+                            _filesToRemoveCount++;
+                            _filesTotalSizeToRemove += ((MyFileInfo)sei.ElementInfo).Size;
                         }
                         else
                         {
-                            ChangedFilesToCopyFound++;
-                            TotalFileSizeToCopy += ((MyFileInfo)sei.ElementInfo).Size;
+                            _filesToCopyCount++;
+                            _filesTotalSizeToCopy += ((MyFileInfo)sei.ElementInfo).Size;
                         }
                     }
                     else
@@ -396,9 +289,9 @@ namespace WinSync.Service
                         SyncDirExecutionInfos.Add((SyncDirExecutionInfo)sei.SyncExecutionInfo);
 
                         if (sei.SyncExecutionInfo.Remove)
-                            ChangedDirsToRemoveFound++;
+                            _dirsToRemoveCount++;
                         else
-                            ChangedDirsToCreateFound++;
+                            _dirsToCreateCount++;
                     }
                     break;
                 case SyncElementStatus.ChangeApplied:
@@ -406,21 +299,21 @@ namespace WinSync.Service
                     {
                         if (sei.SyncExecutionInfo.Remove)
                         {
-                            FileSizeRemoved += ((SyncFileInfo)sei).FileInfo.Size;
-                            RemovedFiles++;
+                            _fileSizeRemoved += ((SyncFileInfo)sei).FileInfo.Size;
+                            _filesRemovedCount++;
                         }
                         else
                         {
-                            FileSizeCopied += ((SyncFileInfo)sei).FileInfo.Size;
-                            CopiedFiles++;
+                            _fileSizeCopied += ((SyncFileInfo)sei).FileInfo.Size;
+                            _filesCopiedCount++;
                         }
                     }
                     else
                     {
                         if (sei.SyncExecutionInfo.Remove)
-                            RemovedDirs++;
+                            _dirsRemovedCount++;
                         else
-                            CreatedDirs++;
+                            _dirsCreatedCount++;
                     }
                     break;
                 case SyncElementStatus.Conflicted:
@@ -434,9 +327,9 @@ namespace WinSync.Service
         public void DetectingEnded(SyncElementInfo sei)
         {
             if (typeof(SyncFileInfo) == sei.GetType())
-                DetectedFilesCount++;
+                _filesDetectedCount++;
             else
-                DetectedDirsCount++;
+                _dirsDetectedCount++;
         }
         
         public void Log(LogMessage message)
@@ -450,23 +343,290 @@ namespace WinSync.Service
             }
                 
         }
+        #endregion
 
-        /// <summary>
-        /// calculate the actual speed ActSpeed with delta time and size applied difference since the last recalculation
-        /// </summary>
-        public void RecalculateActSpeed()
+        #region inner classes
+        public class TimeMeasurement
         {
-            if (_lastTime != null && _lastSizeApplied != null)
+            SyncInfo _si;
+
+            public TimeMeasurement(SyncInfo si)
             {
-                double timeDif = (DateTime.Now - _lastTime.Value).TotalSeconds;
-                double sizeAppliedDif = SizeApplied / 131072.0 - _lastSizeApplied.Value;
-                ActSpeed = sizeAppliedDif / timeDif;
+                _si = si;
             }
-            else
+
+            /// <summary>
+            /// synchronisation start time
+            /// </summary>
+            public DateTime Start
             {
-                _lastTime = DateTime.Now;
-                _lastSizeApplied = 0;
+                get { return _si._startTime; }
+            }
+
+            /// <summary>
+            /// synchronisation end time
+            /// </summary>
+            public DateTime End
+            {
+                get { return _si._endTime; }
+            }
+
+            /// <summary>
+            /// the time, when the last pause started
+            /// </summary>
+            public DateTime LastPauseStart
+            {
+                get { return _si._lastPauseStartTime; }
+            }
+
+            /// <summary>
+            /// the sum of time, that the synchronisation paused
+            /// </summary>
+            public TimeSpan Paused
+            {
+                get { return _si.Paused ? _si._pausedTime + (DateTime.Now - LastPauseStart) : _si._pausedTime; }
+            }
+
+            /// <summary>
+            /// the total time, that the synchronisation was running minus the pused time
+            /// </summary>
+            public TimeSpan Total
+            {
+                get { return _si.Running ? DateTime.Now - Start - Paused : End - Start - Paused; }
+            }
+            
+            /// <summary>
+            /// estimated time until the synchronisation finishs
+            /// calculated all synchronised files
+            /// </summary>
+            public TimeSpan RemainingEst
+            {
+                get
+                {
+                    double s = _si.TotalSpeed;
+                    return TimeSpan.FromMilliseconds(s > 0 ? _si.Files.RemainingSize / s : 0);
+                }
             }
         }
+
+        public class FilesInfo
+        {
+            SyncInfo _si;
+
+            public FilesInfo(SyncInfo si)
+            {
+                _si = si;
+            }
+
+            /// <summary>
+            /// sum of all file sizes, which should be copied
+            /// in byte
+            /// </summary>
+            public long TotalSizeToCopy
+            {
+                get { return _si._filesTotalSizeToCopy; }
+            }
+
+            /// <summary>
+            /// sum of all file sizes, which should be removed
+            /// in byte
+            /// </summary>
+            public long TotalSizeToRemove
+            {
+                get { return _si._filesTotalSizeToRemove; }
+            }
+
+            /// <summary>
+            /// sum of all file sizes
+            /// in byte
+            /// </summary>
+            public long TotalSize
+            {
+                get { return TotalSizeToCopy + TotalSizeToRemove; }
+            }
+
+            /// <summary>
+            /// sum of the copied files sizes
+            /// in byte
+            /// </summary>
+            public long CopiedSize
+            {
+                get { return _si._fileSizeCopied; }
+            }
+
+            /// <summary>
+            /// sum of the removed files sizes
+            /// in byte
+            /// </summary>
+            public long RemovedSize
+            {
+                get { return _si._fileSizeRemoved; }
+            }
+
+            /// <summary>
+            /// sum of the copied and removed files sizes
+            /// in byte
+            /// </summary>
+            public long AppliedSize
+            {
+                get { return CopiedSize + RemovedSize; }
+            }
+
+            /// <summary>
+            /// the sum of remaining file sizes to copy
+            /// in byte
+            /// </summary>
+            public long RemainingSize
+            {
+                get { return TotalSize - AppliedSize; }
+            }
+
+            /// <summary>
+            /// count of remaining files to synchronise
+            /// </summary>
+            public long RemainingCount
+            {
+                get { return ChangedFoundCount - ChangesAppliedCount; }
+            }
+
+            /// <summary>
+            /// count of files that has been found in the sync dir
+            /// </summary>
+            public long FoundCount
+            {
+                get { return _si._filesFoundCount; }
+            }
+
+            /// <summary>
+            /// count of files, on which the detect changes process has been applied
+            /// </summary>
+            public long DetectedCount
+            {
+                get { return _si._filesDetectedCount; }
+            }
+
+            /// <summary>
+            /// count of detected files, which schould be synchronised
+            /// </summary>
+            public long ChangedFoundCount
+            {
+                get { return _si.SyncFileExecutionInfos.Count; }
+            }
+
+            /// <summary>
+            /// count of synchronised files
+            /// </summary>
+            public long ChangesAppliedCount
+            {
+                get { return CopiedCount + RemovedCount; }
+            }
+
+            /// <summary>
+            /// count of copied files
+            /// </summary>
+            public long CopiedCount
+            {
+                get { return _si._filesCopiedCount; }
+            }
+
+            /// <summary>
+            /// count of removed files
+            /// </summary>
+            public long RemovedCount
+            {
+                get { return _si._filesRemovedCount; }
+            }
+
+            /// <summary>
+            /// count of detected files, which schould be copied
+            /// </summary>
+            public long ToCopyCount
+            {
+                get { return _si._filesToCopyCount; }
+            }
+
+            /// <summary>
+            /// count of detected files, which schould be removed
+            /// </summary>
+            public long ToRemoveCount
+            {
+                get { return _si._filesToRemoveCount; }
+            }
+        }
+
+        public class DirsInfo
+        {
+            SyncInfo _si;
+
+            public DirsInfo(SyncInfo si)
+            {
+                _si = si;
+            }
+
+            /// <summary>
+            /// count of subdirs that has been found in the sync dir
+            /// </summary>
+            public long FoundCount
+            {
+                get { return _si._dirsFoundCount; }
+            }
+
+            /// <summary>
+            /// count of subdirs, on which the detect changes process has been applied
+            /// </summary>
+            public long DetectedCount
+            {
+                get { return _si._dirsDetectedCount; }
+            }
+
+            /// <summary>
+            /// count of detected directories, which schould be synchronised
+            /// </summary>
+            public long ChangedFoundCount
+            {
+                get { return _si.SyncDirExecutionInfos.Count; }
+            }
+
+            /// <summary>
+            /// count of synchronised directories
+            /// </summary>
+            public long ChangesAppliedCount
+            {
+                get { return CreatedCount + RemovedCount; }
+            }
+
+            /// <summary>
+            /// count of created directories
+            /// </summary>
+            public long CreatedCount
+            {
+                get { return _si._dirsCreatedCount; }
+            }
+
+            /// <summary>
+            /// count of removed directories
+            /// </summary>
+            public long RemovedCount
+            {
+                get { return _si._dirsRemovedCount; }
+            }
+
+            /// <summary>
+            /// count of detected directories, which schould be copied
+            /// </summary>
+            public long ToCreateCount
+            {
+                get { return _si._dirsToCreateCount; }
+            }
+
+            /// <summary>
+            /// count of detected directories, which schould be removed
+            /// </summary>
+            public long ToRemoveCount
+            {
+                get { return _si._dirsToRemoveCount; }
+            }
+        }
+        #endregion
     }
 }

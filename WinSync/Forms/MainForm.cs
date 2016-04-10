@@ -154,7 +154,7 @@ namespace WinSync.Forms
                 panel_selSL_info.Visible = true;
                 label_detail_progress.Text = $"{_selectedLink.SyncInfo.SyncProgress:0.0}%";
                 label_detail_status.Text = _selectedLink.SyncInfo.Status.Title;
-                label_timeLeft.Text = _selectedLink.SyncInfo.TimeRemainingEst.ToString(@"hh\:mm\:ss");
+                label_timeLeft.Text = _selectedLink.SyncInfo.Time.RemainingEst.ToString(@"hh\:mm\:ss");
                 panel_detail_header.BackColor = _selectedLink.SyncInfo.Status.Color;
             }
             else
@@ -184,7 +184,7 @@ namespace WinSync.Forms
         {
             if (_selectedLink == null) return;
 
-            SyncDetailInfoForm2 f = new SyncDetailInfoForm2(_selectedLink, this);
+            SyncDetailInfoForm2 f = new SyncDetailInfoForm2(_selectedLink);
 
             f.FormClosed += delegate
             {

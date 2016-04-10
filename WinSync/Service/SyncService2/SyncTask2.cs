@@ -19,13 +19,17 @@ namespace WinSync.Service
         {
             _service.Cancel();
         }
+        
         public override async void Execute()
         {
             _si.SyncStarted();
             _service = new SyncService2(_si);
 
+            _service.TasksRunning++;
             int result = await RunExecTaskAsync();
-            switch(result)
+            _service.TasksRunning--;
+
+            switch (result)
             {
                 case 1:
                     MessageBox.Show("The directories to sync do not exist on this System.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -34,18 +38,14 @@ namespace WinSync.Service
                     MessageBox.Show("Unexpected Error.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     break;
             }
-
-            _service.TasksRunning++;
-            _service.TasksRunning--;
         }
 
         /// <summary>
         /// run synchronisation task async
         /// </summary>
         /// <returns>
-        /// result:
-        /// 0 - success
-        /// 1 - directory not found
+        /// 0 - success <para />
+        /// 1 - directory not found <para />
         /// 2 - sync canceled
         /// </returns>
         private Task<int> RunExecTaskAsync()

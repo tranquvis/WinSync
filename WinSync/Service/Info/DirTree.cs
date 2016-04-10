@@ -116,7 +116,5 @@ namespace WinSync.Service
                 yield return f;
             }
         }
-
-        //public bool HasDuplicateDirs => _dirs.Count(dir => _dirs.Count(x => x.Info.Name == dir.Info.Name) > 1) > 0;
     }
 }

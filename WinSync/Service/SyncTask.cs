@@ -20,9 +20,8 @@ namespace WinSync.Service
         }
 
         /// <summary>
-        /// execute sanchronisation
+        /// execute synchronisation
         /// </summary>
-        /// <returns></returns>
         public abstract void Execute();
 
         /// <summary>

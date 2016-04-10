@@ -249,8 +249,8 @@ namespace WinSync.Data
             foreach (SyncLink l in Links)
             {
                 if (!l.IsRunning) continue;
-                total += l.SyncInfo.TotalFileSize;
-                p += l.SyncInfo.SizeApplied;
+                total += l.SyncInfo.Files.TotalSize;
+                p += l.SyncInfo.Files.AppliedSize;
             }
 
             return total > 0 ? 100f / total * p : 0f;

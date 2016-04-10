@@ -6,14 +6,15 @@ namespace WinSync.Service
 {
     public class SyncDirection
     {
-        public static SyncDirection TwoWay = new SyncDirection(0, "Two Way"), 
+        public static SyncDirection 
+            TwoWay = new SyncDirection(0, "Two Way"), 
             To1 = new SyncDirection(1, "To Folder 1"),
             To2 = new SyncDirection(2, "To Folder 2");
 
         private static readonly SyncDirection[] List = { TwoWay, To1, To2 };
 
         private readonly string _name;
-        public int Id { get; }
+        public int Id { get; private set; }
 
         private SyncDirection(int id, string name)
         {
