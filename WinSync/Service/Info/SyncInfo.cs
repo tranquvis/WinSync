@@ -510,7 +510,10 @@ namespace WinSync.Service
             /// </summary>
             public long ChangedFoundCount
             {
-                get { return _si.SyncFileExecutionInfos.Count; }
+                get
+                {
+                    return _si.SyncFileExecutionInfos.Count;
+                }
             }
 
             /// <summary>

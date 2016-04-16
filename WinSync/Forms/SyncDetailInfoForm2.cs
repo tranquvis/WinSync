@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Threading;
 using System.Linq;
+using System.Diagnostics;
 
 namespace WinSync.Forms
 {
@@ -17,10 +18,7 @@ namespace WinSync.Forms
 
         bool _updateRoutineRunning;
         bool _updateStatsAsyncRunning;
-
         bool _statusChangedEventsCheckingRunning;
-        bool _statusChangedEventsAToken;
-        List<StatusChangedEvent> _statusChangedEvents = new List<StatusChangedEvent>();
 
         #region variables for more performant form updating
         const int uProgressIGeneralIF = 4; //importance-factor for updating general progress infos (0 = max. importance)
@@ -30,6 +28,12 @@ namespace WinSync.Forms
         SyncStatus _oldStatus;
         bool _oldPaused;
         int _generalRoundCount = 0;
+        
+        List<StatusChangedEvent> _statusChangedEvents = new List<StatusChangedEvent>();
+        const int maxPendingStatusChangedEventsToProcess = 1000;
+        bool _statusChangedEventsSetAccessRequested;
+        bool _statusChangedEventsGetAccessRequested;
+        bool _statusChangedEventsGetAccess;
         #endregion
 
         /// <summary>
@@ -114,7 +118,6 @@ namespace WinSync.Forms
                 _updateRoutineRunning = false;
             });
         }
-
 
         /// <summary>
         /// start updating sync-info and sync-controls async while synchronisation is running
@@ -214,7 +217,7 @@ namespace WinSync.Forms
                 else if (SI.Status == SyncStatus.DetectingChanges)
                 {
                     label_detectCh_changesDetected.Text = (SI.Files.ChangedFoundCount + SI.Dirs.ChangedFoundCount).ToString();
-                    label_detectCh_FDDone.Text = (SI.Files.DetectedCount + SI.Dirs.DetectedCount).ToString();
+                    label_detectCh_FDDone.Text = (SI.Files.DetectedCount + SI.Dirs.DetectedCount).ToString(); //TODO: should not be less than changesDetected
 
                     label_detectCh_filesToCopy.Text = SI.Files.ToCopyCount.ToString();
                     label_detectCh_filesToRemove.Text = SI.Files.ToRemoveCount.ToString();
@@ -315,13 +318,17 @@ namespace WinSync.Forms
         /// <param name="sei"></param>
         public void OnSyncElementStatusChanged(SyncElementInfo sei)
         {
-            while (_statusChangedEventsAToken || _statusChangedEvents.Count > 1000)
+            //parallel access management
+            _statusChangedEventsSetAccessRequested = true;
+            if (_statusChangedEventsGetAccessRequested && _statusChangedEvents.Count >= maxPendingStatusChangedEventsToProcess)
+                _statusChangedEventsGetAccess = true;
+            while (_statusChangedEventsGetAccess)
                 Thread.Sleep(1);
-            _statusChangedEventsAToken = true;
+            _statusChangedEventsSetAccessRequested = false;
+
             // Add events to list, in order to process them in another thread.
             // So the sync execution is not delayed.
-            _statusChangedEvents.Add(new StatusChangedEvent(sei, sei.SyncStatus)); 
-            _statusChangedEventsAToken = false;
+            _statusChangedEvents.Add(new StatusChangedEvent(sei, sei.SyncStatus));
         }
 
         /// <summary>
@@ -350,28 +357,35 @@ namespace WinSync.Forms
 
             _statusChangedEventsCheckingRunning = true;
 
-            await Task.Run(async () =>
+            await Task.Run(() =>
             {
                 while (_l.IsRunning || _statusChangedEvents.Count > 0)
                 {
-                    //update tree
-                    while (_statusChangedEventsAToken)
-                        await Task.Delay(1);
-                    _statusChangedEventsAToken = true;
+                    while (_statusChangedEvents.Count == 0)
+                        Thread.Sleep(2);
 
+                    //parallel access management
+                    _statusChangedEventsGetAccessRequested = true;
+                    while (_statusChangedEventsSetAccessRequested && !_statusChangedEventsGetAccess)
+                        Thread.Sleep(1);
+                    _statusChangedEventsGetAccessRequested = false;
+                    _statusChangedEventsGetAccess = true;
 
                     List<StatusChangedEvent> tempSCE = new List<StatusChangedEvent>(_statusChangedEvents);
                     _statusChangedEvents = new List<StatusChangedEvent>();
 
-                    _statusChangedEventsAToken = false;
+                    // Wait until the processes are worked off, if there are much of them, in order to keep the ui synchronous.
+                    bool awaitProcessing = tempSCE.Count >= maxPendingStatusChangedEventsToProcess;
+                    if(!awaitProcessing)
+                        _statusChangedEventsGetAccess = false;
 
                     foreach (StatusChangedEvent sce in tempSCE.Where(x => x.CreateStatus == x.SyncElementInfo.SyncStatus))
                     {
                         ProcessStatusChangedEventAsync(sce);
                     }
-                    //------------------
 
-                    await Task.Delay(1);
+                    if (awaitProcessing)
+                        _statusChangedEventsGetAccess = false;
                 }
             });
 
@@ -461,18 +475,18 @@ namespace WinSync.Forms
         /// <param name="text">line</param>
         private void AddLogLine(string text)
         {
-            Console.WriteLine(text);
-            try
-            {
-                listBox_log.Items.Insert(0, text);
-            }
-            catch (ObjectDisposedException)
-            {
-            }
-            catch (InvalidOperationException)
-            {
-                //window handle wasn't created
-            }
+            listBox_log.Items.Insert(0, text);
+        }
+
+        private void ShowContextMenuForFolder(object sender, MouseEventArgs e, string absFolderPath)
+        {
+            ContextMenu m = new ContextMenu();
+
+            MenuItem openFolder1 = new MenuItem("Open Folder in Explorer");
+            openFolder1.Click += (o, args) => Process.Start(absFolderPath);
+            m.MenuItems.Add(openFolder1);
+
+            m.Show((Control)sender, new Point(e.X, e.Y));
         }
 
         #region tree management
@@ -629,6 +643,18 @@ namespace WinSync.Forms
         private void button_refresh_Click(object sender, EventArgs e)
         {
             UpdateSyncElementInfo();
+        }
+
+        private void label_link_folder1_MouseClick(object sender, MouseEventArgs e)
+        {
+            if (e.Button == MouseButtons.Right)
+                ShowContextMenuForFolder(sender, e, _l.Path1);
+        }
+
+        private void label_link_folder2_MouseClick(object sender, MouseEventArgs e)
+        {
+            if (e.Button == MouseButtons.Right)
+                ShowContextMenuForFolder(sender, e, _l.Path2);
         }
         #endregion
 

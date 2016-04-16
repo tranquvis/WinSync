@@ -109,9 +109,9 @@ namespace WinSync.Service
         {
             foreach (DirTree childDir in dirTree.Dirs)
             {
-                CreateFolders(childDir);
                 if (childDir.Info.SyncDirInfo?.SyncDirExecutionInfo != null && !childDir.Info.SyncDirInfo.SyncDirExecutionInfo.Remove)
                     Helper.CreateFolder(childDir.Info.SyncDirInfo.SyncDirExecutionInfo, CheckInterrupt1);
+                CreateFolders(childDir);
             }
         }
 

@@ -7,8 +7,8 @@ namespace WinSync.Controls
 {
     public class AnimatedProgressBar : ProgressBar
     {
-        const int frameRate = 100; //in frames per second
-        const int animationStep = 3; //in percent
+        const int frameRate = 200; //in frames per second
+        const float animationStep = 1; //in percent
 
         float _value = 0;
         float _displayValue = 0;

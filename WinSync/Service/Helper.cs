@@ -257,7 +257,7 @@ namespace WinSync.Service
             sdei.StartedNow();
             try
             {
-                Delimon.Win32.IO.Directory.CreateDirectory(ddp); //TODO sometime does the directory not exist already
+                Delimon.Win32.IO.Directory.CreateDirectory(ddp);
                 sdei.SyncElementInfo.SyncStatus = SyncElementStatus.ChangeApplied;
             }
             catch (Exception e)

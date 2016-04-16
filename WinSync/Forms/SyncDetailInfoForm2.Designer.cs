@@ -42,14 +42,14 @@ namespace WinSync.Forms
             this.tabPage_linkInfo = new System.Windows.Forms.TabPage();
             this.panel_linkInfo = new System.Windows.Forms.Panel();
             this.flowLayoutPanel2 = new System.Windows.Forms.FlowLayoutPanel();
-            this.panel4 = new System.Windows.Forms.Panel();
+            this.tableLayoutPanel10 = new System.Windows.Forms.TableLayoutPanel();
             this.label_link_folder1Title = new System.Windows.Forms.Label();
+            this.label_link_folder2Title = new System.Windows.Forms.Label();
             this.label_link_folder1 = new System.Windows.Forms.Label();
             this.label_link_folder2 = new System.Windows.Forms.Label();
-            this.label_link_folder2Title = new System.Windows.Forms.Label();
-            this.panel5 = new System.Windows.Forms.Panel();
-            this.label_link_directionTitle = new System.Windows.Forms.Label();
+            this.tableLayoutPanel11 = new System.Windows.Forms.TableLayoutPanel();
             this.label_link_direction = new System.Windows.Forms.Label();
+            this.label_link_directionTitle = new System.Windows.Forms.Label();
             this.tabPage_syncInfo = new System.Windows.Forms.TabPage();
             this.tableLayoutPanel5 = new System.Windows.Forms.TableLayoutPanel();
             this.statusProgressBar1 = new WinSync.Controls.StatusProgressBar();
@@ -157,8 +157,8 @@ namespace WinSync.Forms
             this.tabPage_linkInfo.SuspendLayout();
             this.panel_linkInfo.SuspendLayout();
             this.flowLayoutPanel2.SuspendLayout();
-            this.panel4.SuspendLayout();
-            this.panel5.SuspendLayout();
+            this.tableLayoutPanel10.SuspendLayout();
+            this.tableLayoutPanel11.SuspendLayout();
             this.tabPage_syncInfo.SuspendLayout();
             this.tableLayoutPanel5.SuspendLayout();
             this.flowLayoutPanel3.SuspendLayout();
@@ -331,27 +331,32 @@ namespace WinSync.Forms
             this.flowLayoutPanel2.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.flowLayoutPanel2.Controls.Add(this.panel4);
-            this.flowLayoutPanel2.Controls.Add(this.panel5);
+            this.flowLayoutPanel2.Controls.Add(this.tableLayoutPanel10);
+            this.flowLayoutPanel2.Controls.Add(this.tableLayoutPanel11);
             this.flowLayoutPanel2.Location = new System.Drawing.Point(0, 0);
             this.flowLayoutPanel2.Margin = new System.Windows.Forms.Padding(0);
             this.flowLayoutPanel2.Name = "flowLayoutPanel2";
             this.flowLayoutPanel2.Size = new System.Drawing.Size(473, 263);
             this.flowLayoutPanel2.TabIndex = 23;
             // 
-            // panel4
+            // tableLayoutPanel10
             // 
-            this.panel4.AutoSize = true;
-            this.panel4.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.panel4.Controls.Add(this.label_link_folder1Title);
-            this.panel4.Controls.Add(this.label_link_folder1);
-            this.panel4.Controls.Add(this.label_link_folder2);
-            this.panel4.Controls.Add(this.label_link_folder2Title);
-            this.panel4.Location = new System.Drawing.Point(3, 3);
-            this.panel4.Margin = new System.Windows.Forms.Padding(3, 3, 10, 10);
-            this.panel4.Name = "panel4";
-            this.panel4.Size = new System.Drawing.Size(84, 39);
-            this.panel4.TabIndex = 21;
+            this.tableLayoutPanel10.AutoSize = true;
+            this.tableLayoutPanel10.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.tableLayoutPanel10.ColumnCount = 2;
+            this.tableLayoutPanel10.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
+            this.tableLayoutPanel10.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
+            this.tableLayoutPanel10.Controls.Add(this.label_link_folder1Title, 0, 0);
+            this.tableLayoutPanel10.Controls.Add(this.label_link_folder2Title, 0, 1);
+            this.tableLayoutPanel10.Controls.Add(this.label_link_folder1, 1, 0);
+            this.tableLayoutPanel10.Controls.Add(this.label_link_folder2, 1, 1);
+            this.tableLayoutPanel10.Location = new System.Drawing.Point(3, 3);
+            this.tableLayoutPanel10.Name = "tableLayoutPanel10";
+            this.tableLayoutPanel10.RowCount = 2;
+            this.tableLayoutPanel10.RowStyles.Add(new System.Windows.Forms.RowStyle());
+            this.tableLayoutPanel10.RowStyles.Add(new System.Windows.Forms.RowStyle());
+            this.tableLayoutPanel10.Size = new System.Drawing.Size(84, 32);
+            this.tableLayoutPanel10.TabIndex = 56;
             // 
             // label_link_folder1Title
             // 
@@ -360,6 +365,16 @@ namespace WinSync.Forms
             this.label_link_folder1Title.Size = new System.Drawing.Size(60, 16);
             this.label_link_folder1Title.TabIndex = 15;
             this.label_link_folder1Title.Text = "Folder 1:";
+            this.label_link_folder1Title.MouseClick += new System.Windows.Forms.MouseEventHandler(this.label_link_folder1_MouseClick);
+            // 
+            // label_link_folder2Title
+            // 
+            this.label_link_folder2Title.Location = new System.Drawing.Point(3, 16);
+            this.label_link_folder2Title.Name = "label_link_folder2Title";
+            this.label_link_folder2Title.Size = new System.Drawing.Size(60, 16);
+            this.label_link_folder2Title.TabIndex = 17;
+            this.label_link_folder2Title.Text = "Folder 2:";
+            this.label_link_folder2Title.MouseClick += new System.Windows.Forms.MouseEventHandler(this.label_link_folder2_MouseClick);
             // 
             // label_link_folder1
             // 
@@ -369,43 +384,34 @@ namespace WinSync.Forms
             this.label_link_folder1.Size = new System.Drawing.Size(12, 13);
             this.label_link_folder1.TabIndex = 16;
             this.label_link_folder1.Text = "s";
+            this.label_link_folder1.MouseClick += new System.Windows.Forms.MouseEventHandler(this.label_link_folder1_MouseClick);
             // 
             // label_link_folder2
             // 
             this.label_link_folder2.AutoSize = true;
-            this.label_link_folder2.Location = new System.Drawing.Point(69, 23);
+            this.label_link_folder2.Location = new System.Drawing.Point(69, 16);
             this.label_link_folder2.Name = "label_link_folder2";
             this.label_link_folder2.Size = new System.Drawing.Size(12, 13);
             this.label_link_folder2.TabIndex = 18;
             this.label_link_folder2.Text = "s";
+            this.label_link_folder2.MouseClick += new System.Windows.Forms.MouseEventHandler(this.label_link_folder2_MouseClick);
             // 
-            // label_link_folder2Title
+            // tableLayoutPanel11
             // 
-            this.label_link_folder2Title.Location = new System.Drawing.Point(3, 23);
-            this.label_link_folder2Title.Name = "label_link_folder2Title";
-            this.label_link_folder2Title.Size = new System.Drawing.Size(60, 16);
-            this.label_link_folder2Title.TabIndex = 17;
-            this.label_link_folder2Title.Text = "Folder 2:";
-            // 
-            // panel5
-            // 
-            this.panel5.AutoSize = true;
-            this.panel5.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.panel5.Controls.Add(this.label_link_directionTitle);
-            this.panel5.Controls.Add(this.label_link_direction);
-            this.panel5.Location = new System.Drawing.Point(100, 3);
-            this.panel5.Margin = new System.Windows.Forms.Padding(3, 3, 10, 10);
-            this.panel5.Name = "panel5";
-            this.panel5.Size = new System.Drawing.Size(84, 16);
-            this.panel5.TabIndex = 22;
-            // 
-            // label_link_directionTitle
-            // 
-            this.label_link_directionTitle.Location = new System.Drawing.Point(3, 0);
-            this.label_link_directionTitle.Name = "label_link_directionTitle";
-            this.label_link_directionTitle.Size = new System.Drawing.Size(60, 16);
-            this.label_link_directionTitle.TabIndex = 19;
-            this.label_link_directionTitle.Text = "Direction:";
+            this.tableLayoutPanel11.AutoSize = true;
+            this.tableLayoutPanel11.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.tableLayoutPanel11.ColumnCount = 2;
+            this.tableLayoutPanel11.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
+            this.tableLayoutPanel11.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
+            this.tableLayoutPanel11.Controls.Add(this.label_link_direction, 1, 1);
+            this.tableLayoutPanel11.Controls.Add(this.label_link_directionTitle, 0, 1);
+            this.tableLayoutPanel11.Location = new System.Drawing.Point(93, 3);
+            this.tableLayoutPanel11.Name = "tableLayoutPanel11";
+            this.tableLayoutPanel11.RowCount = 2;
+            this.tableLayoutPanel11.RowStyles.Add(new System.Windows.Forms.RowStyle());
+            this.tableLayoutPanel11.RowStyles.Add(new System.Windows.Forms.RowStyle());
+            this.tableLayoutPanel11.Size = new System.Drawing.Size(84, 16);
+            this.tableLayoutPanel11.TabIndex = 57;
             // 
             // label_link_direction
             // 
@@ -415,6 +421,14 @@ namespace WinSync.Forms
             this.label_link_direction.Size = new System.Drawing.Size(12, 13);
             this.label_link_direction.TabIndex = 20;
             this.label_link_direction.Text = "s";
+            // 
+            // label_link_directionTitle
+            // 
+            this.label_link_directionTitle.Location = new System.Drawing.Point(3, 0);
+            this.label_link_directionTitle.Name = "label_link_directionTitle";
+            this.label_link_directionTitle.Size = new System.Drawing.Size(60, 16);
+            this.label_link_directionTitle.TabIndex = 19;
+            this.label_link_directionTitle.Text = "Direction:";
             // 
             // tabPage_syncInfo
             // 
@@ -1678,6 +1692,7 @@ namespace WinSync.Forms
             this.progressBar.Name = "progressBar";
             this.progressBar.Size = new System.Drawing.Size(492, 10);
             this.progressBar.TabIndex = 22;
+            this.progressBar.Value = 0F;
             // 
             // imageList_nodeElements
             // 
@@ -1777,10 +1792,10 @@ namespace WinSync.Forms
             this.panel_linkInfo.ResumeLayout(false);
             this.flowLayoutPanel2.ResumeLayout(false);
             this.flowLayoutPanel2.PerformLayout();
-            this.panel4.ResumeLayout(false);
-            this.panel4.PerformLayout();
-            this.panel5.ResumeLayout(false);
-            this.panel5.PerformLayout();
+            this.tableLayoutPanel10.ResumeLayout(false);
+            this.tableLayoutPanel10.PerformLayout();
+            this.tableLayoutPanel11.ResumeLayout(false);
+            this.tableLayoutPanel11.PerformLayout();
             this.tabPage_syncInfo.ResumeLayout(false);
             this.tableLayoutPanel5.ResumeLayout(false);
             this.tableLayoutPanel5.PerformLayout();
@@ -1861,8 +1876,6 @@ namespace WinSync.Forms
         private System.Windows.Forms.TabPage tabPage_linkInfo;
         private System.Windows.Forms.TabPage tabPage_syncInfo;
         private System.Windows.Forms.FlowLayoutPanel flowLayoutPanel2;
-        private System.Windows.Forms.Panel panel4;
-        private System.Windows.Forms.Panel panel5;
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel5;
         private StatusProgressBar statusProgressBar1;
         private System.Windows.Forms.FlowLayoutPanel flowLayoutPanel3;
@@ -1953,5 +1966,7 @@ namespace WinSync.Forms
         private MyButton button_refresh;
         private System.Windows.Forms.TextBox textBox_sei_info;
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel_left;
+        private System.Windows.Forms.TableLayoutPanel tableLayoutPanel10;
+        private System.Windows.Forms.TableLayoutPanel tableLayoutPanel11;
     }
 }
