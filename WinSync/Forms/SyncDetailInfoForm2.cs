@@ -115,6 +115,7 @@ namespace WinSync.Forms
             });
         }
 
+
         /// <summary>
         /// start updating sync-info and sync-controls async while synchronisation is running
         /// </summary>
@@ -126,16 +127,13 @@ namespace WinSync.Forms
 
             while (_l.IsRunning)
             {
-                if(tabControl_left1.SelectedTab == tabPage_syncInfo)
-                {
-                    UpdateSyncControls();
-                    UpdateSyncProgressInfos(false);
-                }
+                UpdateSyncControls();
+                UpdateSyncProgressInfos(false);
                 await Task.Delay(updatingSyncInfoTimeout);
             }
 
             UpdateSyncControls();
-            UpdateSyncProgressInfos(false);
+            UpdateSyncProgressInfos(true);
 
             _updateStatsAsyncRunning = false;
         }
@@ -170,7 +168,7 @@ namespace WinSync.Forms
             // suspend updating general infos {uProgressIGeneralIF} times
             if (updateAll || _generalRoundCount <= 0)
             {
-                progressBar.Value = (int)(SI.SyncProgress * 10);
+                progressBar.Value = SI.SyncProgress;
                 label_syst_progress.Text = $"{SI.SyncProgress:0.00}%";
                 label_syst_totalTime.Text = SI.Time.Total.ToString(@"hh\:mm\:ss");
 
@@ -205,41 +203,45 @@ namespace WinSync.Forms
             else
                 _generalRoundCount--;
 
-            if (SI.Status == SyncStatus.FetchingElements)
-            {
-                label_fetchFD_filesFound.Text = SI.Files.FoundCount.ToString();
-                label_fetchFD_foldersFound.Text = SI.Dirs.FoundCount.ToString();
-            }
-            else if(SI.Status == SyncStatus.DetectingChanges)
-            {
-                label_detectCh_changesDetected.Text = (SI.Files.ChangedFoundCount + SI.Dirs.ChangedFoundCount).ToString();
-                label_detectCh_FDDone.Text = (SI.Files.DetectedCount + SI.Dirs.DetectedCount).ToString();
 
-                label_detectCh_filesToCopy.Text = SI.Files.ToCopyCount.ToString();
-                label_detectCh_filesToRemove.Text = SI.Files.ToRemoveCount.ToString();
-                label_detectCh_foldersToCreate.Text = SI.Dirs.ToCreateCount.ToString();
-                label_detectCh_foldersToRemove.Text = SI.Dirs.ToRemoveCount.ToString();
-            }
-            else if (SI.Status == SyncStatus.CreatingFolders)
+            if (tabControl_left1.SelectedTab == tabPage_syncInfo)
             {
-                label_crDirs_dirsCreated.Text = $"{SI.Dirs.ChangesAppliedCount} of {SI.Dirs.FoundCount}";
-            }
-            else if (SI.Status == SyncStatus.ApplyingFileChanges)
-            {
-                label_applyCh_speed_current.Text = $"{SI.ActSpeed:0.00} Mbit/s";
-                label_applyCh_speed_average.Text = $"{SI.AverageSpeed:0.00} Mbit/s";
+                if (SI.Status == SyncStatus.FetchingElements)
+                {
+                    label_fetchFD_filesFound.Text = SI.Files.FoundCount.ToString();
+                    label_fetchFD_foldersFound.Text = SI.Dirs.FoundCount.ToString();
+                }
+                else if (SI.Status == SyncStatus.DetectingChanges)
+                {
+                    label_detectCh_changesDetected.Text = (SI.Files.ChangedFoundCount + SI.Dirs.ChangedFoundCount).ToString();
+                    label_detectCh_FDDone.Text = (SI.Files.DetectedCount + SI.Dirs.DetectedCount).ToString();
 
-                label_applyCh_copiedFilesCount.Text = $"{SI.Files.CopiedCount:#,#} of {SI.Files.ToCopyCount:#,#}";
-                label_applyCh_copiedFilesSize.Text = $"{SI.Files.CopiedSize / (1024.0 * 1024.0):#,#0.00} of " +
-                        $"{SI.Files.TotalSizeToCopy / (1024.0 * 1024.0):#,#0.00}MB";
+                    label_detectCh_filesToCopy.Text = SI.Files.ToCopyCount.ToString();
+                    label_detectCh_filesToRemove.Text = SI.Files.ToRemoveCount.ToString();
+                    label_detectCh_foldersToCreate.Text = SI.Dirs.ToCreateCount.ToString();
+                    label_detectCh_foldersToRemove.Text = SI.Dirs.ToRemoveCount.ToString();
+                }
+                else if (SI.Status == SyncStatus.CreatingFolders)
+                {
+                    label_crDirs_dirsCreated.Text = $"{SI.Dirs.ChangesAppliedCount} of {SI.Dirs.FoundCount}";
+                }
+                else if (SI.Status == SyncStatus.ApplyingFileChanges)
+                {
+                    label_applyCh_speed_current.Text = $"{SI.ActSpeed:0.00} Mbit/s";
+                    label_applyCh_speed_average.Text = $"{SI.AverageSpeed:0.00} Mbit/s";
 
-                label_applyCh_removedFilesCount.Text = $"{SI.Files.RemovedCount:#,#} of {SI.Files.ToCopyCount:#,#}";
-                label_applyCh_removedFilesSize.Text = $"{SI.Files.RemovedSize / (1024.0 * 1024.0):#,#0.00} of " +
-                        $"{SI.Files.TotalSizeToRemove / (1024.0 * 1024.0):#,#0.00}MB";
-            }
-            else if (SI.Status == SyncStatus.RemoveDirs)
-            {
-                label_remDirs_foldersRemoved.Text = $"{SI.Dirs.RemovedCount} of {SI.Dirs.ToRemoveCount}";
+                    label_applyCh_copiedFilesCount.Text = $"{SI.Files.CopiedCount:#,#} of {SI.Files.ToCopyCount:#,#}";
+                    label_applyCh_copiedFilesSize.Text = $"{SI.Files.CopiedSize / (1024.0 * 1024.0):#,#0.00} of " +
+                            $"{SI.Files.TotalSizeToCopy / (1024.0 * 1024.0):#,#0.00}MB";
+
+                    label_applyCh_removedFilesCount.Text = $"{SI.Files.RemovedCount:#,#} of {SI.Files.ToCopyCount:#,#}";
+                    label_applyCh_removedFilesSize.Text = $"{SI.Files.RemovedSize / (1024.0 * 1024.0):#,#0.00} of " +
+                            $"{SI.Files.TotalSizeToRemove / (1024.0 * 1024.0):#,#0.00}MB";
+                }
+                else if (SI.Status == SyncStatus.RemoveDirs)
+                {
+                    label_remDirs_foldersRemoved.Text = $"{SI.Dirs.RemovedCount} of {SI.Dirs.ToRemoveCount}";
+                }
             }
         }
 
@@ -297,6 +299,14 @@ namespace WinSync.Forms
                 label_sei_path2.Text = "";
                 label_sei_syncStatus.Text = "";
             }
+        }
+
+        /// <summary>
+        /// reset sync info in Form
+        /// </summary>
+        public void ResetSyncInfos()
+        {
+            progressBar.Value = 0;
         }
 
         /// <summary>
@@ -569,6 +579,7 @@ namespace WinSync.Forms
         {
             if (!_l.IsRunning)
             {
+                ResetSyncInfos();
                 _l.Sync(this);
                 listBox_log.Items.Clear();
                 treeView1.Nodes.Clear();

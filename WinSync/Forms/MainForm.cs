@@ -106,7 +106,7 @@ namespace WinSync.Forms
         {
             //update total progress info
             float tp = DataManager.GetTotalProgress();
-            progressBar_total.Value = (int)(tp * 10);
+            progressBar_total.Value = tp;
             label_p.Text = $"{tp:0.0}%";
 
             //update each sync data of link

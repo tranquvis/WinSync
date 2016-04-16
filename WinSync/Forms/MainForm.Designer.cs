@@ -48,7 +48,7 @@ namespace WinSync.Forms
             this.dataTable = new System.Windows.Forms.TableLayoutPanel();
             this.panel_syncDetail = new System.Windows.Forms.Panel();
             this.button_addLink = new WinSync.Controls.MyButton();
-            this.progressBar_total = new WinSync.Controls.MyProgressBar();
+            this.progressBar_total = new WinSync.Controls.AnimatedProgressBar();
             this._contentPanel.SuspendLayout();
             this.panel_selSL_info.SuspendLayout();
             this.panel_detail_header.SuspendLayout();
@@ -344,7 +344,7 @@ namespace WinSync.Forms
         #endregion
         
         private System.Windows.Forms.FlowLayoutPanel flowLayoutPanel1;
-        private MyProgressBar progressBar_total;
+        private AnimatedProgressBar progressBar_total;
         private System.Windows.Forms.Label label_p;
         private MyButton button_addLink;
         private System.Windows.Forms.Label label_detail_progress;

@@ -142,7 +142,7 @@ namespace WinSync.Forms
             this.panel6 = new System.Windows.Forms.Panel();
             this.label32 = new System.Windows.Forms.Label();
             this.listBox_log = new System.Windows.Forms.ListBox();
-            this.progressBar = new WinSync.Controls.MyProgressBar();
+            this.progressBar = new WinSync.Controls.AnimatedProgressBar();
             this.imageList_nodeElements = new System.Windows.Forms.ImageList(this.components);
             this.splitContainer_main = new System.Windows.Forms.SplitContainer();
             this.tableLayoutPanel_left = new System.Windows.Forms.TableLayoutPanel();
@@ -1843,7 +1843,7 @@ namespace WinSync.Forms
         private System.Windows.Forms.Label label_title;
         private MyButton button_sync;
         private MyButton button_pr;
-        private MyProgressBar progressBar;
+        private AnimatedProgressBar progressBar;
         private System.Windows.Forms.ImageList imageList_nodeElements;
         private System.Windows.Forms.SplitContainer splitContainer_main;
         private System.Windows.Forms.SplitContainer splitContainer_left;

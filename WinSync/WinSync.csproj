@@ -162,7 +162,7 @@
       <DependentUpon>MainForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Data\Link.cs" />
-    <Compile Include="Controls\MyProgressBar.cs">
+    <Compile Include="Controls\AnimatedProgressBar.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="Service\Info\SyncListener.cs" />
